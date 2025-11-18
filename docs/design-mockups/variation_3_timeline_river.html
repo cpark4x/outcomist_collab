@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Variation 3: Timeline River</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #FAFAF9;
+            color: #1F2937;
+            min-height: 100vh;
+        }
+
+        .top-bar {
+            background: white;
+            border-bottom: 1px solid #E5E7EB;
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .title {
+            font-size: 1.5em;
+            font-weight: 700;
+            color: #1F2937;
+        }
+
+        .filters {
+            display: flex;
+            gap: 10px;
+        }
+
+        .filter-btn {
+            padding: 8px 16px;
+            border: 1px solid #E5E7EB;
+            background: white;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .filter-btn.active {
+            background: #14B8A6;
+            color: white;
+            border-color: #14B8A6;
+        }
+
+        .timeline-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        .now-marker {
+            background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);
+            color: white;
+            padding: 12px 30px;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 1.1em;
+            text-align: center;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+        }
+
+        .timeline-card {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 25px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            transition: all 0.3s;
+            border-left: 6px solid #E5E7EB;
+        }
+
+        .timeline-card:hover {
+            box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+            transform: translateY(-2px);
+        }
+
+        .timeline-card.needs-attention {
+            border-left-color: #F97316;
+            background: #FFFBEB;
+        }
+
+        .timeline-card.running {
+            border-left-color: #3B82F6;
+        }
+
+        .timeline-card.complete {
+            border-left-color: #22C55E;
+        }
+
+        .timeline-card.planning {
+            border-left-color: #A855F7;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 20px;
+        }
+
+        .card-title {
+            font-size: 1.5em;
+            font-weight: 700;
+            color: #1F2937;
+            margin-bottom: 5px;
+        }
+
+        .card-timestamp {
+            font-size: 0.85em;
+            color: #9CA3AF;
+            font-family: 'Courier New', monospace;
+        }
+
+        .card-status {
+            display: inline-block;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+
+        .status-needs-attention {
+            background: #FED7AA;
+            color: #C2410C;
+        }
+
+        .status-running {
+            background: #DBEAFE;
+            color: #1E40AF;
+        }
+
+        .status-complete {
+            background: #D1FAE5;
+            color: #065F46;
+        }
+
+        .status-planning {
+            background: #E9D5FF;
+            color: #6B21A8;
+        }
+
+        .card-content {
+            margin-bottom: 20px;
+            line-height: 1.6;
+            color: #4B5563;
+        }
+
+        .card-preview {
+            margin: 20px 0;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .preview-image {
+            width: 100%;
+            height: 200px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 3em;
+        }
+
+        .card-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: 1px solid #E5E7EB;
+            background: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .btn:hover {
+            background: #F9FAFB;
+        }
+
+        .btn-primary {
+            background: #14B8A6;
+            color: white;
+            border-color: #14B8A6;
+        }
+
+        .btn-primary:hover {
+            background: #0D9488;
+        }
+
+        .time-divider {
+            text-align: center;
+            margin: 50px 0 30px 0;
+            position: relative;
+        }
+
+        .divider-text {
+            background: #FAFAF9;
+            padding: 0 20px;
+            color: #9CA3AF;
+            font-size: 0.9em;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            position: relative;
+            z-index: 1;
+            display: inline-block;
+        }
+
+        .divider-line {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: #E5E7EB;
+            z-index: 0;
+        }
+
+        .progress-bar-small {
+            height: 6px;
+            background: #E5E7EB;
+            border-radius: 3px;
+            margin-top: 10px;
+            overflow: hidden;
+        }
+
+        .progress-fill-small {
+            height: 100%;
+            background: #3B82F6;
+            transition: width 0.5s;
+        }
+    </style>
+</head>
+<body>
+    <div class="top-bar">
+        <div class="title">⏱️ Timeline River</div>
+        <div class="filters">
+            <button class="filter-btn active">Today</button>
+            <button class="filter-btn">This Week</button>
+            <button class="filter-btn">Filter</button>
+            <button class="filter-btn">🔔 3</button>
+        </div>
+    </div>
+
+    <div class="timeline-container">
+        <div class="now-marker">
+            🔴 NOW - 14:32
+        </div>
+
+        <!-- Needs Attention Card -->
+        <div class="timeline-card needs-attention">
+            <div class="card-header">
+                <div>
+                    <div class="card-title">⚠️ OUTCOMIST - NEEDS YOUR INPUT</div>
+                    <div class="card-timestamp">14:31 (1 minute ago)</div>
+                </div>
+                <div class="card-status status-needs-attention">AWAITING RESPONSE</div>
+            </div>
+            <div class="card-content">
+                AI is asking: "Which design approach should I use for the task management interface?"
+            </div>
+            <div class="card-preview">
+                <div class="preview-image">❓</div>
+            </div>
+            <div class="card-actions">
+                <button class="btn btn-primary">Respond Now</button>
+                <button class="btn">View Context</button>
+            </div>
+        </div>
+
+        <!-- Running Card -->
+        <div class="timeline-card running">
+            <div class="card-header">
+                <div>
+                    <div class="card-title">⏳ NEW CLAUDE SESSION - RUNNING</div>
+                    <div class="card-timestamp">14:30 (2 minutes ago) • 72% complete</div>
+                </div>
+                <div class="card-status status-running">EXECUTING</div>
+            </div>
+            <div class="card-content">
+                Executor: Processing file 23/32
+            </div>
+            <div class="progress-bar-small">
+                <div class="progress-fill-small" style="width: 72%;"></div>
+            </div>
+            <div class="card-preview">
+                <div style="background: #1E293B; color: #0EA5E9; padding: 20px; font-family: monospace; font-size: 0.85em;">
+                    $ analyzing project...<br>
+                    → found 47 files<br>
+                    → processing contracts.py<br>
+                    <span style="color: #10B981;">✓ analysis complete</span>
+                </div>
+            </div>
+            <div class="card-actions">
+                <button class="btn btn-primary">View Details</button>
+                <button class="btn">Pause</button>
+            </div>
+        </div>
+
+        <div class="time-divider">
+            <div class="divider-line"></div>
+            <span class="divider-text">Earlier Today</span>
+        </div>
+
+        <!-- Complete Card -->
+        <div class="timeline-card complete">
+            <div class="card-header">
+                <div>
+                    <div class="card-title">✅ REMEMBER12 - COMPLETED</div>
+                    <div class="card-timestamp">12:15 (2 hours ago)</div>
+                </div>
+                <div class="card-status status-complete">COMPLETE</div>
+            </div>
+            <div class="card-content">
+                Photo gallery created with 24 memories
+            </div>
+            <div class="card-preview">
+                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; padding: 15px; background: #F9FAFB; border-radius: 12px;">
+                    <div style="aspect-ratio: 1; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 6px;"></div>
+                    <div style="aspect-ratio: 1; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 6px;"></div>
+                    <div style="aspect-ratio: 1; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 6px;"></div>
+                    <div style="aspect-ratio: 1; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 6px;"></div>
+                </div>
+            </div>
+            <div class="card-actions">
+                <button class="btn btn-primary">Open Gallery</button>
+                <button class="btn">Download</button>
+                <button class="btn">Share</button>
+            </div>
+        </div>
+
+        <!-- Planning Card -->
+        <div class="timeline-card planning">
+            <div class="card-header">
+                <div>
+                    <div class="card-title">📋 Q4 SALES ANALYSIS - PLANNING</div>
+                    <div class="card-timestamp">11:30 (3 hours ago) • 12% complete</div>
+                </div>
+                <div class="card-status status-planning">PLANNING</div>
+            </div>
+            <div class="card-content">
+                Planner: Analyzing data structure and requirements
+            </div>
+            <div class="progress-bar-small">
+                <div class="progress-fill-small" style="width: 12%; background: #A855F7;"></div>
+            </div>
+            <div class="card-actions">
+                <button class="btn btn-primary">Monitor</button>
+                <button class="btn">Cancel</button>
+            </div>
+        </div>
+
+        <div class="time-divider">
+            <div class="divider-line"></div>
+            <span class="divider-text">Yesterday</span>
+        </div>
+
+        <!-- Earlier Complete Card -->
+        <div class="timeline-card complete">
+            <div class="card-header">
+                <div>
+                    <div class="card-title">✅ MARKET RESEARCH - COMPLETED</div>
+                    <div class="card-timestamp">Yesterday at 16:45</div>
+                </div>
+                <div class="card-status status-complete">COMPLETE</div>
+            </div>
+            <div class="card-content">
+                Comprehensive market analysis report generated
+            </div>
+            <div class="card-actions">
+                <button class="btn btn-primary">View Artifact</button>
+                <button class="btn">Download</button>
+            </div>
+        </div>
+
+        <div style="text-align: center; margin-top: 40px;">
+            <button class="btn">Load Earlier Activity</button>
+        </div>
+    </div>
+
+    <script>
+        // Simulate new entries appearing
+        setInterval(() => {
+            const nowMarker = document.querySelector('.now-marker');
+            const time = new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' });
+            nowMarker.innerHTML = `🔴 NOW - ${time}`;
+        }, 1000);
+    </script>
+</body>
+</html>

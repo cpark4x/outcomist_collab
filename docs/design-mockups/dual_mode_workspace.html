@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dual Mode Workspace - Overview & Focus</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #1a1a1a;
+            color: #e0e0e0;
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        /* Top Toolbar */
+        .toolbar {
+            background: #2a2a2a;
+            border-bottom: 1px solid #3a3a3a;
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .toolbar-title {
+            color: #e0e0e0;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .mode-switcher {
+            display: flex;
+            gap: 8px;
+            margin-left: 20px;
+        }
+
+        .mode-btn {
+            background: #333;
+            color: #aaa;
+            border: 1px solid #444;
+            padding: 6px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .mode-btn:hover {
+            background: #3a3a3a;
+            color: #e0e0e0;
+        }
+
+        .mode-btn.active {
+            background: #4A90E2;
+            color: white;
+            border-color: #4A90E2;
+        }
+
+        .toolbar-btn {
+            background: #4A90E2;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            transition: background 0.2s;
+            margin-left: auto;
+        }
+
+        .toolbar-btn:hover {
+            background: #3a7bc8;
+        }
+
+        .toolbar-info {
+            color: #888;
+            font-size: 12px;
+        }
+
+        /* OVERVIEW MODE - Canvas with all projects */
+        .overview-mode {
+            display: block;
+            position: relative;
+            width: 100%;
+            height: calc(100vh - 49px);
+            overflow: auto;
+        }
+
+        .overview-mode.hidden {
+            display: none;
+        }
+
+        .canvas-workspace {
+            position: relative;
+            width: 100%;
+            min-height: 100%;
+            padding: 20px;
+        }
+
+        /* Project Cards in Overview */
+        .project-card-mini {
+            position: absolute;
+            background: #2a2a2a;
+            border: 2px solid #3a3a3a;
+            border-radius: 8px;
+            width: 350px;
+            height: 280px;
+            cursor: pointer;
+            transition: all 0.2s;
+            overflow: hidden;
+        }
+
+        .project-card-mini:hover {
+            border-color: #4A90E2;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(74, 144, 226, 0.3);
+        }
+
+        .mini-header {
+            background: #333;
+            padding: 12px 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 1px solid #3a3a3a;
+        }
+
+        .mini-status {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #50C878;
+        }
+
+        .mini-status.idle {
+            background: #888;
+        }
+
+        .mini-title {
+            flex: 1;
+            font-size: 13px;
+            font-weight: 600;
+            color: #e0e0e0;
+        }
+
+        .mini-preview {
+            padding: 15px;
+            color: #aaa;
+            font-size: 12px;
+            line-height: 1.6;
+            display: -webkit-box;
+            -webkit-line-clamp: 8;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .mini-meta {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 10px 15px;
+            background: #252525;
+            border-top: 1px solid #3a3a3a;
+            font-size: 11px;
+            color: #666;
+        }
+
+        /* FOCUS MODE - Full screen single project */
+        .focus-mode {
+            display: none;
+            width: 100%;
+            height: calc(100vh - 49px);
+        }
+
+        .focus-mode.active {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .focus-header {
+            background: #2a2a2a;
+            border-bottom: 1px solid #3a3a3a;
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .back-btn {
+            background: #333;
+            border: 1px solid #444;
+            color: #aaa;
+            padding: 8px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+
+        .back-btn:hover {
+            background: #3a3a3a;
+            color: #e0e0e0;
+        }
+
+        .focus-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #e0e0e0;
+            flex: 1;
+        }
+
+        .focus-content {
+            display: grid;
+            grid-template-columns: 45% 55%;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        /* Agent Panel */
+        .agent-panel {
+            background: #252525;
+            border-right: 1px solid #3a3a3a;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .panel-header {
+            padding: 12px 20px;
+            background: #2a2a2a;
+            border-bottom: 1px solid #3a3a3a;
+            font-size: 13px;
+            font-weight: 600;
+            color: #aaa;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .conversation-area {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .message {
+            background: #2a2a2a;
+            border: 1px solid #3a3a3a;
+            border-radius: 8px;
+            padding: 12px 15px;
+            margin-bottom: 12px;
+        }
+
+        .message-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+
+        .message-timestamp {
+            color: #666;
+            font-size: 11px;
+        }
+
+        .message-role {
+            font-size: 11px;
+            font-weight: 600;
+            padding: 3px 8px;
+            border-radius: 4px;
+        }
+
+        .message-role.user {
+            background: #4A90E2;
+            color: white;
+        }
+
+        .message-role.assistant {
+            background: #50C878;
+            color: white;
+        }
+
+        .message-content {
+            color: #ccc;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .command-input-area {
+            border-top: 1px solid #3a3a3a;
+            padding: 15px 20px;
+            background: #2a2a2a;
+        }
+
+        .command-input {
+            width: 100%;
+            background: #1a1a1a;
+            border: 1px solid #3a3a3a;
+            border-radius: 8px;
+            padding: 12px 15px;
+            color: #e0e0e0;
+            font-size: 14px;
+            font-family: inherit;
+        }
+
+        .command-input:focus {
+            outline: none;
+            border-color: #4A90E2;
+        }
+
+        .command-input::placeholder {
+            color: #666;
+        }
+
+        /* Output Panel */
+        .output-panel {
+            background: #1e1e1e;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .output-area {
+            flex: 1;
+            overflow: auto;
+            padding: 20px;
+        }
+
+        .output-content {
+            background: #252525;
+            border: 1px solid #3a3a3a;
+            border-radius: 8px;
+            padding: 30px;
+            min-height: 100%;
+        }
+
+        /* Game styling */
+        .game-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 400px;
+        }
+
+        .game-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 120px);
+            gap: 12px;
+            margin: 30px 0;
+        }
+
+        .game-cell {
+            width: 120px;
+            height: 120px;
+            background: #2a2a2a;
+            border: 2px solid #3a3a3a;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 60px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .game-cell:hover:empty {
+            background: #333;
+            border-color: #4A90E2;
+        }
+
+        .game-cell.x {
+            color: #4A90E2;
+        }
+
+        .game-cell.o {
+            color: #E74C3C;
+        }
+
+        .game-status {
+            color: #e0e0e0;
+            font-size: 20px;
+            font-weight: 500;
+            margin-bottom: 20px;
+        }
+
+        /* Document styling */
+        .document-output {
+            color: #ccc;
+            font-size: 14px;
+            line-height: 1.8;
+        }
+
+        .document-output h3 {
+            color: #e0e0e0;
+            margin: 20px 0 10px 0;
+            font-size: 18px;
+        }
+
+        .document-output ul {
+            padding-left: 25px;
+            color: #aaa;
+        }
+
+        .document-output li {
+            margin: 8px 0;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #1a1a1a;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #444;
+            border-radius: 5px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+    </style>
+</head>
+<body>
+    <!-- Top Toolbar -->
+    <div class="toolbar">
+        <div class="toolbar-title">Default Workspace</div>
+
+        <div class="mode-switcher">
+            <button class="mode-btn active" onclick="switchMode('overview')">📊 Overview</button>
+            <button class="mode-btn" onclick="switchMode('focus')" id="focusModeBtn" disabled>🎯 Focus</button>
+        </div>
+
+        <button class="toolbar-btn" onclick="addProject()">+ New Project</button>
+        <div class="toolbar-info">Projects: 4</div>
+        <div class="toolbar-info">Synced 1:50:20 PM</div>
+    </div>
+
+    <!-- OVERVIEW MODE: All Projects Canvas -->
+    <div class="overview-mode" id="overviewMode">
+        <div class="canvas-workspace">
+
+            <!-- Project 1: Tic Tac Toe -->
+            <div class="project-card-mini" style="top: 20px; left: 20px;" onclick="openProject('tictactoe')">
+                <div class="mini-header">
+                    <div class="mini-status"></div>
+                    <div class="mini-title">Tic Tac Toe Game</div>
+                </div>
+                <div class="mini-preview">
+                    <strong>Latest:</strong> Created interactive 3x3 grid with alternating turns, win detection, and smooth animations. Dark theme with hover effects and clear status display.
+
+                    <div style="margin-top: 10px; color: #666;">Click to open and continue working...</div>
+                </div>
+                <div class="mini-meta">
+                    Last updated: 2 minutes ago • 8 messages
+                </div>
+            </div>
+
+            <!-- Project 2: Vegas Trip -->
+            <div class="project-card-mini" style="top: 20px; left: 390px;" onclick="openProject('vegas')">
+                <div class="mini-header">
+                    <div class="mini-status"></div>
+                    <div class="mini-title">Vegas Family Trip Planning</div>
+                </div>
+                <div class="mini-preview">
+                    <strong>Latest:</strong> Created comprehensive planning document with sections for dates, family info, interests, and daily itinerary. Ready for customization.
+
+                    <div style="margin-top: 10px; color: #666;">Click to open and add details...</div>
+                </div>
+                <div class="mini-meta">
+                    Last updated: 5 minutes ago • 4 messages
+                </div>
+            </div>
+
+            <!-- Project 3: Snake Game -->
+            <div class="project-card-mini" style="top: 320px; left: 20px;" onclick="openProject('snake')">
+                <div class="mini-header">
+                    <div class="mini-status idle"></div>
+                    <div class="mini-title">Snake Game</div>
+                </div>
+                <div class="mini-preview">
+                    <strong>Latest:</strong> Classic snake game with arrow key controls. Added score counter and speed adjustment. Ready for additional features.
+
+                    <div style="margin-top: 10px; color: #666;">Click to continue development...</div>
+                </div>
+                <div class="mini-meta">
+                    Last updated: 1 hour ago • 12 messages
+                </div>
+            </div>
+
+            <!-- Project 4: Presentation Helper -->
+            <div class="project-card-mini" style="top: 320px; left: 390px;" onclick="openProject('presentation')">
+                <div class="mini-header">
+                    <div class="mini-status idle"></div>
+                    <div class="mini-title">Presentation Helper</div>
+                </div>
+                <div class="mini-preview">
+                    <strong>Status:</strong> Planning stage. Waiting for topic and requirements.
+
+                    <div style="margin-top: 10px; color: #666;">Click to start planning...</div>
+                </div>
+                <div class="mini-meta">
+                    Last updated: 3 hours ago • 1 message
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- FOCUS MODE: Single Project Full Screen -->
+    <div class="focus-mode" id="focusMode">
+        <div class="focus-header">
+            <button class="back-btn" onclick="switchMode('overview')">
+                ← Back to Overview
+            </button>
+            <div class="focus-title" id="focusProjectTitle">Tic Tac Toe Game</div>
+        </div>
+
+        <div class="focus-content">
+            <!-- Agent Conversation Panel -->
+            <div class="agent-panel">
+                <div class="panel-header">
+                    💬 Agent Conversation
+                </div>
+                <div class="conversation-area" id="conversationArea">
+                    <!-- Messages will be loaded here based on project -->
+                </div>
+                <div class="command-input-area">
+                    <input type="text" class="command-input" placeholder="Enter command... (↑↓ history, @ files, / commands)">
+                </div>
+            </div>
+
+            <!-- Output Panel -->
+            <div class="output-panel">
+                <div class="panel-header">
+                    🎮 Live Output
+                </div>
+                <div class="output-area">
+                    <div class="output-content" id="outputArea">
+                        <!-- Output will be loaded here based on project -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentMode = 'overview';
+        let currentProject = null;
+
+        // Project data
+        const projects = {
+            tictactoe: {
+                title: 'Tic Tac Toe Game',
+                conversation: [
+                    { time: '13:45:12', role: 'user', content: 'Create a tic tac toe game' },
+                    { time: '13:45:15', role: 'assistant', content: 'I\'ll create a tic tac toe game with:\n- Interactive 3x3 grid\n- Alternating turns between X and O\n- Automatic win detection with highlighted winning cells\n- Draw detection when the board is full\n- "New Game" button to reset and play again\n\n✨ Design Features:\n- Clean, modern dark theme\n- Smooth hover effects\n- Large, easy-to-click buttons\n- Clear status display' },
+                    { time: '13:47:22', role: 'user', content: 'Add a score counter for both players' },
+                    { time: '13:47:28', role: 'assistant', content: 'Added score tracking! Now displays:\n- Player X wins: 0\n- Player O wins: 0\n- Draws: 0\n\nScores persist across games and reset with "Reset Scores" button.' }
+                ],
+                output: `
+                    <div class="game-container">
+                        <div class="game-status">Current turn: X</div>
+                        <div class="game-grid">
+                            <div class="game-cell x">X</div>
+                            <div class="game-cell"></div>
+                            <div class="game-cell"></div>
+                            <div class="game-cell o">O</div>
+                            <div class="game-cell"></div>
+                            <div class="game-cell"></div>
+                            <div class="game-cell"></div>
+                            <div class="game-cell x">X</div>
+                            <div class="game-cell"></div>
+                        </div>
+                        <div style="margin-top: 20px; color: #aaa; font-size: 14px;">
+                            X Wins: 2 | O Wins: 1 | Draws: 0
+                        </div>
+                    </div>
+                `
+            },
+            vegas: {
+                title: 'Vegas Family Trip Planning',
+                conversation: [
+                    { time: '13:46:03', role: 'user', content: 'Help me plan a comprehensive Vegas family trip' },
+                    { time: '13:46:08', role: 'assistant', content: 'I can create a detailed day-by-day itinerary with specific recommendations tailored to your family\'s needs and interests.\n\nFeel free to edit the document directly, or just tell me the details here and I\'ll update it with a complete customized plan!' }
+                ],
+                output: `
+                    <div class="document-output">
+                        <h3>**Trip Duration:**</h3>
+                        <ul>
+                            <li>Dates: Next week</li>
+                            <li>Number of days: ________</li>
+                        </ul>
+                        <h3>**Family Information:**</h3>
+                        <ul>
+                            <li>Number of travelers: ________</li>
+                            <li>Ages of children (if any): ________</li>
+                        </ul>
+                        <h3>**Interests & Preferences:**</h3>
+                        <ul>
+                            <li>Shows/Entertainment: □</li>
+                            <li>Attractions (Grand Canyon, Hoover Dam, etc.): □</li>
+                            <li>Shopping: □</li>
+                            <li>Dining experiences: □</li>
+                            <li>Outdoor activities: □</li>
+                            <li>Other interests: □</li>
+                        </ul>
+                    </div>
+                `
+            },
+            snake: {
+                title: 'Snake Game',
+                conversation: [
+                    { time: '12:30:45', role: 'user', content: 'Create a snake game with arrow key controls' },
+                    { time: '12:30:52', role: 'assistant', content: 'Created classic snake game! Features:\n- Arrow key controls\n- Growing snake when eating food\n- Collision detection\n- Score tracking' },
+                    { time: '12:35:12', role: 'user', content: 'Make it faster and add high score' },
+                    { time: '12:35:18', role: 'assistant', content: 'Done! Increased speed to 150ms interval and added persistent high score tracking using localStorage.' }
+                ],
+                output: `
+                    <div class="game-container">
+                        <div class="game-status">Snake Game</div>
+                        <div style="background: #2a2a2a; width: 400px; height: 400px; border: 2px solid #3a3a3a; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #666; margin: 20px 0;">
+                            [Snake Game Canvas]<br>
+                            <div style="font-size: 12px; margin-top: 10px;">Use arrow keys to play</div>
+                        </div>
+                        <div style="margin-top: 20px; color: #aaa; font-size: 14px;">
+                            Score: 150 | High Score: 420
+                        </div>
+                    </div>
+                `
+            },
+            presentation: {
+                title: 'Presentation Helper',
+                conversation: [
+                    { time: '10:15:30', role: 'user', content: 'Help me plan a presentation' },
+                    { time: '10:15:35', role: 'assistant', content: 'I\'d be happy to help! What\'s the topic and who\'s your audience?' }
+                ],
+                output: `
+                    <div style="color: #666; text-align: center; padding: 60px 20px;">
+                        <div style="font-size: 48px; margin-bottom: 20px;">📊</div>
+                        <div style="font-size: 16px;">Waiting for presentation details...</div>
+                        <div style="font-size: 13px; margin-top: 10px; color: #555;">Provide your topic and requirements to get started</div>
+                    </div>
+                `
+            }
+        };
+
+        function switchMode(mode) {
+            currentMode = mode;
+
+            const overviewMode = document.getElementById('overviewMode');
+            const focusMode = document.getElementById('focusMode');
+            const modeButtons = document.querySelectorAll('.mode-btn');
+
+            if (mode === 'overview') {
+                overviewMode.classList.remove('hidden');
+                focusMode.classList.remove('active');
+                modeButtons[0].classList.add('active');
+                modeButtons[1].classList.remove('active');
+                document.getElementById('focusModeBtn').disabled = true;
+            } else {
+                overviewMode.classList.add('hidden');
+                focusMode.classList.add('active');
+                modeButtons[0].classList.remove('active');
+                modeButtons[1].classList.add('active');
+            }
+        }
+
+        function openProject(projectId) {
+            currentProject = projectId;
+            const project = projects[projectId];
+
+            // Update title
+            document.getElementById('focusProjectTitle').textContent = project.title;
+
+            // Load conversation
+            const conversationArea = document.getElementById('conversationArea');
+            conversationArea.innerHTML = project.conversation.map(msg => `
+                <div class="message">
+                    <div class="message-header">
+                        <span class="message-timestamp">${msg.time}</span>
+                        <span class="message-role ${msg.role}">${msg.role.toUpperCase()}</span>
+                    </div>
+                    <div class="message-content">${msg.content}</div>
+                </div>
+            `).join('');
+
+            // Load output
+            document.getElementById('outputArea').innerHTML = project.output;
+
+            // Enable focus mode button and switch
+            document.getElementById('focusModeBtn').disabled = false;
+            switchMode('focus');
+        }
+
+        function addProject() {
+            alert('New project creation would be implemented here');
+        }
+    </script>
+</body>
+</html>

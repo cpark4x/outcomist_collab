@@ -1,0 +1,44 @@
+[project]
+name = "autonomous_agent"
+version = "0.1.0"
+description = "Autonomous agent system with P→E→V workflow"
+requires-python = ">=3.11"
+dependencies = [
+    "anthropic>=0.18.0",
+    "fastapi>=0.109.0",
+    "uvicorn[standard]>=0.27.0",
+    "pydantic>=2.5.0",
+    "requests>=2.31.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4.0",
+    "pytest-asyncio>=0.21.0",
+    "httpx>=0.26.0",
+]
+
+[build-system]
+requires = ["setuptools>=68.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+asyncio_mode = "auto"
+
+[tool.ruff]
+line-length = 120
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "W"]
+ignore = ["E501"]
+
+[tool.pyright]
+include = ["src", "tests"]
+exclude = [".venv", "__pycache__", "memory"]
+pythonVersion = "3.11"
+typeCheckingMode = "basic"

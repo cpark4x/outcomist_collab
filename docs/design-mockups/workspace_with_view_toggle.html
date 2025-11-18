@@ -1,0 +1,2019 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multi-Project Workspace - View Toggle</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Inter', sans-serif;
+            background: linear-gradient(135deg, #1a1a1a 0%, #0f0f0f 100%);
+            color: #e0e0e0;
+            overflow: hidden;
+            height: 100vh;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background:
+                radial-gradient(circle at 20% 50%, rgba(74, 144, 226, 0.03) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(80, 200, 120, 0.03) 0%, transparent 50%);
+            pointer-events: none;
+        }
+
+        /* Toolbar */
+        .toolbar {
+            background: rgba(42, 42, 42, 0.95);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 14px 24px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            position: relative;
+            z-index: 100;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .toolbar-left {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .toolbar-title {
+            color: #e0e0e0;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .toolbar-actions {
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .toolbar-btn {
+            background: linear-gradient(135deg, #4A90E2 0%, #357ABD 100%);
+            color: white;
+            border: none;
+            padding: 9px 18px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            transition: all 0.2s;
+            box-shadow: 0 2px 8px rgba(74, 144, 226, 0.3);
+        }
+
+        .toolbar-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(74, 144, 226, 0.4);
+        }
+
+        /* Overview Mode */
+        .overview-mode {
+            display: block;
+            width: 100%;
+            height: calc(100vh - 57px);
+            overflow: auto;
+            padding: 24px;
+        }
+
+        .overview-mode.hidden {
+            display: none;
+        }
+
+        /* Focus Mode - Side by Side */
+        .focus-mode {
+            display: none;
+            width: 100%;
+            height: calc(100vh - 57px);
+            background: #1a1a1a;
+        }
+
+        .focus-mode.active {
+            display: flex;
+        }
+
+        .focus-header {
+            padding: 16px 24px;
+            background: rgba(42, 42, 42, 0.95);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .back-btn {
+            background: rgba(51, 51, 51, 0.8);
+            color: #e0e0e0;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .back-btn:hover {
+            background: rgba(58, 58, 58, 1);
+            border-color: rgba(74, 144, 226, 0.4);
+        }
+
+        .focus-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #e0e0e0;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .split-view {
+            display: flex;
+            height: 100%;
+            width: 100%;
+        }
+
+        .split-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            border-right: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .split-panel:last-child {
+            border-right: none;
+        }
+
+        .split-panel-header {
+            padding: 12px 20px;
+            background: rgba(42, 42, 42, 0.6);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            font-size: 13px;
+            font-weight: 600;
+            color: #aaa;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .split-panel-content {
+            flex: 1;
+            overflow-y: auto;
+            background: #1e1e1e;
+        }
+
+        .split-panel-footer {
+            padding: 16px 20px;
+            background: rgba(30, 30, 30, 0.8);
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .canvas-workspace {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
+            gap: 24px;
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        /* Project Cards */
+        .project-card {
+            background: rgba(42, 42, 42, 0.6);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            overflow: hidden;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            height: 580px;
+        }
+
+        .project-card:hover {
+            border-color: rgba(74, 144, 226, 0.3);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+        }
+
+        .card-header {
+            padding: 12px 14px;
+            background: rgba(51, 51, 51, 0.4);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card-icon {
+            font-size: 20px;
+        }
+
+        .card-title {
+            flex: 1;
+            font-size: 15px;
+            font-weight: 600;
+            color: #e0e0e0;
+        }
+
+        .expand-btn {
+            padding: 6px;
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 6px;
+            color: #888;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 28px;
+            height: 28px;
+        }
+
+        .expand-btn:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: #e0e0e0;
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Header View Switch Button */
+        .header-view-btn {
+            padding: 5px 12px;
+            background: rgba(30, 30, 30, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 6px;
+            color: #888;
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.15s;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .header-view-btn:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: #aaa;
+            border-color: rgba(255, 255, 255, 0.12);
+        }
+
+        .status-badge {
+            padding: 5px 12px;
+            border-radius: 14px;
+            font-size: 11px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status-badge.running {
+            background: linear-gradient(135deg, rgba(74, 144, 226, 0.2), rgba(74, 144, 226, 0.15));
+            color: #6BA3E8;
+            border: 1px solid rgba(74, 144, 226, 0.3);
+        }
+
+        .status-badge.waiting {
+            background: linear-gradient(135deg, rgba(255, 193, 7, 0.2), rgba(255, 193, 7, 0.15));
+            color: #FFD54F;
+            border: 1px solid rgba(255, 193, 7, 0.3);
+        }
+
+        .status-badge.complete {
+            background: linear-gradient(135deg, rgba(80, 200, 120, 0.2), rgba(80, 200, 120, 0.15));
+            color: #66D98F;
+            border: 1px solid rgba(80, 200, 120, 0.3);
+        }
+
+        .status-badge.idle {
+            background: rgba(136, 136, 136, 0.15);
+            color: #999;
+            border: 1px solid rgba(136, 136, 136, 0.2);
+        }
+
+        .status-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: currentColor;
+        }
+
+        .status-badge.running .status-dot {
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+
+        /* VIEW TOGGLE - HIDDEN IN NEW DESIGN */
+        .view-toggle {
+            display: none;
+        }
+
+        .view-toggle-group {
+            flex: 1;
+            display: flex;
+            gap: 6px;
+        }
+
+        .view-toggle-btn {
+            flex: 1;
+            background: transparent;
+            color: #888;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 8px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .view-toggle-btn:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: #aaa;
+        }
+
+        .view-toggle-btn.active {
+            background: rgba(74, 144, 226, 0.2);
+            color: #6BA3E8;
+            border-color: rgba(74, 144, 226, 0.3);
+        }
+
+        .files-icon-link {
+            padding: 8px 12px;
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 8px;
+            color: #888;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .files-icon-link:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: #aaa;
+            border-color: rgba(255, 255, 255, 0.12);
+        }
+
+        .files-icon-link.active {
+            background: rgba(74, 144, 226, 0.15);
+            color: #6BA3E8;
+            border-color: rgba(74, 144, 226, 0.3);
+        }
+
+        /* Input Required Banner */
+        .input-required-banner {
+            padding: 10px 14px;
+            background: rgba(255, 193, 7, 0.06);
+            border-bottom: 1px solid rgba(255, 193, 7, 0.15);
+        }
+
+        .input-required-header {
+            font-size: 12px;
+            font-weight: 600;
+            color: #999;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .input-required-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .input-required-item {
+            font-size: 12px;
+            color: #ccc;
+            padding: 4px 10px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 4px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            white-space: nowrap;
+        }
+
+        /* Session Tabs */
+        .session-tabs {
+            display: flex;
+            gap: 4px;
+            padding: 8px 12px;
+            background: rgba(37, 37, 37, 0.4);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+            overflow-x: auto;
+        }
+
+        .session-tab {
+            padding: 6px 12px;
+            background: transparent;
+            border: 1px solid transparent;
+            border-radius: 6px;
+            cursor: pointer;
+            position: relative;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.15s;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            min-width: 140px;
+        }
+
+        .session-tab:hover {
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .session-tab.active {
+            background: rgba(74, 144, 226, 0.15);
+            border-color: rgba(74, 144, 226, 0.3);
+        }
+
+        .session-tab-content {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .session-tab-title {
+            font-size: 10px;
+            font-weight: 600;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .session-tab.active .session-tab-title {
+            color: #4A90E2;
+        }
+
+        .session-tab-task {
+            font-size: 11px;
+            color: #aaa;
+            font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .session-tab.active .session-tab-task {
+            color: #e0e0e0;
+        }
+
+        .session-tab.needs-attention .session-tab-task {
+            color: #FFC107;
+        }
+
+        .session-tab .tab-badge {
+            width: 6px;
+            height: 6px;
+            background: #FFC107;
+            border-radius: 50%;
+            animation: pulse 1.5s ease-in-out infinite;
+            flex-shrink: 0;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(0.9); }
+        }
+
+        /* Status Details */
+        .status-details {
+            padding: 10px 16px;
+            background: rgba(37, 37, 37, 0.4);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+        }
+
+        .status-details.hidden {
+            display: none;
+        }
+
+        .status-message {
+            font-size: 13px;
+            color: #aaa;
+            line-height: 1.6;
+        }
+
+        .status-message strong {
+            color: #e0e0e0;
+        }
+
+        .action-needed {
+            margin-top: 10px;
+            padding: 10px 12px;
+            background: rgba(255, 193, 7, 0.08);
+            border: 1px solid rgba(255, 193, 7, 0.2);
+            border-radius: 8px;
+            font-size: 12px;
+            color: #FFD54F;
+        }
+
+        /* Running Progress Indicators */
+        .running-progress {
+            padding: 10px 14px;
+            background: rgba(42, 42, 42, 0.5);
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .progress-status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .progress-spinner {
+            font-size: 16px;
+            color: #4A90E2;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .progress-text {
+            font-size: 13px;
+            color: #ccc;
+            font-weight: 500;
+        }
+
+        .progress-time {
+            font-size: 11px;
+            color: #666;
+            font-family: 'SF Mono', Monaco, monospace;
+            font-weight: 600;
+        }
+
+        .progress-bar-container {
+            height: 3px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 2px;
+            overflow: hidden;
+            margin-bottom: 12px;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4A90E2, #357ABD);
+            border-radius: 2px;
+            width: 65%;
+            animation: progressPulse 2s ease-in-out infinite;
+            box-shadow: 0 0 10px rgba(74, 144, 226, 0.5);
+        }
+
+        @keyframes progressPulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .progress-steps {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .progress-step {
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 4px 0;
+        }
+
+        .progress-step.complete {
+            color: #50C878;
+            opacity: 0.7;
+        }
+
+        .progress-step.active {
+            color: #4A90E2;
+            font-weight: 600;
+            animation: activeStepPulse 1.5s ease-in-out infinite;
+        }
+
+        .progress-step.pending {
+            color: #666;
+        }
+
+        @keyframes activeStepPulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+
+        /* Quick Actions - HIDDEN, replaced by inline-input */
+        .quick-actions {
+            display: none;
+        }
+
+        .quick-input {
+            flex: 1;
+            min-width: 150px;
+            background: rgba(42, 42, 42, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 9px 12px;
+            color: #e0e0e0;
+            font-size: 13px;
+        }
+
+        .quick-input:focus {
+            outline: none;
+            border-color: rgba(74, 144, 226, 0.5);
+            box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
+        }
+
+        .quick-action-btn {
+            background: rgba(51, 51, 51, 0.8);
+            color: #e0e0e0;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 9px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .quick-action-btn:hover {
+            background: rgba(58, 58, 58, 1);
+            border-color: rgba(74, 144, 226, 0.4);
+        }
+
+        .quick-action-btn.primary {
+            background: linear-gradient(135deg, #4A90E2 0%, #357ABD 100%);
+            border-color: rgba(74, 144, 226, 0.4);
+            color: white;
+            font-weight: 600;
+        }
+
+        /* Content Area - Toggleable Views */
+        .content-area {
+            position: relative;
+            background: rgba(30, 30, 30, 0.3);
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Agent View - Chat Style */
+        .agent-view.active {
+            padding: 0;
+            max-height: 360px;
+            overflow-y: auto;
+            background: #1e1e1e;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', 'Helvetica Neue', Arial, sans-serif;
+        }
+
+        /* Output View */
+        .output-view.active {
+            min-height: 200px;
+        }
+
+        .message-mini {
+            padding: 10px 14px;
+            margin: 4px 0;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* User messages - Align to right, subtle background */
+        .message-mini:has(.message-mini-role.user) {
+            align-items: flex-end;
+            padding-right: 14px;
+        }
+
+        .message-mini:has(.message-mini-role.user) .message-mini-content {
+            background: rgba(59, 130, 246, 0.15);
+            padding: 8px 12px;
+            border-radius: 8px;
+            max-width: 85%;
+            color: #e8e8e8;
+        }
+
+        /* Agent messages - Align to left, very subtle background */
+        .message-mini:has(.message-mini-role.assistant) {
+            align-items: flex-start;
+            padding-left: 14px;
+        }
+
+        .message-mini:has(.message-mini-role.assistant) .message-mini-content {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 8px 12px;
+            border-radius: 8px;
+            max-width: 85%;
+            color: #d4d4d4;
+        }
+
+        .message-mini-header {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 4px;
+            font-size: 10px;
+            color: #666;
+        }
+
+        .message-mini-time {
+            font-size: 10px;
+            color: #666;
+            font-weight: 400;
+        }
+
+        .message-mini-role {
+            display: none;  /* Hide role badges entirely */
+        }
+
+        .message-mini-content {
+            font-size: 13px;
+            line-height: 1.5;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .message-mini-content strong {
+            color: #ffffff;
+            font-weight: 600;
+        }
+
+        /* Files View */
+        .files-view.active {
+            padding: 10px 14px;
+            background: #1e1e1e;
+            max-height: 360px;
+            overflow-y: auto;
+        }
+
+        .file-tree {
+            font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+            font-size: 12px;
+            line-height: 1.6;
+        }
+
+        .file-item, .folder-item {
+            color: #d4d4d4;
+            padding: 2px 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .folder-item {
+            color: #4A90E2;
+            font-weight: 600;
+        }
+
+        .file-item:hover, .folder-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+            cursor: pointer;
+        }
+
+        .folder-children {
+            padding-left: 20px;
+            border-left: 1px solid rgba(255, 255, 255, 0.1);
+            margin-left: 10px;
+        }
+
+        /* Output View */
+        .output-view.active {
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .preview-content {
+            text-align: center;
+        }
+
+        .preview-icon {
+            font-size: 64px;
+            margin-bottom: 16px;
+        }
+
+        .preview-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #e0e0e0;
+            margin-bottom: 8px;
+        }
+
+        .preview-subtitle {
+            font-size: 14px;
+            color: #888;
+        }
+
+        .game-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 80px);
+            gap: 8px;
+            margin: 20px auto;
+            width: fit-content;
+        }
+
+        .game-cell {
+            width: 80px;
+            height: 80px;
+            background: rgba(42, 42, 42, 0.8);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+        }
+
+        .game-cell.x {
+            color: #4A90E2;
+            text-shadow: 0 2px 12px rgba(74, 144, 226, 0.4);
+        }
+
+        .game-cell.o {
+            color: #50C878;
+            text-shadow: 0 2px 12px rgba(80, 200, 120, 0.4);
+        }
+
+        /* Enhanced Game Grid Styling */
+        .game-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 3px;
+            background: rgba(255, 255, 255, 0.08);
+            padding: 3px;
+            border-radius: 12px;
+            max-width: 220px;
+            margin: 10px auto;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .game-cell {
+            aspect-ratio: 1;
+            background: rgba(42, 42, 42, 0.9);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 42px;
+            font-weight: 700;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .game-cell:hover:empty {
+            background: rgba(74, 144, 226, 0.1);
+            transform: scale(1.05);
+            border: 1px solid rgba(74, 144, 226, 0.3);
+        }
+
+        .game-cell:empty::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, transparent 0%, rgba(255, 255, 255, 0.02) 100%);
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .game-cell:hover:empty::before {
+            opacity: 1;
+        }
+
+        /* Smooth Content View Transitions */
+        .content-view {
+            display: none;
+            opacity: 0;
+            transition: opacity 0.2s ease-in-out;
+        }
+
+        .content-view.active {
+            display: block;
+            animation: fadeIn 0.2s ease-in-out forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* Enhanced Session Tab with Attention Indicator */
+        .session-tab.needs-attention::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            right: -2px;
+            width: 6px;
+            height: 6px;
+            background: #FFC107;
+            border-radius: 50%;
+            border: 1px solid rgba(37, 37, 37, 0.8);
+            animation: pulse 1.5s ease-in-out infinite;
+            z-index: 1;
+        }
+
+        /* Inline Progress - Simplified */
+        .inline-progress {
+            padding: 10px 14px;
+            background: rgba(42, 42, 42, 0.5);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 12px;
+        }
+
+        .inline-progress .progress-spinner {
+            color: #4A90E2;
+            animation: spin 1s linear infinite;
+        }
+
+        .inline-progress .progress-text {
+            flex: 1;
+            color: #ccc;
+            font-size: 12px;
+        }
+
+        .inline-progress .progress-time {
+            color: #666;
+            font-size: 11px;
+            font-family: 'SF Mono', Monaco, monospace;
+            font-weight: 600;
+        }
+
+        /* Inline Input at Bottom */
+        .inline-input {
+            padding: 12px 14px;
+            background: rgba(20, 20, 20, 0.8);
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .inline-input-field {
+            flex: 1;
+            background: rgba(42, 42, 42, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 10px 14px;
+            color: #e8e8e8;
+            font-size: 13px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', 'Helvetica Neue', Arial, sans-serif;
+            transition: all 0.2s ease;
+            outline: none;
+        }
+
+        .inline-input-field:focus {
+            background: rgba(50, 50, 50, 0.8);
+            border-color: rgba(74, 144, 226, 0.4);
+            box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
+        }
+
+        .inline-input-field::placeholder {
+            color: #666;
+        }
+
+        .inline-input-btn {
+            width: 32px;
+            height: 32px;
+            background: rgba(74, 144, 226, 0.15);
+            border: 1px solid rgba(74, 144, 226, 0.3);
+            border-radius: 8px;
+            color: #4A90E2;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            padding: 0;
+        }
+
+        .inline-input-btn:hover {
+            background: rgba(74, 144, 226, 0.25);
+            border-color: rgba(74, 144, 226, 0.5);
+            transform: translateY(-1px);
+        }
+
+        .inline-input-btn:active {
+            transform: translateY(0);
+        }
+
+        .voice-input-btn {
+            width: 32px;
+            height: 32px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: #888;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            padding: 0;
+        }
+
+        .voice-input-btn:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.15);
+            color: #aaa;
+        }
+
+        .voice-input-btn.recording {
+            background: rgba(239, 68, 68, 0.15);
+            border-color: rgba(239, 68, 68, 0.3);
+            color: #ef4444;
+            animation: pulse-recording 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse-recording {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+
+        /* Inline Footer - Minimal */
+        .inline-footer {
+            padding: 8px 14px;
+            display: flex;
+            gap: 16px;
+            font-size: 11px;
+            color: #555;
+            border-top: 1px solid rgba(255, 255, 255, 0.03);
+        }
+
+        .inline-footer .footer-link {
+            margin-left: auto;
+            color: #4A90E2;
+            cursor: pointer;
+            transition: color 0.15s;
+        }
+
+        .inline-footer .footer-link:hover {
+            color: #6BA3E8;
+        }
+
+        /* OLD FOOTER STYLES - Keep for backwards compatibility but hide */
+        .card-footer {
+            display: none;
+        }
+
+        .footer-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* Agent Input Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(8px);
+            z-index: 2000;
+            animation: fadeIn 0.2s ease-out;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: #2a2a2a;
+            border: 1px solid rgba(255, 193, 7, 0.3);
+            border-radius: 12px;
+            max-width: 600px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+            animation: slideUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .modal-icon {
+            font-size: 24px;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        .modal-title {
+            flex: 1;
+            font-size: 16px;
+            font-weight: 600;
+            color: #e0e0e0;
+        }
+
+        .modal-project {
+            font-size: 12px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .modal-body {
+            padding: 24px;
+        }
+
+        .modal-question {
+            font-size: 14px;
+            color: #ccc;
+            line-height: 1.6;
+            margin-bottom: 20px;
+            padding: 16px;
+            background: rgba(255, 193, 7, 0.08);
+            border-left: 3px solid #FFC107;
+            border-radius: 6px;
+        }
+
+        .modal-input-group {
+            margin-bottom: 20px;
+        }
+
+        .modal-label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            color: #999;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .modal-input {
+            width: 100%;
+            padding: 12px 16px;
+            background: rgba(42, 42, 42, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: #e0e0e0;
+            font-size: 14px;
+            font-family: 'SF Mono', Monaco, monospace;
+        }
+
+        .modal-input:focus {
+            outline: none;
+            border-color: #4A90E2;
+            box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.2);
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+        }
+
+        .modal-btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+        }
+
+        .modal-btn-secondary {
+            background: rgba(51, 51, 51, 0.8);
+            color: #aaa;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .modal-btn-secondary:hover {
+            background: rgba(58, 58, 58, 1);
+            color: #e0e0e0;
+        }
+
+        .modal-btn-primary {
+            background: linear-gradient(135deg, #4A90E2 0%, #357ABD 100%);
+            color: white;
+            box-shadow: 0 2px 8px rgba(74, 144, 226, 0.3);
+        }
+
+        .modal-btn-primary:hover {
+            box-shadow: 0 4px 12px rgba(74, 144, 226, 0.4);
+            transform: translateY(-1px);
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(26, 26, 26, 0.4);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(68, 68, 68, 0.6);
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(85, 85, 85, 0.8);
+        }
+    </style>
+</head>
+<body>
+    <!-- Toolbar -->
+    <div class="toolbar">
+        <div class="toolbar-left">
+            <div class="toolbar-title">Multi-Project Workspace</div>
+        </div>
+        <div class="toolbar-actions">
+            <button class="toolbar-btn" onclick="showAgentModal()" style="background: rgba(255, 193, 7, 0.2); color: #FFC107;">⚡ Demo Modal</button>
+            <button class="toolbar-btn">+ New Project</button>
+        </div>
+    </div>
+
+    <!-- Overview Mode -->
+    <div class="overview-mode">
+        <div class="canvas-workspace">
+
+            <!-- Project 1: AI Running -->
+            <div class="project-card">
+                <div class="card-header">
+                    <div class="card-icon">🎮</div>
+                    <div class="card-title">Tic Tac Toe Game</div>
+                    <div class="status-badge running">
+                        <div class="status-dot"></div>
+                        Running
+                    </div>
+                    <button class="header-view-btn" onclick="toggleView(this, 'output')" data-current-view="agent">
+                        Preview
+                    </button>
+                    <button class="header-view-btn" onclick="switchView(this, 'files')" title="View files">
+                        📁
+                    </button>
+                    <button class="expand-btn" onclick="openFocusMode(event)" title="Expand to full screen">
+                        ⤢
+                    </button>
+                </div>
+
+                <!-- CONTENT AREA with toggleable views -->
+                <div class="content-area">
+                    <!-- Output View -->
+                    <div class="content-view output-view">
+                        <div>
+                            <div class="game-grid" id="gameBoard1">
+                                <div class="game-cell" onclick="makeMove(1, 0)"></div>
+                                <div class="game-cell" onclick="makeMove(1, 1)"></div>
+                                <div class="game-cell" onclick="makeMove(1, 2)"></div>
+                                <div class="game-cell" onclick="makeMove(1, 3)"></div>
+                                <div class="game-cell" onclick="makeMove(1, 4)"></div>
+                                <div class="game-cell" onclick="makeMove(1, 5)"></div>
+                                <div class="game-cell" onclick="makeMove(1, 6)"></div>
+                                <div class="game-cell" onclick="makeMove(1, 7)"></div>
+                                <div class="game-cell" onclick="makeMove(1, 8)"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Agent View (Active by default) -->
+                    <div class="content-view agent-view active">
+                        <div class="message-mini">
+                            <div class="message-mini-header">
+                                <span class="message-mini-time">13:45:12</span>
+                                <span class="message-mini-role user">[USER]</span>
+                            </div>
+                            <div class="message-mini-content">> Create a tic tac toe game</div>
+                        </div>
+                        <div class="message-mini">
+                            <div class="message-mini-header">
+                                <span class="message-mini-time">13:45:15</span>
+                                <span class="message-mini-role assistant">[AGENT]</span>
+                            </div>
+                            <div class="message-mini-content">Creating game with interactive grid, win detection, and smooth animations...
+
+Features:
+- Alternating turns between X and O
+- Automatic win detection
+- Draw detection when board is full
+- "New Game" button to reset</div>
+                        </div>
+                        <div class="message-mini">
+                            <div class="message-mini-header">
+                                <span class="message-mini-time">13:47:20</span>
+                                <span class="message-mini-role user">[USER]</span>
+                            </div>
+                            <div class="message-mini-content">> Add score tracking</div>
+                        </div>
+                        <div class="message-mini">
+                            <div class="message-mini-header">
+                                <span class="message-mini-time">13:47:25</span>
+                                <span class="message-mini-role assistant">[AGENT]</span>
+                            </div>
+                            <div class="message-mini-content">🔄 Working on it... Adding score counter now.</div>
+                        </div>
+                    </div>
+
+                    <!-- Files View -->
+                    <div class="content-view files-view">
+                        <div class="file-tree">
+                            <div class="folder-item">📁 tic-tac-toe/</div>
+                            <div class="folder-children">
+                                <div class="folder-item">📁 src/</div>
+                                <div class="folder-children">
+                                    <div class="file-item">📄 game.js</div>
+                                    <div class="file-item">📄 board.js</div>
+                                    <div class="file-item">📄 player.js</div>
+                                </div>
+                                <div class="folder-item">📁 styles/</div>
+                                <div class="folder-children">
+                                    <div class="file-item">📄 main.css</div>
+                                    <div class="file-item">📄 animations.css</div>
+                                </div>
+                                <div class="file-item">📄 index.html</div>
+                                <div class="file-item">📄 README.md</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Inline Progress -->
+                <div class="inline-progress">
+                    <span class="progress-spinner">◐</span>
+                    <span class="progress-text">Implementing score counter and reset functionality...</span>
+                    <span class="progress-time">2m 14s</span>
+                </div>
+
+                <!-- Inline Input -->
+                <div class="inline-input">
+                    <button class="voice-input-btn" onclick="event.stopPropagation()" title="Add file">+</button>
+                    <input type="text" class="inline-input-field" placeholder="Type your response..." onclick="event.stopPropagation()">
+                    <button class="inline-input-btn" onclick="event.stopPropagation()">↑</button>
+                </div>
+
+            </div>
+
+            <!-- Project 2: Waiting for Input -->
+            <div class="project-card">
+                <div class="card-header">
+                    <div class="card-icon">✈️</div>
+                    <div class="card-title">Vegas Family Trip</div>
+                    <div class="status-badge waiting">
+                        <div class="status-dot"></div>
+                        Needs Input
+                    </div>
+                    <button class="header-view-btn" onclick="toggleView(this, 'output')" data-current-view="agent">
+                        Preview
+                    </button>
+                    <button class="header-view-btn" onclick="switchView(this, 'files')" title="View files">
+                        📁
+                    </button>
+                    <button class="expand-btn" onclick="openFocusMode(event)" title="Expand to full screen">
+                        ⤢
+                    </button>
+                </div>
+
+                <!-- REQUIRED INPUT BANNER -->
+                <div class="input-required-banner">
+                    <div class="input-required-header">Waiting for:</div>
+                    <div class="input-required-list">
+                        <div class="input-required-item">Travel dates</div>
+                        <div class="input-required-item">Number of travelers</div>
+                        <div class="input-required-item">Ages of children</div>
+                        <div class="input-required-item">Interests & preferences</div>
+                    </div>
+                </div>
+
+                <!-- CONTENT AREA -->
+                <div class="content-area">
+                    <!-- Agent View (Active) -->
+                    <div class="content-view agent-view active">
+                        <div class="message-mini">
+                            <div class="message-mini-header">
+                                <span class="message-mini-time">13:46:03</span>
+                                <span class="message-mini-role user">[USER]</span>
+                            </div>
+                            <div class="message-mini-content">> Help me plan a comprehensive Vegas family trip</div>
+                        </div>
+                        <div class="message-mini">
+                            <div class="message-mini-header">
+                                <span class="message-mini-time">13:46:08</span>
+                                <span class="message-mini-role assistant">[AGENT]</span>
+                            </div>
+                            <div class="message-mini-content">I've created a planning document template.
+
+Please provide:
+- Travel dates
+- Number of travelers
+- Ages of children (if any)
+- Interests and preferences
+
+Once you fill these in, I'll create a detailed day-by-day itinerary!</div>
+                        </div>
+                    </div>
+
+                    <!-- Output View -->
+                    <div class="content-view output-view">
+                        <div class="preview-content">
+                            <div class="preview-icon">📋</div>
+                            <div class="preview-title">Planning Document</div>
+                            <div class="preview-subtitle">Add details to generate itinerary</div>
+                        </div>
+                    </div>
+
+                    <!-- Files View -->
+                    <div class="content-view files-view">
+                        <div class="file-tree">
+                            <div class="folder-item">📁 vegas-family-trip/</div>
+                            <div class="folder-children">
+                                <div class="folder-item">📁 planning/</div>
+                                <div class="folder-children">
+                                    <div class="file-item">📄 itinerary_template.md</div>
+                                    <div class="file-item">📄 travel_checklist.txt</div>
+                                    <div class="file-item">📄 budget.xlsx</div>
+                                </div>
+                                <div class="folder-item">📁 research/</div>
+                                <div class="folder-children">
+                                    <div class="file-item">📄 hotel_options.json</div>
+                                    <div class="file-item">📄 attractions.md</div>
+                                    <div class="file-item">📄 restaurants.md</div>
+                                </div>
+                                <div class="file-item">📄 notes.txt</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Inline Input -->
+                <div class="inline-input">
+                    <button class="voice-input-btn" onclick="event.stopPropagation()" title="Add file">+</button>
+                    <input type="text" class="inline-input-field" placeholder="Type your response..." onclick="event.stopPropagation()">
+                    <button class="inline-input-btn" onclick="event.stopPropagation()">↑</button>
+                </div>
+
+            </div>
+
+            <!-- Project 3: Complete -->
+            <div class="project-card">
+                <div class="card-header">
+                    <div class="card-icon">🐍</div>
+                    <div class="card-title">Snake Game</div>
+                    <div class="status-badge complete">
+                        <div class="status-dot"></div>
+                        Complete
+                    </div>
+                    <button class="header-view-btn" onclick="toggleView(this, 'output')" data-current-view="agent">
+                        Preview
+                    </button>
+                    <button class="header-view-btn" onclick="switchView(this, 'files')" title="View files">
+                        📁
+                    </button>
+                    <button class="expand-btn" onclick="openFocusMode(event)" title="Expand to full screen">
+                        ⤢
+                    </button>
+                </div>
+
+                <!-- CONTENT AREA -->
+                <div class="content-area">
+                    <!-- Agent View (Active) -->
+                    <div class="content-view agent-view active">
+                        <div class="message-mini">
+                            <div class="message-mini-header">
+                                <span class="message-mini-time">12:30:45</span>
+                                <span class="message-mini-role user">[USER]</span>
+                            </div>
+                            <div class="message-mini-content">> Create a snake game with arrow key controls</div>
+                        </div>
+                        <div class="message-mini">
+                            <div class="message-mini-header">
+                                <span class="message-mini-time">12:30:52</span>
+                                <span class="message-mini-role assistant">[AGENT]</span>
+                            </div>
+                            <div class="message-mini-content">Created classic snake game!
+
+Features:
+- Arrow key controls
+- Growing snake when eating food
+- Collision detection
+- Score tracking</div>
+                        </div>
+                        <div class="message-mini">
+                            <div class="message-mini-header">
+                                <span class="message-mini-time">12:35:12</span>
+                                <span class="message-mini-role user">[USER]</span>
+                            </div>
+                            <div class="message-mini-content">> Make it faster and add high score</div>
+                        </div>
+                        <div class="message-mini">
+                            <div class="message-mini-header">
+                                <span class="message-mini-time">12:35:18</span>
+                                <span class="message-mini-role assistant">[AGENT]</span>
+                            </div>
+                            <div class="message-mini-content">✅ Done! Increased speed to 150ms interval and added persistent high score tracking using localStorage.</div>
+                        </div>
+                    </div>
+
+                    <!-- Output View -->
+                    <div class="content-view output-view">
+                        <div class="preview-content">
+                            <div class="preview-icon">🐍</div>
+                            <div class="preview-title">Snake Game Ready!</div>
+                            <div class="preview-subtitle">Click to start playing</div>
+                        </div>
+                    </div>
+
+                    <!-- Files View -->
+                    <div class="content-view files-view">
+                        <div class="file-tree">
+                            <div class="folder-item">📁 snake-game/</div>
+                            <div class="folder-children">
+                                <div class="folder-item">📁 src/</div>
+                                <div class="folder-children">
+                                    <div class="file-item">📄 snake.js</div>
+                                    <div class="file-item">📄 game_logic.js</div>
+                                    <div class="file-item">📄 controls.js</div>
+                                    <div class="file-item">📄 renderer.js</div>
+                                </div>
+                                <div class="folder-item">📁 assets/</div>
+                                <div class="folder-children">
+                                    <div class="file-item">📄 food.png</div>
+                                    <div class="file-item">📄 sounds.mp3</div>
+                                </div>
+                                <div class="file-item">📄 index.html</div>
+                                <div class="file-item">📄 styles.css</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Inline Input -->
+                <div class="inline-input">
+                    <button class="voice-input-btn" onclick="event.stopPropagation()" title="Add file">+</button>
+                    <input type="text" class="inline-input-field" placeholder="Type your response..." onclick="event.stopPropagation()">
+                    <button class="inline-input-btn" onclick="event.stopPropagation()">↑</button>
+                </div>
+
+            </div>
+
+            <!-- Project 4: Idle -->
+            <div class="project-card">
+                <div class="card-header">
+                    <div class="card-icon">📊</div>
+                    <div class="card-title">Presentation Helper</div>
+                    <div class="status-badge idle">
+                        <div class="status-dot"></div>
+                        Idle
+                    </div>
+                    <button class="header-view-btn" onclick="toggleView(this, 'output')" data-current-view="agent">
+                        Preview
+                    </button>
+                    <button class="header-view-btn" onclick="switchView(this, 'files')" title="View files">
+                        📁
+                    </button>
+                    <button class="expand-btn" onclick="openFocusMode(event)" title="Expand to full screen">
+                        ⤢
+                    </button>
+                </div>
+
+                <!-- CONTENT AREA -->
+                <div class="content-area">
+                    <!-- Agent View (Active) -->
+                    <div class="content-view agent-view active">
+                        <div class="message-mini">
+                            <div class="message-mini-header">
+                                <span class="message-mini-time">10:15:30</span>
+                                <span class="message-mini-role user">[USER]</span>
+                            </div>
+                            <div class="message-mini-content">> Help me plan a presentation</div>
+                        </div>
+                        <div class="message-mini">
+                            <div class="message-mini-header">
+                                <span class="message-mini-time">10:15:35</span>
+                                <span class="message-mini-role assistant">[AGENT]</span>
+                            </div>
+                            <div class="message-mini-content">I'd be happy to help!
+
+What's the topic and who's your audience?</div>
+                        </div>
+                    </div>
+
+                    <!-- Output View -->
+                    <div class="content-view output-view">
+                        <div class="preview-content">
+                            <div class="preview-icon">💤</div>
+                            <div class="preview-title">Waiting for Details</div>
+                            <div class="preview-subtitle">Provide topic to begin</div>
+                        </div>
+                    </div>
+
+                    <!-- Files View -->
+                    <div class="content-view files-view">
+                        <div class="file-tree">
+                            <div class="folder-item">📁 presentation/</div>
+                            <div class="folder-children">
+                                <div class="folder-item">📁 drafts/</div>
+                                <div class="folder-children">
+                                    <div class="file-item">📄 outline_v1.md</div>
+                                    <div class="file-item">📄 outline_v2.md</div>
+                                </div>
+                                <div class="folder-item">📁 slides/</div>
+                                <div class="folder-children">
+                                    <div class="file-item">📄 intro.pptx</div>
+                                    <div class="file-item">📄 main_content.pptx</div>
+                                </div>
+                                <div class="file-item">📄 notes.txt</div>
+                                <div class="file-item">📄 script.md</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Inline Input -->
+                <div class="inline-input">
+                    <button class="voice-input-btn" onclick="event.stopPropagation()" title="Add file">+</button>
+                    <input type="text" class="inline-input-field" placeholder="Type your response..." onclick="event.stopPropagation()">
+                    <button class="inline-input-btn" onclick="event.stopPropagation()">↑</button>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Agent Input Modal -->
+    <div class="modal-overlay" id="agentInputModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-icon">⚡</div>
+                <div style="flex: 1;">
+                    <div class="modal-title">Agent Needs Your Input</div>
+                    <div class="modal-project">Tic Tac Toe Game</div>
+                </div>
+            </div>
+            <div class="modal-body">
+                <div class="modal-question">
+                    Should I run the following bash command to install dependencies?
+                    <pre style="margin-top: 12px; padding: 12px; background: rgba(0,0,0,0.3); border-radius: 6px; font-size: 13px;">npm install canvas@2.11.2</pre>
+                </div>
+                <div class="modal-input-group">
+                    <label class="modal-label">Your Response</label>
+                    <input type="text" class="modal-input" placeholder="Type 'yes' to approve, or provide alternative command..." autofocus>
+                </div>
+                <div class="modal-actions">
+                    <button class="modal-btn modal-btn-secondary" onclick="closeAgentModal()">Cancel</button>
+                    <button class="modal-btn modal-btn-primary" onclick="submitAgentResponse()">Send Response</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Focus Mode - Side by Side View -->
+    <div class="focus-mode" id="focusMode">
+        <div style="display: flex; flex-direction: column; width: 100%; height: 100%;">
+            <div class="focus-header">
+                <button class="back-btn" onclick="closeFocusMode()">← Back to Overview</button>
+                <div class="focus-title">
+                    <span id="focusIcon"></span>
+                    <span id="focusTitle"></span>
+                </div>
+            </div>
+            <div class="split-view">
+                <!-- Left Panel: Agent Chat -->
+                <div class="split-panel">
+                    <div class="split-panel-header">
+                        💬 Agent Conversation
+                    </div>
+                    <div class="split-panel-content" id="focusAgent">
+                        <!-- Agent content will be loaded here -->
+                    </div>
+                    <div class="split-panel-footer">
+                        <div class="quick-actions" style="margin: 0;">
+                            <input type="text" class="quick-input" placeholder="Type your response...">
+                            <button class="quick-action-btn primary">↑ Send</button>
+                        </div>
+                    </div>
+                </div>
+                <!-- Right Panel: Output -->
+                <div class="split-panel">
+                    <div class="split-panel-header">
+                        🎮 Output
+                    </div>
+                    <div class="split-panel-content" id="focusOutput">
+                        <!-- Output content will be loaded here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function switchView(button, viewType) {
+            const card = button.closest('.project-card');
+            const contentArea = card.querySelector('.content-area');
+            const toggleButtons = card.querySelectorAll('.view-toggle-btn');
+            const filesIcon = card.querySelector('.files-icon-link');
+            const views = contentArea.querySelectorAll('.content-view');
+            const sessionTabs = card.querySelector('.session-tabs');
+
+            // Update button states
+            toggleButtons.forEach(btn => btn.classList.remove('active'));
+            if (filesIcon) filesIcon.classList.remove('active');
+
+            if (button.classList.contains('files-icon-link')) {
+                button.classList.add('active');
+            } else {
+                button.classList.add('active');
+            }
+
+            // Update view visibility
+            views.forEach(view => {
+                if (view.classList.contains(`${viewType}-view`)) {
+                    view.classList.add('active');
+                } else {
+                    view.classList.remove('active');
+                }
+            });
+
+            // Show/hide session tabs based on view type
+            if (sessionTabs) {
+                if (viewType === 'agent') {
+                    sessionTabs.style.display = 'flex';
+                } else {
+                    sessionTabs.style.display = 'none';
+                }
+            }
+        }
+
+        // New single-button view toggle function
+        function toggleView(button, targetView) {
+            const card = button.closest('.project-card');
+            const contentArea = card.querySelector('.content-area');
+            const views = contentArea.querySelectorAll('.content-view');
+            const currentView = button.getAttribute('data-current-view');
+
+            // Switch to the target view
+            views.forEach(view => {
+                if (view.classList.contains(`${targetView}-view`)) {
+                    view.classList.add('active');
+                } else {
+                    view.classList.remove('active');
+                }
+            });
+
+            // Update button to show opposite view
+            if (targetView === 'output') {
+                button.setAttribute('data-current-view', 'output');
+                button.innerHTML = '💬 Agent';
+                button.onclick = function() { toggleView(this, 'agent'); };
+            } else if (targetView === 'agent') {
+                button.setAttribute('data-current-view', 'agent');
+                button.innerHTML = 'Preview';
+                button.onclick = function() { toggleView(this, 'output'); };
+            }
+        }
+
+        function switchSession(tab, sessionId) {
+            const card = tab.closest('.project-card');
+            const tabs = card.querySelectorAll('.session-tab');
+
+            // Update tab states
+            tabs.forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+
+            // Here you would load the content for the selected session
+            // For now, this is just visual feedback
+            console.log('Switched to session:', sessionId);
+        }
+
+        function openFocusMode(event) {
+            // Stop event propagation so card doesn't receive the click
+            event.stopPropagation();
+
+            const overviewMode = document.querySelector('.overview-mode');
+            const focusMode = document.getElementById('focusMode');
+            const card = event.target.closest('.project-card');
+
+            // Get project info
+            const icon = card.querySelector('.card-icon').textContent;
+            const title = card.querySelector('.card-title').textContent;
+
+            // Get agent and output content
+            const agentView = card.querySelector('.agent-view');
+            const outputView = card.querySelector('.output-view');
+
+            // Update focus mode
+            document.getElementById('focusIcon').textContent = icon;
+            document.getElementById('focusTitle').textContent = title;
+            document.getElementById('focusAgent').innerHTML = agentView.innerHTML;
+            document.getElementById('focusOutput').innerHTML = outputView.innerHTML;
+
+            // Switch views
+            overviewMode.classList.add('hidden');
+            focusMode.classList.add('active');
+        }
+
+        function closeFocusMode() {
+            const overviewMode = document.querySelector('.overview-mode');
+            const focusMode = document.getElementById('focusMode');
+
+            overviewMode.classList.remove('hidden');
+            focusMode.classList.remove('active');
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            // Animate running progress
+            animateRunningProgress();
+        });
+
+        function animateRunningProgress() {
+            const progressTime = document.querySelector('.progress-time');
+            const progressBar = document.querySelector('.progress-bar-fill');
+
+            if (!progressTime || !progressBar) return;
+
+            let seconds = 134; // Starting at 2m 14s
+            let progress = 65;
+
+            setInterval(() => {
+                seconds++;
+                const mins = Math.floor(seconds / 60);
+                const secs = seconds % 60;
+                progressTime.textContent = `${mins}m ${secs}s`;
+
+                // Slowly increment progress
+                if (progress < 95 && Math.random() > 0.7) {
+                    progress += 0.5;
+                    progressBar.style.width = `${progress}%`;
+                }
+            }, 1000);
+        }
+
+        // Agent Input Modal
+        function showAgentModal() {
+            document.getElementById('agentInputModal').classList.add('active');
+            // Focus the input after animation
+            setTimeout(() => {
+                document.querySelector('.modal-input').focus();
+            }, 300);
+        }
+
+        function closeAgentModal() {
+            document.getElementById('agentInputModal').classList.remove('active');
+        }
+
+        function submitAgentResponse() {
+            const input = document.querySelector('.modal-input').value;
+            console.log('Agent response:', input);
+            closeAgentModal();
+            // Here you would send the response to the agent
+        }
+
+        // Close modal on Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeAgentModal();
+            }
+        });
+
+        // Close modal when clicking outside
+        document.getElementById('agentInputModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeAgentModal();
+            }
+        });
+
+        // Tic Tac Toe Game Logic
+        const games = {
+            1: {
+                board: ['', '', '', '', '', '', '', '', ''],
+                currentPlayer: 'X',
+                gameActive: true
+            }
+        };
+
+        function makeMove(gameId, cellIndex) {
+            const game = games[gameId];
+            if (!game.gameActive || game.board[cellIndex] !== '') return;
+
+            // Make the move
+            game.board[cellIndex] = game.currentPlayer;
+            const cells = document.querySelectorAll(`#gameBoard${gameId} .game-cell`);
+            cells[cellIndex].textContent = game.currentPlayer;
+            cells[cellIndex].classList.add(game.currentPlayer.toLowerCase());
+
+            // Check for win
+            if (checkWin(gameId)) {
+                game.gameActive = false;
+                setTimeout(() => {
+                    alert(`${game.currentPlayer} wins!`);
+                    resetGame(gameId);
+                }, 200);
+                return;
+            }
+
+            // Check for draw
+            if (game.board.every(cell => cell !== '')) {
+                game.gameActive = false;
+                setTimeout(() => {
+                    alert("It's a draw!");
+                    resetGame(gameId);
+                }, 200);
+                return;
+            }
+
+            // Switch player
+            game.currentPlayer = game.currentPlayer === 'X' ? 'O' : 'X';
+        }
+
+        function checkWin(gameId) {
+            const game = games[gameId];
+            const winPatterns = [
+                [0, 1, 2], [3, 4, 5], [6, 7, 8], // Rows
+                [0, 3, 6], [1, 4, 7], [2, 5, 8], // Columns
+                [0, 4, 8], [2, 4, 6]             // Diagonals
+            ];
+
+            return winPatterns.some(pattern => {
+                const [a, b, c] = pattern;
+                return game.board[a] !== '' &&
+                       game.board[a] === game.board[b] &&
+                       game.board[b] === game.board[c];
+            });
+        }
+
+        function resetGame(gameId) {
+            const game = games[gameId];
+            game.board = ['', '', '', '', '', '', '', '', ''];
+            game.currentPlayer = 'X';
+            game.gameActive = true;
+
+            const cells = document.querySelectorAll(`#gameBoard${gameId} .game-cell`);
+            cells.forEach(cell => {
+                cell.textContent = '';
+                cell.classList.remove('x', 'o');
+            });
+        }
+    </script>
+</body>
+</html>

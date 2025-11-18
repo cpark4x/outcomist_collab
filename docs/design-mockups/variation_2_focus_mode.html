@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Variation 2: Focus Mode</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #FFFFFF;
+            color: #1F2937;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+        }
+
+        .zen-container {
+            width: 100%;
+            max-width: 600px;
+            text-align: center;
+        }
+
+        .project-status-label {
+            font-size: 0.9em;
+            color: #9CA3AF;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 30px;
+            font-weight: 500;
+        }
+
+        .project-card-zen {
+            background: white;
+            border-radius: 20px;
+            padding: 60px 40px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+            margin-bottom: 40px;
+            transition: all 0.3s;
+        }
+
+        .project-title-zen {
+            font-size: 2.5em;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #1F2937;
+        }
+
+        .project-status-zen {
+            display: inline-block;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-size: 0.95em;
+            font-weight: 600;
+            margin-bottom: 30px;
+        }
+
+        .status-complete {
+            background: #D1FAE5;
+            color: #059669;
+        }
+
+        .status-running {
+            background: #DBEAFE;
+            color: #2563EB;
+        }
+
+        .status-needs-you {
+            background: #FED7AA;
+            color: #C2410C;
+        }
+
+        .project-preview-zen {
+            margin: 40px 0;
+            min-height: 250px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .preview-gallery {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            width: 100%;
+        }
+
+        .gallery-item {
+            aspect-ratio: 1;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 8px;
+        }
+
+        .project-meta-zen {
+            font-size: 1.1em;
+            color: #6B7280;
+            margin-bottom: 40px;
+            line-height: 1.6;
+        }
+
+        .primary-action-zen {
+            background: #3B82F6;
+            color: white;
+            border: none;
+            padding: 16px 48px;
+            border-radius: 12px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+
+        .primary-action-zen:hover {
+            background: #2563EB;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(59, 130, 246, 0.4);
+        }
+
+        .navigation-zen {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 40px;
+        }
+
+        .nav-button {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 24px;
+            background: #F3F4F6;
+            border: none;
+            border-radius: 10px;
+            font-size: 0.95em;
+            color: #4B5563;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .nav-button:hover {
+            background: #E5E7EB;
+            color: #1F2937;
+        }
+
+        .nav-button.needs-attention {
+            background: #FEF3C7;
+            color: #92400E;
+            animation: gentle-pulse 2s infinite;
+        }
+
+        @keyframes gentle-pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .dots-indicator {
+            display: flex;
+            gap: 8px;
+        }
+
+        .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #E5E7EB;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .dot.active {
+            background: #3B82F6;
+            width: 28px;
+            border-radius: 5px;
+        }
+
+        .new-project-button {
+            margin-top: 30px;
+            padding: 14px 32px;
+            background: transparent;
+            border: 2px dashed #D1D5DB;
+            border-radius: 12px;
+            color: #9CA3AF;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .new-project-button:hover {
+            border-color: #3B82F6;
+            color: #3B82F6;
+        }
+
+        .project-count {
+            font-size: 0.85em;
+            color: #9CA3AF;
+        }
+    </style>
+</head>
+<body>
+    <div class="zen-container">
+        <div class="project-status-label">CURRENTLY ACTIVE</div>
+
+        <div class="project-card-zen" id="projectCard">
+            <div class="project-title-zen" id="projectTitle">Remember12</div>
+            <div class="project-status-zen status-complete" id="projectStatus">✓ Complete</div>
+
+            <div class="project-preview-zen" id="projectPreview">
+                <div class="preview-gallery">
+                    <div class="gallery-item"></div>
+                    <div class="gallery-item"></div>
+                    <div class="gallery-item"></div>
+                    <div class="gallery-item"></div>
+                    <div class="gallery-item"></div>
+                    <div class="gallery-item"></div>
+                    <div class="gallery-item"></div>
+                    <div class="gallery-item"></div>
+                </div>
+            </div>
+
+            <div class="project-meta-zen" id="projectMeta">
+                Photo Gallery<br>
+                <strong>24 photos ready</strong>
+            </div>
+
+            <button class="primary-action-zen" id="primaryAction">Open Gallery</button>
+        </div>
+
+        <div class="navigation-zen">
+            <button class="nav-button" onclick="previousProject()">
+                ← Previous
+                <div class="project-count">New Claude Session</div>
+            </button>
+
+            <div class="dots-indicator">
+                <div class="dot" onclick="goToProject(0)"></div>
+                <div class="dot active" onclick="goToProject(1)"></div>
+                <div class="dot" onclick="goToProject(2)"></div>
+                <div class="dot" onclick="goToProject(3)"></div>
+            </div>
+
+            <button class="nav-button needs-attention" onclick="nextProject()">
+                Next →
+                <div class="project-count">Outcomist (Needs You!)</div>
+            </button>
+        </div>
+
+        <button class="new-project-button">+ Start New Project</button>
+    </div>
+
+    <script>
+        const projects = [
+            {
+                title: 'New Claude Session',
+                status: '⏳ Running',
+                statusClass: 'status-running',
+                meta: 'Analyzing project structure<br><strong>72% complete</strong>',
+                action: 'View Details',
+                preview: 'terminal'
+            },
+            {
+                title: 'Remember12',
+                status: '✓ Complete',
+                statusClass: 'status-complete',
+                meta: 'Photo Gallery<br><strong>24 photos ready</strong>',
+                action: 'Open Gallery',
+                preview: 'gallery'
+            },
+            {
+                title: 'Outcomist',
+                status: '⚠️ Needs You',
+                statusClass: 'status-needs-you',
+                meta: 'Decision required<br><strong>Which design approach?</strong>',
+                action: 'Respond Now',
+                preview: 'question'
+            },
+            {
+                title: 'Q4 Sales Analysis',
+                status: '📋 Planning',
+                statusClass: 'status-running',
+                meta: 'Analyzing requirements<br><strong>12% complete</strong>',
+                action: 'Monitor',
+                preview: 'planning'
+            }
+        ];
+
+        let currentIndex = 1;
+
+        function updateProject(index) {
+            const project = projects[index];
+            document.getElementById('projectTitle').textContent = project.title;
+            document.getElementById('projectStatus').textContent = project.status;
+            document.getElementById('projectStatus').className = 'project-status-zen ' + project.statusClass;
+            document.getElementById('projectMeta').innerHTML = project.meta;
+            document.getElementById('primaryAction').textContent = project.action;
+
+            // Update dots
+            document.querySelectorAll('.dot').forEach((dot, i) => {
+                dot.classList.toggle('active', i === index);
+            });
+
+            // Update preview
+            const preview = document.getElementById('projectPreview');
+            if (project.preview === 'gallery') {
+                preview.innerHTML = `
+                    <div class="preview-gallery">
+                        <div class="gallery-item"></div>
+                        <div class="gallery-item"></div>
+                        <div class="gallery-item"></div>
+                        <div class="gallery-item"></div>
+                        <div class="gallery-item"></div>
+                        <div class="gallery-item"></div>
+                        <div class="gallery-item"></div>
+                        <div class="gallery-item"></div>
+                    </div>
+                `;
+            } else if (project.preview === 'terminal') {
+                preview.innerHTML = `
+                    <div style="background: #1E293B; color: #0EA5E9; padding: 30px; border-radius: 12px; text-align: left; font-family: monospace; font-size: 0.9em; width: 100%;">
+                        $ analyzing...<br>
+                        → files: 47<br>
+                        → processing...<br>
+                        <span style="color: #10B981;">✓ contracts.py</span>
+                    </div>
+                `;
+            } else if (project.preview === 'question') {
+                preview.innerHTML = `
+                    <div style="background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%); color: white; padding: 40px; border-radius: 12px; text-align: center; width: 100%;">
+                        <div style="font-size: 1.5em; margin-bottom: 20px;">❓</div>
+                        <div style="font-size: 1.1em;">Which design approach should I use?</div>
+                    </div>
+                `;
+            } else if (project.preview === 'planning') {
+                preview.innerHTML = `
+                    <div style="background: linear-gradient(135deg, #A855F7 0%, #9333EA 100%); color: white; padding: 40px; border-radius: 12px; text-align: center; width: 100%;">
+                        <div style="font-size: 3em; margin-bottom: 15px;">🤔</div>
+                        <div style="font-size: 1.1em;">Planning Strategy</div>
+                    </div>
+                `;
+            }
+        }
+
+        function previousProject() {
+            currentIndex = (currentIndex - 1 + projects.length) % projects.length;
+            updateProject(currentIndex);
+        }
+
+        function nextProject() {
+            currentIndex = (currentIndex + 1) % projects.length;
+            updateProject(currentIndex);
+        }
+
+        function goToProject(index) {
+            currentIndex = index;
+            updateProject(index);
+        }
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft') previousProject();
+            if (e.key === 'ArrowRight') nextProject();
+        });
+    </script>
+</body>
+</html>

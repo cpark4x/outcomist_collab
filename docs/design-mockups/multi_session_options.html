@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multi-Session Display Options</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #1a1a1a;
+            color: #e0e0e0;
+            padding: 40px;
+        }
+
+        .container {
+            max-width: 1800px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            color: #e0e0e0;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #888;
+            margin-bottom: 40px;
+            font-size: 16px;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .option-container {
+            background: #2a2a2a;
+            border: 2px solid #3a3a3a;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .option-header {
+            background: #333;
+            padding: 20px;
+            border-bottom: 2px solid #3a3a3a;
+        }
+
+        .option-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #e0e0e0;
+            margin-bottom: 8px;
+        }
+
+        .option-description {
+            font-size: 14px;
+            color: #888;
+        }
+
+        .pros-cons {
+            padding: 15px 20px;
+            background: #252525;
+            border-bottom: 1px solid #3a3a3a;
+            font-size: 13px;
+        }
+
+        .pro {
+            color: #50C878;
+            margin-bottom: 4px;
+        }
+
+        .con {
+            color: #E74C3C;
+            margin-bottom: 4px;
+        }
+
+        /* Project Card Preview */
+        .project-card-preview {
+            background: #2a2a2a;
+            border: 2px solid #3a3a3a;
+            border-radius: 8px;
+            margin: 20px;
+            overflow: hidden;
+        }
+
+        .card-header {
+            background: #333;
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-bottom: 1px solid #3a3a3a;
+        }
+
+        .card-icon {
+            font-size: 24px;
+        }
+
+        .card-title {
+            flex: 1;
+            font-size: 16px;
+            font-weight: 600;
+            color: #e0e0e0;
+        }
+
+        .status-badge {
+            padding: 6px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .status-badge.needs-input {
+            background: rgba(255, 193, 7, 0.2);
+            color: #FFC107;
+            border: 1px solid rgba(255, 193, 7, 0.3);
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        .status-badge.running {
+            background: rgba(33, 150, 243, 0.2);
+            color: #2196F3;
+            border: 1px solid rgba(33, 150, 243, 0.3);
+        }
+
+        .status-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: currentColor;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .session-count-badge {
+            background: rgba(156, 39, 176, 0.2);
+            color: #9C27B0;
+            border: 1px solid rgba(156, 39, 176, 0.3);
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-left: 8px;
+        }
+
+        .attention-badge {
+            background: rgba(255, 193, 7, 0.3);
+            color: #FFC107;
+            border: 1px solid rgba(255, 193, 7, 0.5);
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 700;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        /* OPTION 2: Session List */
+        .session-list {
+            padding: 0;
+            background: #252525;
+        }
+
+        .session-item {
+            padding: 12px 20px;
+            border-bottom: 1px solid #3a3a3a;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .session-item:last-child {
+            border-bottom: none;
+        }
+
+        .session-item.needs-attention {
+            background: rgba(255, 193, 7, 0.1);
+            border-left: 3px solid #FFC107;
+        }
+
+        .session-icon {
+            font-size: 16px;
+        }
+
+        .session-name {
+            flex: 1;
+            font-size: 14px;
+            color: #e0e0e0;
+        }
+
+        .session-status {
+            font-size: 12px;
+            padding: 4px 8px;
+            border-radius: 8px;
+        }
+
+        .session-status.needs-input {
+            background: rgba(255, 193, 7, 0.2);
+            color: #FFC107;
+            font-weight: 600;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        .session-status.running {
+            background: rgba(33, 150, 243, 0.2);
+            color: #2196F3;
+        }
+
+        /* OPTION 3: Session Tabs */
+        .session-tabs {
+            display: flex;
+            gap: 4px;
+            padding: 12px 20px;
+            background: #252525;
+            border-bottom: 1px solid #3a3a3a;
+            overflow-x: auto;
+        }
+
+        .session-tab {
+            padding: 8px 14px;
+            background: #333;
+            border: 1px solid #3a3a3a;
+            border-radius: 6px;
+            font-size: 13px;
+            color: #aaa;
+            cursor: pointer;
+            white-space: nowrap;
+            position: relative;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .session-tab.active {
+            background: #404040;
+            color: #e0e0e0;
+            border-color: #4a4a4a;
+        }
+
+        .session-tab.needs-attention {
+            border-color: #FFC107;
+        }
+
+        .session-tab .tab-badge {
+            width: 8px;
+            height: 8px;
+            background: #FFC107;
+            border-radius: 50%;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        .agent-view {
+            padding: 0;
+            max-height: 300px;
+            overflow-y: auto;
+            background: #1e1e1e;
+            font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        .message {
+            padding: 12px 20px;
+            border-bottom: 1px solid #2a2a2a;
+        }
+
+        .message-meta {
+            color: #666;
+            font-size: 11px;
+            margin-bottom: 4px;
+        }
+
+        .message-content {
+            color: #e0e0e0;
+        }
+
+        .user-message .message-content {
+            color: #4A90E2;
+        }
+
+        /* OPTION 4: Split Sessions */
+        .split-sessions {
+            display: flex;
+            gap: 1px;
+            background: #1e1e1e;
+            max-height: 300px;
+        }
+
+        .session-panel {
+            flex: 1;
+            background: #252525;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .session-panel.needs-attention {
+            border: 2px solid #FFC107;
+            box-shadow: 0 0 20px rgba(255, 193, 7, 0.3);
+        }
+
+        .session-panel-header {
+            padding: 10px 15px;
+            background: #2a2a2a;
+            border-bottom: 1px solid #3a3a3a;
+            font-size: 12px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .session-panel.needs-attention .session-panel-header {
+            background: rgba(255, 193, 7, 0.2);
+            border-bottom-color: #FFC107;
+        }
+
+        .session-panel-content {
+            flex: 1;
+            overflow-y: auto;
+            font-family: 'SF Mono', Monaco, monospace;
+            font-size: 12px;
+        }
+
+        /* Recommendation Section */
+        .recommendation {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 12px;
+            margin-top: 30px;
+            text-align: center;
+        }
+
+        .recommendation h2 {
+            color: white;
+            margin-bottom: 15px;
+            font-size: 24px;
+        }
+
+        .recommendation p {
+            font-size: 16px;
+            line-height: 1.6;
+            opacity: 0.95;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Multi-Session Display Options</h1>
+        <p class="subtitle">When multiple Claude Code tabs are working on the same project</p>
+
+        <div class="options-grid">
+            <!-- OPTION 1: Badge Count -->
+            <div class="option-container">
+                <div class="option-header">
+                    <div class="option-title">Option 1: Session Count Badge</div>
+                    <div class="option-description">Show total sessions + attention badge in header</div>
+                </div>
+                <div class="pros-cons">
+                    <div class="pro">✓ Minimal space usage</div>
+                    <div class="pro">✓ Clear attention indicator</div>
+                    <div class="con">✗ No detail on which session needs attention</div>
+                    <div class="con">✗ Must open to see individual sessions</div>
+                </div>
+
+                <div class="project-card-preview">
+                    <div class="card-header">
+                        <span class="card-icon">🐍</span>
+                        <span class="card-title">Snake Game</span>
+                        <span class="session-count-badge">3 sessions</span>
+                        <span class="attention-badge">! ACTION</span>
+                        <div class="status-badge needs-input">
+                            <div class="status-dot"></div>
+                            Needs Input
+                        </div>
+                    </div>
+                    <div class="agent-view">
+                        <div class="message">
+                            <div class="message-meta">12:45 PM • Assistant</div>
+                            <div class="message-content">I've implemented the scoring system. Would you like me to add difficulty levels?</div>
+                        </div>
+                        <div class="message user-message">
+                            <div class="message-meta">12:46 PM • You</div>
+                            <div class="message-content">> Yes, add easy/medium/hard modes</div>
+                        </div>
+                        <div class="message">
+                            <div class="message-meta">12:47 PM • Assistant</div>
+                            <div class="message-content">Working on difficulty levels...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- OPTION 2: Session List -->
+            <div class="option-container">
+                <div class="option-header">
+                    <div class="option-title">Option 2: Expanded Session List</div>
+                    <div class="option-description">Show each session as separate item in status area</div>
+                </div>
+                <div class="pros-cons">
+                    <div class="pro">✓ See all sessions at a glance</div>
+                    <div class="pro">✓ Clear which session needs action</div>
+                    <div class="con">✗ Takes more vertical space</div>
+                    <div class="con">✗ Can't see conversation details</div>
+                </div>
+
+                <div class="project-card-preview">
+                    <div class="card-header">
+                        <span class="card-icon">🐍</span>
+                        <span class="card-title">Snake Game</span>
+                        <div class="status-badge running">
+                            <div class="status-dot"></div>
+                            Multiple Sessions
+                        </div>
+                    </div>
+                    <div class="session-list">
+                        <div class="session-item">
+                            <span class="session-icon">💬</span>
+                            <span class="session-name">Main Development</span>
+                            <span class="session-status running">Running</span>
+                        </div>
+                        <div class="session-item needs-attention">
+                            <span class="session-icon">💬</span>
+                            <span class="session-name">UI Improvements</span>
+                            <span class="session-status needs-input">NEEDS INPUT</span>
+                        </div>
+                        <div class="session-item">
+                            <span class="session-icon">💬</span>
+                            <span class="session-name">Bug Fixes</span>
+                            <span class="session-status running">Running</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- OPTION 3: Session Tabs -->
+            <div class="option-container">
+                <div class="option-header">
+                    <div class="option-title">Option 3: Session Tabs</div>
+                    <div class="option-description">Tab bar at top of Agent view with badge indicators</div>
+                </div>
+                <div class="pros-cons">
+                    <div class="pro">✓ See conversation immediately</div>
+                    <div class="pro">✓ Easy to switch between sessions</div>
+                    <div class="pro">✓ Badge shows which tab needs attention</div>
+                    <div class="con">✗ Can only view one session at a time</div>
+                </div>
+
+                <div class="project-card-preview">
+                    <div class="card-header">
+                        <span class="card-icon">🐍</span>
+                        <span class="card-title">Snake Game</span>
+                        <div class="status-badge needs-input">
+                            <div class="status-dot"></div>
+                            Needs Input
+                        </div>
+                    </div>
+                    <div class="session-tabs">
+                        <div class="session-tab">
+                            💬 Main
+                        </div>
+                        <div class="session-tab active needs-attention">
+                            <span class="tab-badge"></span>
+                            💬 UI
+                        </div>
+                        <div class="session-tab">
+                            💬 Bugs
+                        </div>
+                    </div>
+                    <div class="agent-view">
+                        <div class="message">
+                            <div class="message-meta">12:50 PM • Assistant</div>
+                            <div class="message-content">I've updated the UI colors. Should I also change the button styles?</div>
+                        </div>
+                        <div class="message user-message">
+                            <div class="message-meta">12:51 PM • You</div>
+                            <div class="message-content">> Keep the current buttons</div>
+                        </div>
+                        <div class="message">
+                            <div class="message-meta">12:52 PM • Assistant</div>
+                            <div class="message-content">Got it. What about the score display?</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- OPTION 4: Split View -->
+            <div class="option-container">
+                <div class="option-header">
+                    <div class="option-title">Option 4: Side-by-Side Sessions</div>
+                    <div class="option-description">Show multiple sessions simultaneously in panels</div>
+                </div>
+                <div class="pros-cons">
+                    <div class="pro">✓ See all conversations at once</div>
+                    <div class="pro">✓ Glowing border highlights attention needed</div>
+                    <div class="con">✗ Horizontal space gets cramped quickly</div>
+                    <div class="con">✗ Small text in panels</div>
+                </div>
+
+                <div class="project-card-preview">
+                    <div class="card-header">
+                        <span class="card-icon">🐍</span>
+                        <span class="card-title">Snake Game</span>
+                        <div class="status-badge needs-input">
+                            <div class="status-dot"></div>
+                            Needs Input
+                        </div>
+                    </div>
+                    <div class="split-sessions">
+                        <div class="session-panel">
+                            <div class="session-panel-header">
+                                <span>💬 Main</span>
+                                <span style="color: #2196F3; font-size: 11px;">Running</span>
+                            </div>
+                            <div class="session-panel-content">
+                                <div class="message">
+                                    <div class="message-meta">12:45 PM</div>
+                                    <div class="message-content">Adding difficulty...</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="session-panel needs-attention">
+                            <div class="session-panel-header">
+                                <span>💬 UI</span>
+                                <span style="color: #FFC107; font-size: 11px;">NEEDS INPUT</span>
+                            </div>
+                            <div class="session-panel-content">
+                                <div class="message">
+                                    <div class="message-meta">12:50 PM</div>
+                                    <div class="message-content">What about score display?</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="session-panel">
+                            <div class="session-panel-header">
+                                <span>💬 Bugs</span>
+                                <span style="color: #2196F3; font-size: 11px;">Running</span>
+                            </div>
+                            <div class="session-panel-content">
+                                <div class="message">
+                                    <div class="message-meta">12:48 PM</div>
+                                    <div class="message-content">Fixed collision...</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recommendation -->
+        <div class="recommendation">
+            <h2>🎯 Recommendation</h2>
+            <p>
+                <strong>Option 3: Session Tabs</strong> is the best balance.<br><br>
+
+                You can see the full conversation immediately (unlike Option 2).<br>
+                The pulsing badge on tabs clearly shows which session needs your attention.<br>
+                Easy to switch between sessions with a click.<br>
+                Doesn't waste space (unlike Option 1's generic badge or Option 4's cramped panels).<br><br>
+
+                <strong>Implementation:</strong> Active session shows full Agent view. Badge pulses on tabs needing input.<br>
+                Overall status in header shows "Needs Input" if ANY session needs attention.
+            </p>
+        </div>
+    </div>
+</body>
+</html>

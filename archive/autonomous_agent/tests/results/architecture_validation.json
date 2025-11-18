@@ -1,0 +1,359 @@
+{
+  "validation_type": "architecture_design",
+  "total_scenarios": 10,
+  "results": [
+    {
+      "scenario_num": 1,
+      "user_role": "Product Manager",
+      "goal": "Generate a competitive analysis report on Domino's and Papa John's pizza chains, including a 10-slide summary deck. Use only data from the last 18 months.",
+      "complexity_assessment": {
+        "score": 2,
+        "level": "LOW",
+        "indicators": {
+          "multi_artifact": false,
+          "external_data": true,
+          "code_generation": false,
+          "compliance": false,
+          "formatting": true,
+          "verification": false
+        }
+      },
+      "planner_capability": [
+        true,
+        []
+      ],
+      "executor_capability": [
+        false,
+        [
+          "No tool for artifact type: summary_deck.pptx (.pptx)",
+          "PowerPoint generation requires external library (not in MVP)"
+        ]
+      ],
+      "verifier_capability": [
+        true,
+        []
+      ],
+      "tool_gaps": [
+        "PowerPoint generation library (python-pptx)"
+      ],
+      "architecture_support": "PARTIAL",
+      "recommendations": [
+        "No tool for artifact type: summary_deck.pptx (.pptx)",
+        "PowerPoint generation requires external library (not in MVP)"
+      ]
+    },
+    {
+      "scenario_num": 2,
+      "user_role": "Marketing Manager",
+      "goal": "Draft a launch email campaign (3 emails) for the new 'Velocity' feature. The final output must be in a single, ready-to-upload CSV file.",
+      "complexity_assessment": {
+        "score": 2,
+        "level": "LOW",
+        "indicators": {
+          "multi_artifact": false,
+          "external_data": true,
+          "code_generation": false,
+          "compliance": false,
+          "formatting": true,
+          "verification": false
+        }
+      },
+      "planner_capability": [
+        true,
+        []
+      ],
+      "executor_capability": [
+        true,
+        []
+      ],
+      "verifier_capability": [
+        true,
+        []
+      ],
+      "tool_gaps": [],
+      "architecture_support": "FULLY_SUPPORTED",
+      "recommendations": []
+    },
+    {
+      "scenario_num": 3,
+      "user_role": "Financial Analyst",
+      "goal": "Generate a Python script that calculates CAGR for 3 competitors and output results to Excel with percentage formatting.",
+      "complexity_assessment": {
+        "score": 2,
+        "level": "LOW",
+        "indicators": {
+          "multi_artifact": false,
+          "external_data": false,
+          "code_generation": true,
+          "compliance": false,
+          "formatting": true,
+          "verification": false
+        }
+      },
+      "planner_capability": [
+        true,
+        []
+      ],
+      "executor_capability": [
+        false,
+        [
+          "Excel generation requires external library (openpyxl - can add)"
+        ]
+      ],
+      "verifier_capability": [
+        true,
+        []
+      ],
+      "tool_gaps": [
+        "Excel library (openpyxl)"
+      ],
+      "architecture_support": "PARTIAL",
+      "recommendations": [
+        "Excel generation requires external library (openpyxl - can add)"
+      ]
+    },
+    {
+      "scenario_num": 4,
+      "user_role": "HR Manager",
+      "goal": "Draft a new Remote Work Policy document based on California labor law AB 1234. Output as PDF.",
+      "complexity_assessment": {
+        "score": 2,
+        "level": "LOW",
+        "indicators": {
+          "multi_artifact": false,
+          "external_data": false,
+          "code_generation": false,
+          "compliance": true,
+          "formatting": true,
+          "verification": false
+        }
+      },
+      "planner_capability": [
+        true,
+        []
+      ],
+      "executor_capability": [
+        true,
+        []
+      ],
+      "verifier_capability": [
+        false,
+        [
+          "Compliance check requires external legal data: AB 1234 compliance verified"
+        ]
+      ],
+      "tool_gaps": [],
+      "architecture_support": "PARTIAL",
+      "recommendations": [
+        "Compliance check requires external legal data: AB 1234 compliance verified"
+      ]
+    },
+    {
+      "scenario_num": 5,
+      "user_role": "Sales Ops Manager",
+      "goal": "Identify top 5 sales reps from CSV and generate personalized motivational emails with accurate revenue and rank.",
+      "complexity_assessment": {
+        "score": 1,
+        "level": "LOW",
+        "indicators": {
+          "multi_artifact": false,
+          "external_data": true,
+          "code_generation": false,
+          "compliance": false,
+          "formatting": false,
+          "verification": false
+        }
+      },
+      "planner_capability": [
+        true,
+        []
+      ],
+      "executor_capability": [
+        true,
+        []
+      ],
+      "verifier_capability": [
+        true,
+        []
+      ],
+      "tool_gaps": [],
+      "architecture_support": "FULLY_SUPPORTED",
+      "recommendations": []
+    },
+    {
+      "scenario_num": 6,
+      "user_role": "Executive Assistant",
+      "goal": "Write 3-sentence briefing notes for 5 external meetings with recent company news.",
+      "complexity_assessment": {
+        "score": 1,
+        "level": "LOW",
+        "indicators": {
+          "multi_artifact": false,
+          "external_data": true,
+          "code_generation": false,
+          "compliance": false,
+          "formatting": false,
+          "verification": false
+        }
+      },
+      "planner_capability": [
+        true,
+        []
+      ],
+      "executor_capability": [
+        true,
+        []
+      ],
+      "verifier_capability": [
+        true,
+        []
+      ],
+      "tool_gaps": [],
+      "architecture_support": "FULLY_SUPPORTED",
+      "recommendations": []
+    },
+    {
+      "scenario_num": 7,
+      "user_role": "Product Marketing Manager",
+      "goal": "Generate 10 Facebook ad headlines containing 'Save 10 Hours' under 40 characters. Output as JSON.",
+      "complexity_assessment": {
+        "score": 0,
+        "level": "LOW",
+        "indicators": {
+          "multi_artifact": false,
+          "external_data": false,
+          "code_generation": false,
+          "compliance": false,
+          "formatting": false,
+          "verification": false
+        }
+      },
+      "planner_capability": [
+        true,
+        []
+      ],
+      "executor_capability": [
+        true,
+        []
+      ],
+      "verifier_capability": [
+        true,
+        []
+      ],
+      "tool_gaps": [],
+      "architecture_support": "FULLY_SUPPORTED",
+      "recommendations": []
+    },
+    {
+      "scenario_num": 8,
+      "user_role": "Academic Researcher",
+      "goal": "Summarize key findings of top 5 cited papers on ML interpretability with APA bibliography.",
+      "complexity_assessment": {
+        "score": 1,
+        "level": "LOW",
+        "indicators": {
+          "multi_artifact": false,
+          "external_data": false,
+          "code_generation": false,
+          "compliance": false,
+          "formatting": true,
+          "verification": false
+        }
+      },
+      "planner_capability": [
+        true,
+        []
+      ],
+      "executor_capability": [
+        true,
+        []
+      ],
+      "verifier_capability": [
+        true,
+        []
+      ],
+      "tool_gaps": [],
+      "architecture_support": "FULLY_SUPPORTED",
+      "recommendations": []
+    },
+    {
+      "scenario_num": 9,
+      "user_role": "Small Business Owner",
+      "goal": "Generate responsive landing page linking to Shopify that passes PageSpeed mobile score of 90+.",
+      "complexity_assessment": {
+        "score": 0,
+        "level": "LOW",
+        "indicators": {
+          "multi_artifact": false,
+          "external_data": false,
+          "code_generation": false,
+          "compliance": false,
+          "formatting": false,
+          "verification": false
+        }
+      },
+      "planner_capability": [
+        true,
+        []
+      ],
+      "executor_capability": [
+        true,
+        []
+      ],
+      "verifier_capability": [
+        false,
+        [
+          "Performance check requires external tool: PageSpeed score >= 90"
+        ]
+      ],
+      "tool_gaps": [
+        "Google PageSpeed Insights API"
+      ],
+      "architecture_support": "PARTIAL",
+      "recommendations": [
+        "Performance check requires external tool: PageSpeed score >= 90"
+      ]
+    },
+    {
+      "scenario_num": 10,
+      "user_role": "Operations Manager",
+      "goal": "Create workflow automation monitoring Slack for 'URGENT', creating Jira ticket, sending confirmation.",
+      "complexity_assessment": {
+        "score": 0,
+        "level": "LOW",
+        "indicators": {
+          "multi_artifact": false,
+          "external_data": false,
+          "code_generation": false,
+          "compliance": false,
+          "formatting": false,
+          "verification": false
+        }
+      },
+      "planner_capability": [
+        true,
+        []
+      ],
+      "executor_capability": [
+        true,
+        []
+      ],
+      "verifier_capability": [
+        false,
+        [
+          "Integration check requires external API: Jira ticket created with High priority",
+          "Integration check requires external API: Slack confirmation sent"
+        ]
+      ],
+      "tool_gaps": [
+        "Slack API client",
+        "Jira API client"
+      ],
+      "architecture_support": "PARTIAL",
+      "recommendations": [
+        "Integration check requires external API: Jira ticket created with High priority",
+        "Integration check requires external API: Slack confirmation sent"
+      ]
+    }
+  ]
+}

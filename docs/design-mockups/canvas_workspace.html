@@ -1,0 +1,856 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Canvas Workspace - Multi-Project Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #1a1a1a;
+            color: #e0e0e0;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .workspace-header {
+            background: #2a2a2a;
+            padding: 12px 20px;
+            border-bottom: 1px solid #3a3a3a;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+            position: relative;
+        }
+
+        .workspace-title {
+            font-size: 14px;
+            font-weight: 500;
+            color: #e0e0e0;
+        }
+
+        .workspace-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn {
+            padding: 6px 16px;
+            border-radius: 6px;
+            border: none;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: #4a9eff;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #3a8eef;
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: #a0a0a0;
+            border: 1px solid #4a4a4a;
+        }
+
+        .btn-secondary:hover {
+            background: #3a3a3a;
+        }
+
+        /* Canvas Area */
+        .canvas-container {
+            position: relative;
+            width: 100%;
+            height: calc(100vh - 49px);
+            overflow: auto;
+            background:
+                linear-gradient(#2a2a2a 1px, transparent 1px),
+                linear-gradient(90deg, #2a2a2a 1px, transparent 1px);
+            background-size: 40px 40px;
+            background-position: -1px -1px;
+        }
+
+        .canvas {
+            position: relative;
+            min-width: 3000px;
+            min-height: 2000px;
+            padding: 40px;
+        }
+
+        /* Widget Cards on Canvas */
+        .widget-card {
+            position: absolute;
+            background: #2a2a2a;
+            border: 2px solid #3a3a3a;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+            overflow: hidden;
+            transition: box-shadow 0.2s, transform 0.2s;
+        }
+
+        .widget-card:hover {
+            box-shadow: 0 12px 48px rgba(0, 0, 0, 0.6);
+        }
+
+        .widget-card.dragging {
+            opacity: 0.8;
+            cursor: grabbing;
+            z-index: 1000;
+        }
+
+        .widget-card.selected {
+            border-color: #4a9eff;
+            box-shadow: 0 0 0 3px rgba(74, 158, 255, 0.3);
+        }
+
+        .widget-card.needs-attention {
+            border-color: #ff6b6b;
+        }
+
+        .widget-card.running {
+            border-color: #4a9eff;
+        }
+
+        .widget-card.complete {
+            border-color: #51cf66;
+        }
+
+        /* Widget Header */
+        .widget-header {
+            background: #333;
+            padding: 12px 16px;
+            border-bottom: 1px solid #3a3a3a;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: grab;
+        }
+
+        .widget-header:active {
+            cursor: grabbing;
+        }
+
+        .widget-header-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .widget-drag-handle {
+            color: #6a6a6a;
+            font-size: 16px;
+            cursor: grab;
+        }
+
+        .widget-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #e0e0e0;
+        }
+
+        .widget-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .widget-status.needs-attention {
+            background: rgba(255, 107, 107, 0.2);
+            color: #ff6b6b;
+        }
+
+        .widget-status.running {
+            background: rgba(74, 158, 255, 0.2);
+            color: #4a9eff;
+        }
+
+        .widget-status.complete {
+            background: rgba(81, 207, 102, 0.2);
+            color: #51cf66;
+        }
+
+        .status-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: currentColor;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .widget-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .widget-btn {
+            background: transparent;
+            border: none;
+            color: #a0a0a0;
+            font-size: 16px;
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+
+        .widget-btn:hover {
+            background: #3a3a3a;
+            color: #e0e0e0;
+        }
+
+        /* Widget Content */
+        .widget-content {
+            background: white;
+            color: #2a2a2a;
+        }
+
+        /* Tic Tac Toe Widget */
+        .tictactoe-widget {
+            padding: 30px;
+            text-align: center;
+            width: 400px;
+        }
+
+        .tictactoe-widget h2 {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 16px;
+        }
+
+        .tictactoe-status {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        .tictactoe-board {
+            display: inline-grid;
+            grid-template-columns: repeat(3, 80px);
+            grid-template-rows: repeat(3, 80px);
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .tictactoe-cell {
+            background: #f0f0f0;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 32px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .tictactoe-cell:hover:not(.occupied) {
+            background: #e0e0e0;
+            border-color: #4a9eff;
+        }
+
+        .tictactoe-cell.x {
+            color: #4a9eff;
+        }
+
+        .tictactoe-cell.o {
+            color: #ff6b6b;
+        }
+
+        .tictactoe-cell.occupied {
+            cursor: not-allowed;
+        }
+
+        .tictactoe-reset {
+            padding: 10px 24px;
+            background: #4a9eff;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        /* Calculator Widget */
+        .calculator-widget {
+            padding: 30px;
+            width: 360px;
+        }
+
+        .calculator {
+            background: #f5f5f5;
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        .calculator-display {
+            background: #2a2a2a;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 16px;
+            text-align: right;
+            font-size: 32px;
+            font-weight: 300;
+            color: #fff;
+            min-height: 60px;
+        }
+
+        .calculator-buttons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+        }
+
+        .calc-btn {
+            padding: 18px;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: 600;
+            color: #2a2a2a;
+            cursor: pointer;
+        }
+
+        .calc-btn.operator {
+            background: #4a9eff;
+            color: white;
+            border: none;
+        }
+
+        .calc-btn.equals {
+            background: #51cf66;
+            color: white;
+            border: none;
+            grid-column: span 2;
+        }
+
+        /* Needs Input Widget */
+        .needs-input-widget {
+            padding: 40px;
+            width: 500px;
+            text-align: center;
+        }
+
+        .needs-input-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        .needs-input-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        .needs-input-question {
+            font-size: 14px;
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 24px;
+        }
+
+        .input-options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .option-btn {
+            padding: 14px 20px;
+            background: #f0f0f0;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .option-btn:hover {
+            border-color: #4a9eff;
+            background: #f0f8ff;
+        }
+
+        /* Running Widget */
+        .running-widget {
+            padding: 40px;
+            width: 450px;
+            text-align: center;
+        }
+
+        .running-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+            animation: spin 2s linear infinite;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .running-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        .running-status {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        .progress-bar {
+            height: 6px;
+            background: #e0e0e0;
+            border-radius: 3px;
+            overflow: hidden;
+            margin-bottom: 12px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: #4a9eff;
+            width: 45%;
+            animation: progress 2s ease-in-out infinite;
+        }
+
+        @keyframes progress {
+            0% { width: 30%; }
+            50% { width: 70%; }
+            100% { width: 30%; }
+        }
+
+        .running-log {
+            background: #f5f5f5;
+            border-radius: 8px;
+            padding: 16px;
+            text-align: left;
+            font-size: 12px;
+            color: #666;
+            font-family: 'Monaco', 'Courier New', monospace;
+        }
+
+        /* Chat Widget */
+        .chat-widget {
+            width: 400px;
+            height: 500px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+
+        .chat-message {
+            margin-bottom: 16px;
+            font-size: 13px;
+        }
+
+        .chat-timestamp {
+            font-size: 11px;
+            color: #999;
+            margin-bottom: 4px;
+        }
+
+        .chat-content {
+            color: #2a2a2a;
+            line-height: 1.5;
+        }
+
+        .chat-input {
+            padding: 16px;
+            border-top: 1px solid #ddd;
+            background: white;
+        }
+
+        .chat-input input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 13px;
+        }
+
+        /* Minimap */
+        .minimap {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 200px;
+            height: 150px;
+            background: rgba(42, 42, 42, 0.95);
+            border: 1px solid #4a4a4a;
+            border-radius: 8px;
+            padding: 10px;
+            z-index: 1000;
+        }
+
+        .minimap-viewport {
+            position: absolute;
+            border: 2px solid #4a9eff;
+            background: rgba(74, 158, 255, 0.1);
+        }
+
+        .minimap-widget {
+            position: absolute;
+            background: #4a4a4a;
+            border-radius: 2px;
+        }
+    </style>
+</head>
+<body>
+    <div class="workspace-header">
+        <div class="workspace-title">Default Workspace · 4 widgets</div>
+        <div class="workspace-actions">
+            <button class="btn btn-secondary">📐 Arrange</button>
+            <button class="btn btn-secondary">🔍 Zoom</button>
+            <button class="btn btn-primary" onclick="addNewWidget()">+ New Widget</button>
+        </div>
+    </div>
+
+    <div class="canvas-container" id="canvasContainer">
+        <div class="canvas" id="canvas">
+            <!-- Widget 1: Tic Tac Toe - Top Left -->
+            <div class="widget-card complete" style="left: 100px; top: 100px;" data-widget="tictactoe">
+                <div class="widget-header">
+                    <div class="widget-header-left">
+                        <span class="widget-drag-handle">⋮⋮</span>
+                        <span class="widget-title">Tic Tac Toe Game</span>
+                    </div>
+                    <div class="widget-actions">
+                        <span class="widget-status complete">
+                            <span class="status-dot"></span>
+                            Complete
+                        </span>
+                        <button class="widget-btn" onclick="minimizeWidget(this)">−</button>
+                        <button class="widget-btn" onclick="closeWidget(this)">×</button>
+                    </div>
+                </div>
+                <div class="widget-content">
+                    <div class="tictactoe-widget">
+                        <h2>Tic Tac Toe</h2>
+                        <div class="tictactoe-status" id="status1">Next player: O</div>
+                        <div class="tictactoe-board" id="board1">
+                            <div class="tictactoe-cell" onclick="makeMove(1, 0)"></div>
+                            <div class="tictactoe-cell" onclick="makeMove(1, 1)"></div>
+                            <div class="tictactoe-cell" onclick="makeMove(1, 2)"></div>
+                            <div class="tictactoe-cell" onclick="makeMove(1, 3)"></div>
+                            <div class="tictactoe-cell" onclick="makeMove(1, 4)"></div>
+                            <div class="tictactoe-cell" onclick="makeMove(1, 5)"></div>
+                            <div class="tictactoe-cell" onclick="makeMove(1, 6)"></div>
+                            <div class="tictactoe-cell" onclick="makeMove(1, 7)"></div>
+                            <div class="tictactoe-cell" onclick="makeMove(1, 8)"></div>
+                        </div>
+                        <button class="tictactoe-reset" onclick="resetGame(1)">New Game</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Widget 2: Calculator - Top Right -->
+            <div class="widget-card complete" style="left: 600px; top: 100px;" data-widget="calculator">
+                <div class="widget-header">
+                    <div class="widget-header-left">
+                        <span class="widget-drag-handle">⋮⋮</span>
+                        <span class="widget-title">Calculator</span>
+                    </div>
+                    <div class="widget-actions">
+                        <span class="widget-status complete">
+                            <span class="status-dot"></span>
+                            Complete
+                        </span>
+                        <button class="widget-btn" onclick="minimizeWidget(this)">−</button>
+                        <button class="widget-btn" onclick="closeWidget(this)">×</button>
+                    </div>
+                </div>
+                <div class="widget-content">
+                    <div class="calculator-widget">
+                        <div class="calculator">
+                            <div class="calculator-display" id="calcDisplay">0</div>
+                            <div class="calculator-buttons">
+                                <button class="calc-btn" onclick="calcInput('7')">7</button>
+                                <button class="calc-btn" onclick="calcInput('8')">8</button>
+                                <button class="calc-btn" onclick="calcInput('9')">9</button>
+                                <button class="calc-btn operator" onclick="calcInput('/')">÷</button>
+                                <button class="calc-btn" onclick="calcInput('4')">4</button>
+                                <button class="calc-btn" onclick="calcInput('5')">5</button>
+                                <button class="calc-btn" onclick="calcInput('6')">6</button>
+                                <button class="calc-btn operator" onclick="calcInput('*')">×</button>
+                                <button class="calc-btn" onclick="calcInput('1')">1</button>
+                                <button class="calc-btn" onclick="calcInput('2')">2</button>
+                                <button class="calc-btn" onclick="calcInput('3')">3</button>
+                                <button class="calc-btn operator" onclick="calcInput('-')">−</button>
+                                <button class="calc-btn" onclick="calcInput('0')">0</button>
+                                <button class="calc-btn" onclick="calcClear()">C</button>
+                                <button class="calc-btn operator" onclick="calcInput('+')">+</button>
+                                <button class="calc-btn equals" onclick="calcEquals()">=</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Widget 3: Needs Input - Bottom Left -->
+            <div class="widget-card needs-attention" style="left: 100px; top: 700px;" data-widget="landing">
+                <div class="widget-header">
+                    <div class="widget-header-left">
+                        <span class="widget-drag-handle">⋮⋮</span>
+                        <span class="widget-title">Landing Page Design</span>
+                    </div>
+                    <div class="widget-actions">
+                        <span class="widget-status needs-attention">
+                            <span class="status-dot"></span>
+                            Needs Input
+                        </span>
+                        <button class="widget-btn" onclick="minimizeWidget(this)">−</button>
+                        <button class="widget-btn" onclick="closeWidget(this)">×</button>
+                    </div>
+                </div>
+                <div class="widget-content">
+                    <div class="needs-input-widget">
+                        <div class="needs-input-icon">🎨</div>
+                        <div class="needs-input-title">Choose Design Direction</div>
+                        <div class="needs-input-question">
+                            Which hero section style fits your brand?
+                        </div>
+                        <div class="input-options">
+                            <button class="option-btn">Bold & Colorful</button>
+                            <button class="option-btn">Minimal & Elegant</button>
+                            <button class="option-btn">Data-Driven</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Widget 4: Running Analysis - Bottom Right -->
+            <div class="widget-card running" style="left: 700px; top: 700px;" data-widget="analysis">
+                <div class="widget-header">
+                    <div class="widget-header-left">
+                        <span class="widget-drag-handle">⋮⋮</span>
+                        <span class="widget-title">Sales Analysis Q4</span>
+                    </div>
+                    <div class="widget-actions">
+                        <span class="widget-status running">
+                            <span class="status-dot"></span>
+                            Running
+                        </span>
+                        <button class="widget-btn" onclick="minimizeWidget(this)">−</button>
+                        <button class="widget-btn" onclick="closeWidget(this)">×</button>
+                    </div>
+                </div>
+                <div class="widget-content">
+                    <div class="running-widget">
+                        <div class="running-icon">⚙️</div>
+                        <div class="running-title">Analyzing Data...</div>
+                        <div class="running-status">Processing 847 transactions</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill"></div>
+                        </div>
+                        <div class="running-log">
+                            [INFO] Processing Q4 data...<br>
+                            [INFO] Found 847 transactions<br>
+                            [WARN] 3 anomalies detected<br>
+                            [INFO] Running statistical analysis...
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Dragging functionality
+        let draggedElement = null;
+        let offsetX = 0;
+        let offsetY = 0;
+
+        document.querySelectorAll('.widget-header').forEach(header => {
+            header.addEventListener('mousedown', function(e) {
+                if (e.target.classList.contains('widget-btn') || e.target.closest('.widget-btn')) {
+                    return;
+                }
+
+                draggedElement = this.closest('.widget-card');
+                draggedElement.classList.add('dragging');
+
+                const rect = draggedElement.getBoundingClientRect();
+                const containerRect = document.getElementById('canvas').getBoundingClientRect();
+
+                offsetX = e.clientX - rect.left + document.getElementById('canvasContainer').scrollLeft;
+                offsetY = e.clientY - rect.top + document.getElementById('canvasContainer').scrollTop;
+            });
+        });
+
+        document.addEventListener('mousemove', function(e) {
+            if (draggedElement) {
+                const containerRect = document.getElementById('canvas').getBoundingClientRect();
+                const scrollLeft = document.getElementById('canvasContainer').scrollLeft;
+                const scrollTop = document.getElementById('canvasContainer').scrollTop;
+
+                let x = e.clientX - containerRect.left + scrollLeft - offsetX;
+                let y = e.clientY - containerRect.top + scrollTop - offsetY;
+
+                draggedElement.style.left = Math.max(0, x) + 'px';
+                draggedElement.style.top = Math.max(0, y) + 'px';
+            }
+        });
+
+        document.addEventListener('mouseup', function() {
+            if (draggedElement) {
+                draggedElement.classList.remove('dragging');
+                draggedElement = null;
+            }
+        });
+
+        // Widget actions
+        function minimizeWidget(btn) {
+            const widget = btn.closest('.widget-card');
+            const content = widget.querySelector('.widget-content');
+            if (content.style.display === 'none') {
+                content.style.display = 'block';
+                btn.textContent = '−';
+            } else {
+                content.style.display = 'none';
+                btn.textContent = '□';
+            }
+        }
+
+        function closeWidget(btn) {
+            const widget = btn.closest('.widget-card');
+            widget.style.display = 'none';
+        }
+
+        function addNewWidget() {
+            alert('Create new widget - This would open a dialog to start a new agent task');
+        }
+
+        // Tic Tac Toe Logic
+        const games = {
+            1: {
+                currentPlayer: 'O',
+                board: ['', '', '', '', '', '', '', '', ''],
+                gameActive: true
+            }
+        };
+
+        function makeMove(gameId, index) {
+            const game = games[gameId];
+            if (game.board[index] === '' && game.gameActive) {
+                game.board[index] = game.currentPlayer;
+                const cell = document.querySelectorAll(`#board${gameId} .tictactoe-cell`)[index];
+                cell.textContent = game.currentPlayer;
+                cell.classList.add(game.currentPlayer.toLowerCase());
+                cell.classList.add('occupied');
+
+                if (checkWin(gameId)) {
+                    document.getElementById(`status${gameId}`).textContent = `Player ${game.currentPlayer} wins!`;
+                    game.gameActive = false;
+                } else if (game.board.every(cell => cell !== '')) {
+                    document.getElementById(`status${gameId}`).textContent = "It's a draw!";
+                    game.gameActive = false;
+                } else {
+                    game.currentPlayer = game.currentPlayer === 'X' ? 'O' : 'X';
+                    document.getElementById(`status${gameId}`).textContent = `Next player: ${game.currentPlayer}`;
+                }
+            }
+        }
+
+        function checkWin(gameId) {
+            const game = games[gameId];
+            const winPatterns = [
+                [0, 1, 2], [3, 4, 5], [6, 7, 8],
+                [0, 3, 6], [1, 4, 7], [2, 5, 8],
+                [0, 4, 8], [2, 4, 6]
+            ];
+
+            return winPatterns.some(pattern => {
+                return game.board[pattern[0]] !== '' &&
+                       game.board[pattern[0]] === game.board[pattern[1]] &&
+                       game.board[pattern[1]] === game.board[pattern[2]];
+            });
+        }
+
+        function resetGame(gameId) {
+            const game = games[gameId];
+            game.currentPlayer = 'O';
+            game.board = ['', '', '', '', '', '', '', '', ''];
+            game.gameActive = true;
+            document.getElementById(`status${gameId}`).textContent = 'Next player: O';
+            document.querySelectorAll(`#board${gameId} .tictactoe-cell`).forEach(cell => {
+                cell.textContent = '';
+                cell.classList.remove('x', 'o', 'occupied');
+            });
+        }
+
+        // Calculator Logic
+        let calcValue = '0';
+        let calcOperation = null;
+        let calcPrevValue = null;
+
+        function calcInput(value) {
+            if (['+', '-', '*', '/'].includes(value)) {
+                calcOperation = value;
+                calcPrevValue = calcValue;
+                calcValue = '0';
+            } else {
+                calcValue = calcValue === '0' ? value : calcValue + value;
+                document.getElementById('calcDisplay').textContent = calcValue;
+            }
+        }
+
+        function calcEquals() {
+            if (calcOperation && calcPrevValue) {
+                const prev = parseFloat(calcPrevValue);
+                const curr = parseFloat(calcValue);
+                let result;
+                switch(calcOperation) {
+                    case '+': result = prev + curr; break;
+                    case '-': result = prev - curr; break;
+                    case '*': result = prev * curr; break;
+                    case '/': result = prev / curr; break;
+                }
+                calcValue = result.toString();
+                document.getElementById('calcDisplay').textContent = calcValue;
+                calcOperation = null;
+                calcPrevValue = null;
+            }
+        }
+
+        function calcClear() {
+            calcValue = '0';
+            calcOperation = null;
+            calcPrevValue = null;
+            document.getElementById('calcDisplay').textContent = '0';
+        }
+    </script>
+</body>
+</html>

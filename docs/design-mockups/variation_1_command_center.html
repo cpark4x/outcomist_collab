@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Variation 1: Command Center</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'JetBrains Mono', 'Courier New', monospace;
+            background: #0A1628;
+            color: #E2E8F0;
+            min-height: 100vh;
+            font-size: 14px;
+        }
+
+        .top-bar {
+            background: #1E293B;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #0EA5E9;
+        }
+
+        .title {
+            font-size: 1.2em;
+            font-weight: 700;
+            color: #0EA5E9;
+        }
+
+        .system-stats {
+            display: flex;
+            gap: 30px;
+            font-size: 0.9em;
+        }
+
+        .stat {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .stat-value {
+            color: #0EA5E9;
+            font-weight: 700;
+        }
+
+        .notification-bell {
+            position: relative;
+            font-size: 1.3em;
+            cursor: pointer;
+        }
+
+        .bell-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: #EF4444;
+            color: white;
+            border-radius: 10px;
+            padding: 2px 6px;
+            font-size: 0.6em;
+        }
+
+        .status-bar {
+            background: #1E293B;
+            padding: 12px 30px;
+            display: flex;
+            justify-content: space-around;
+            border-bottom: 1px solid #334155;
+            font-size: 0.85em;
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .status-number {
+            font-weight: 700;
+            font-size: 1.3em;
+        }
+
+        .status-active { color: #0EA5E9; }
+        .status-complete { color: #10B981; }
+        .status-failed { color: #EF4444; }
+        .status-queue { color: #F59E0B; }
+
+        .main-container {
+            padding: 20px;
+        }
+
+        .projects-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .project-card {
+            background: #1E293B;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            overflow: hidden;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .project-card:hover {
+            border-color: #0EA5E9;
+            transform: translateY(-2px);
+        }
+
+        .project-preview {
+            height: 120px;
+            background: #0F172A;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75em;
+            padding: 10px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .preview-terminal {
+            text-align: left;
+            width: 100%;
+            color: #0EA5E9;
+            line-height: 1.4;
+        }
+
+        .preview-complete {
+            background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+            color: white;
+            font-size: 2em;
+        }
+
+        .preview-needs-attention {
+            background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+            color: white;
+            font-size: 1.5em;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .preview-planning {
+            background: linear-gradient(135deg, #A855F7 0%, #9333EA 100%);
+            color: white;
+            font-size: 2em;
+        }
+
+        .project-info {
+            padding: 12px;
+        }
+
+        .project-title {
+            font-size: 0.9em;
+            font-weight: 700;
+            margin-bottom: 6px;
+            color: #F1F5F9;
+        }
+
+        .project-status {
+            font-size: 0.75em;
+            margin-bottom: 8px;
+            color: #94A3B8;
+        }
+
+        .progress-bar {
+            height: 4px;
+            background: #334155;
+            border-radius: 2px;
+            margin-bottom: 8px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: #0EA5E9;
+            transition: width 0.5s;
+        }
+
+        .project-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.7em;
+            color: #64748B;
+            margin-bottom: 8px;
+        }
+
+        .project-actions {
+            display: flex;
+            gap: 5px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 5px;
+            border: 1px solid #334155;
+            background: #0F172A;
+            color: #94A3B8;
+            border-radius: 4px;
+            font-size: 0.7em;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn:hover {
+            border-color: #0EA5E9;
+            color: #0EA5E9;
+        }
+
+        .btn-primary {
+            background: #0EA5E9;
+            color: white;
+            border-color: #0EA5E9;
+        }
+
+        .btn-primary:hover {
+            background: #0284C7;
+        }
+
+        .activity-timeline {
+            background: #1E293B;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .timeline-header {
+            font-weight: 700;
+            margin-bottom: 12px;
+            color: #0EA5E9;
+            font-size: 0.9em;
+        }
+
+        .timeline-content {
+            max-height: 150px;
+            overflow-y: auto;
+        }
+
+        .timeline-entry {
+            display: flex;
+            gap: 15px;
+            padding: 8px 0;
+            border-bottom: 1px solid #334155;
+            font-size: 0.8em;
+        }
+
+        .timeline-entry:last-child {
+            border-bottom: none;
+        }
+
+        .timeline-time {
+            color: #64748B;
+            min-width: 50px;
+        }
+
+        .timeline-message {
+            color: #CBD5E1;
+        }
+
+        .timeline-project {
+            color: #0EA5E9;
+            font-weight: 600;
+        }
+
+        .bottom-panel {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .panel-section {
+            background: #1E293B;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            padding: 15px;
+        }
+
+        .panel-title {
+            font-weight: 700;
+            margin-bottom: 12px;
+            color: #0EA5E9;
+            font-size: 0.9em;
+        }
+
+        .queued-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px;
+            background: #0F172A;
+            border-radius: 4px;
+            margin-bottom: 8px;
+            font-size: 0.8em;
+        }
+
+        .resource-meter {
+            margin-bottom: 12px;
+        }
+
+        .resource-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 4px;
+            font-size: 0.8em;
+        }
+
+        .resource-bar {
+            height: 8px;
+            background: #334155;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .resource-fill {
+            height: 100%;
+            transition: width 0.5s;
+        }
+
+        .resource-fill.cpu { background: #0EA5E9; }
+        .resource-fill.memory { background: #10B981; }
+        .resource-fill.network { background: #F59E0B; }
+    </style>
+</head>
+<body>
+    <div class="top-bar">
+        <div class="title">🚀 AUTONOMOUS AGENT - COMMAND CENTER</div>
+        <div class="system-stats">
+            <div class="stat">
+                <span>Resources:</span>
+                <span class="stat-value">65%</span>
+            </div>
+            <div class="stat">
+                <span>Queue:</span>
+                <span class="stat-value">2</span>
+            </div>
+            <div class="notification-bell">
+                🔔
+                <span class="bell-badge">3</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="status-bar">
+        <div class="status-item">
+            <span class="status-number status-active">4</span>
+            <span>ACTIVE</span>
+        </div>
+        <div class="status-item">
+            <span class="status-number status-complete">12</span>
+            <span>COMPLETE</span>
+        </div>
+        <div class="status-item">
+            <span class="status-number status-failed">1</span>
+            <span>FAILED</span>
+        </div>
+        <div class="status-item">
+            <span class="status-number status-queue">2</span>
+            <span>QUEUED</span>
+        </div>
+    </div>
+
+    <div class="main-container">
+        <div class="projects-grid">
+            <!-- Project 1: Running -->
+            <div class="project-card">
+                <div class="project-preview preview-terminal">
+                    <div>
+                        $ analyzing...<br>
+                        → files: 47<br>
+                        → processing...<br>
+                        <span style="color: #10B981;">✓ contracts.py</span>
+                    </div>
+                </div>
+                <div class="project-info">
+                    <div class="project-title">New Claude Session</div>
+                    <div class="project-status">⏳ RUNNING</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 72%;"></div>
+                    </div>
+                    <div class="project-meta">
+                        <span>72%</span>
+                        <span>~2 min</span>
+                    </div>
+                    <div class="project-actions">
+                        <button class="btn btn-primary">VIEW</button>
+                        <button class="btn">PAUSE</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Project 2: Complete -->
+            <div class="project-card">
+                <div class="project-preview preview-complete">
+                    ✓
+                </div>
+                <div class="project-info">
+                    <div class="project-title">Remember12</div>
+                    <div class="project-status">✓ COMPLETE</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 100%; background: #10B981;"></div>
+                    </div>
+                    <div class="project-meta">
+                        <span>100%</span>
+                        <span>2h ago</span>
+                    </div>
+                    <div class="project-actions">
+                        <button class="btn btn-primary">OPEN</button>
+                        <button class="btn">SHARE</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Project 3: Needs Attention -->
+            <div class="project-card">
+                <div class="project-preview preview-needs-attention">
+                    ⚠️
+                </div>
+                <div class="project-info">
+                    <div class="project-title">Outcomist</div>
+                    <div class="project-status">⚠️ NEEDS YOU</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 85%; background: #F59E0B;"></div>
+                    </div>
+                    <div class="project-meta">
+                        <span>85%</span>
+                        <span>waiting 15m</span>
+                    </div>
+                    <div class="project-actions">
+                        <button class="btn btn-primary">RESPOND</button>
+                        <button class="btn">CONTEXT</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Project 4: Planning -->
+            <div class="project-card">
+                <div class="project-preview preview-planning">
+                    🤔
+                </div>
+                <div class="project-info">
+                    <div class="project-title">Q4 Sales Analysis</div>
+                    <div class="project-status">📋 PLANNING</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 12%; background: #A855F7;"></div>
+                    </div>
+                    <div class="project-meta">
+                        <span>12%</span>
+                        <span>est 10m</span>
+                    </div>
+                    <div class="project-actions">
+                        <button class="btn btn-primary">MONITOR</button>
+                        <button class="btn">CANCEL</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- New Project Card -->
+            <div class="project-card" style="border: 2px dashed #334155; cursor: pointer;" onclick="alert('New Project Dialog')">
+                <div class="project-preview" style="display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                    <div style="font-size: 3em; margin-bottom: 10px;">+</div>
+                    <div style="font-size: 0.9em; color: #64748B;">NEW PROJECT</div>
+                </div>
+                <div class="project-info" style="text-align: center;">
+                    <div style="font-size: 0.8em; color: #64748B;">Click to create</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="activity-timeline">
+            <div class="timeline-header">⚡ ACTIVITY TIMELINE</div>
+            <div class="timeline-content">
+                <div class="timeline-entry">
+                    <div class="timeline-time">14:32</div>
+                    <div class="timeline-message">
+                        <span class="timeline-project">New Claude Session:</span> Executor started task 3/5
+                    </div>
+                </div>
+                <div class="timeline-entry">
+                    <div class="timeline-time">14:31</div>
+                    <div class="timeline-message">
+                        <span class="timeline-project">Outcomist:</span> Waiting for user response
+                    </div>
+                </div>
+                <div class="timeline-entry">
+                    <div class="timeline-time">14:30</div>
+                    <div class="timeline-message">
+                        <span class="timeline-project">Remember12:</span> Verification complete ✓
+                    </div>
+                </div>
+                <div class="timeline-entry">
+                    <div class="timeline-time">14:28</div>
+                    <div class="timeline-message">
+                        <span class="timeline-project">Q4 Sales Analysis:</span> Planning analysis strategy
+                    </div>
+                </div>
+                <div class="timeline-entry">
+                    <div class="timeline-time">14:25</div>
+                    <div class="timeline-message">
+                        <span class="timeline-project">New Claude Session:</span> Executor processing files
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="bottom-panel">
+            <div class="panel-section">
+                <div class="panel-title">📋 QUEUED PROJECTS</div>
+                <div class="queued-item">
+                    <div>
+                        <div style="font-weight: 600;">Market Research</div>
+                        <div style="font-size: 0.85em; color: #64748B;">Waiting for resources</div>
+                    </div>
+                    <button class="btn btn-primary">START</button>
+                </div>
+                <div class="queued-item">
+                    <div>
+                        <div style="font-weight: 600;">Competitor Study</div>
+                        <div style="font-size: 0.85em; color: #64748B;">Scheduled for later</div>
+                    </div>
+                    <button class="btn btn-primary">START</button>
+                </div>
+            </div>
+
+            <div class="panel-section">
+                <div class="panel-title">💻 RESOURCE ALLOCATION</div>
+                <div class="resource-meter">
+                    <div class="resource-label">
+                        <span>CPU</span>
+                        <span>80%</span>
+                    </div>
+                    <div class="resource-bar">
+                        <div class="resource-fill cpu" style="width: 80%;"></div>
+                    </div>
+                </div>
+                <div class="resource-meter">
+                    <div class="resource-label">
+                        <span>MEMORY</span>
+                        <span>60%</span>
+                    </div>
+                    <div class="resource-bar">
+                        <div class="resource-fill memory" style="width: 60%;"></div>
+                    </div>
+                </div>
+                <div class="resource-meter">
+                    <div class="resource-label">
+                        <span>NETWORK</span>
+                        <span>30%</span>
+                    </div>
+                    <div class="resource-bar">
+                        <div class="resource-fill network" style="width: 30%;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Simulate live updates
+        setInterval(() => {
+            const entries = document.querySelectorAll('.timeline-entry');
+            if (entries.length > 0) {
+                entries[0].style.animation = 'pulse 0.5s';
+                setTimeout(() => {
+                    entries[0].style.animation = '';
+                }, 500);
+            }
+        }, 3000);
+    </script>
+</body>
+</html>

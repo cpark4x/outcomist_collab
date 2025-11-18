@@ -1,0 +1,899 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Widget-Based Multi-Project Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #1a1a1a;
+            color: #e0e0e0;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .workspace-header {
+            background: #2a2a2a;
+            padding: 12px 20px;
+            border-bottom: 1px solid #3a3a3a;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .workspace-title {
+            font-size: 14px;
+            font-weight: 500;
+            color: #e0e0e0;
+        }
+
+        .workspace-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn {
+            padding: 6px 16px;
+            border-radius: 6px;
+            border: none;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: #4a9eff;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #3a8eef;
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: #a0a0a0;
+            border: 1px solid #4a4a4a;
+        }
+
+        .btn-secondary:hover {
+            background: #3a3a3a;
+        }
+
+        .workspace-content {
+            display: flex;
+            height: calc(100vh - 49px);
+        }
+
+        /* Project Grid (Left Side) */
+        .projects-panel {
+            width: 400px;
+            background: #2a2a2a;
+            border-right: 1px solid #3a3a3a;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .projects-header {
+            padding: 16px;
+            border-bottom: 1px solid #3a3a3a;
+        }
+
+        .projects-header h2 {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .projects-stats {
+            font-size: 12px;
+            color: #a0a0a0;
+        }
+
+        .projects-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 12px;
+        }
+
+        .project-item {
+            background: #1a1a1a;
+            border: 1px solid #3a3a3a;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .project-item:hover {
+            border-color: #4a9eff;
+            background: #252525;
+        }
+
+        .project-item.active {
+            border-color: #4a9eff;
+            background: #252525;
+        }
+
+        .project-item.needs-attention {
+            border-left: 3px solid #ff6b6b;
+        }
+
+        .project-item.running {
+            border-left: 3px solid #4a9eff;
+        }
+
+        .project-item.complete {
+            border-left: 3px solid #51cf66;
+        }
+
+        .project-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 8px;
+        }
+
+        .project-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #e0e0e0;
+            margin-bottom: 4px;
+        }
+
+        .project-type {
+            font-size: 11px;
+            color: #a0a0a0;
+        }
+
+        .project-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .project-status.needs-attention {
+            background: rgba(255, 107, 107, 0.2);
+            color: #ff6b6b;
+        }
+
+        .project-status.running {
+            background: rgba(74, 158, 255, 0.2);
+            color: #4a9eff;
+        }
+
+        .project-status.complete {
+            background: rgba(81, 207, 102, 0.2);
+            color: #51cf66;
+        }
+
+        .status-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: currentColor;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .project-preview {
+            font-size: 12px;
+            color: #a0a0a0;
+            line-height: 1.5;
+            margin-top: 8px;
+        }
+
+        .new-project-btn {
+            margin: 12px;
+            padding: 12px;
+            background: #3a3a3a;
+            border: 1px dashed #4a4a4a;
+            border-radius: 8px;
+            color: #a0a0a0;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+        }
+
+        .new-project-btn:hover {
+            background: #4a4a4a;
+            border-color: #4a9eff;
+            color: #4a9eff;
+        }
+
+        /* Widget Display (Right Side) */
+        .widget-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: #1a1a1a;
+        }
+
+        .widget-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid #3a3a3a;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .widget-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .widget-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .widget-content {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+        }
+
+        /* Agent Chat Panel */
+        .agent-panel {
+            width: 400px;
+            background: #2a2a2a;
+            border-right: 1px solid #3a3a3a;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .agent-header {
+            padding: 12px 16px;
+            border-bottom: 1px solid #3a3a3a;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .agent-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: #a0a0a0;
+        }
+
+        .agent-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+        }
+
+        .message {
+            margin-bottom: 16px;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        .message-timestamp {
+            font-size: 11px;
+            color: #6a6a6a;
+            margin-bottom: 4px;
+        }
+
+        .message-info {
+            color: #4a9eff;
+        }
+
+        .message-content {
+            color: #e0e0e0;
+        }
+
+        .agent-input {
+            padding: 16px;
+            border-top: 1px solid #3a3a3a;
+        }
+
+        .agent-input input {
+            width: 100%;
+            padding: 10px 12px;
+            background: #1a1a1a;
+            border: 1px solid #3a3a3a;
+            border-radius: 6px;
+            color: #e0e0e0;
+            font-size: 13px;
+            outline: none;
+        }
+
+        .agent-input input:focus {
+            border-color: #4a9eff;
+        }
+
+        /* Widget Output Panel */
+        .output-panel {
+            flex: 1;
+            background: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .output-empty {
+            text-align: center;
+            color: #999;
+        }
+
+        .output-empty-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+            opacity: 0.3;
+        }
+
+        /* Tic Tac Toe Widget Styles */
+        .tictactoe-widget {
+            text-align: center;
+            padding: 40px;
+        }
+
+        .tictactoe-widget h2 {
+            font-size: 32px;
+            font-weight: 700;
+            color: #2a2a2a;
+            margin-bottom: 20px;
+        }
+
+        .tictactoe-status {
+            font-size: 18px;
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        .tictactoe-board {
+            display: inline-grid;
+            grid-template-columns: repeat(3, 100px);
+            grid-template-rows: repeat(3, 100px);
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+
+        .tictactoe-cell {
+            background: #f0f0f0;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 40px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .tictactoe-cell:hover:not(.occupied) {
+            background: #e0e0e0;
+            border-color: #4a9eff;
+        }
+
+        .tictactoe-cell.x {
+            color: #4a9eff;
+        }
+
+        .tictactoe-cell.o {
+            color: #ff6b6b;
+        }
+
+        .tictactoe-cell.occupied {
+            cursor: not-allowed;
+        }
+
+        .tictactoe-reset {
+            padding: 12px 32px;
+            background: #4a9eff;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .tictactoe-reset:hover {
+            background: #3a8eef;
+        }
+
+        /* Calculator Widget Styles */
+        .calculator-widget {
+            padding: 40px;
+        }
+
+        .calculator {
+            background: #2a2a2a;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            width: 320px;
+        }
+
+        .calculator-display {
+            background: #1a1a1a;
+            border-radius: 8px;
+            padding: 24px;
+            margin-bottom: 16px;
+            text-align: right;
+            font-size: 36px;
+            font-weight: 300;
+            color: #fff;
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+        }
+
+        .calculator-buttons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+        }
+
+        .calc-btn {
+            padding: 20px;
+            background: #3a3a3a;
+            border: none;
+            border-radius: 8px;
+            font-size: 20px;
+            font-weight: 600;
+            color: #fff;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .calc-btn:hover {
+            background: #4a4a4a;
+        }
+
+        .calc-btn.operator {
+            background: #4a9eff;
+        }
+
+        .calc-btn.operator:hover {
+            background: #3a8eef;
+        }
+
+        .calc-btn.equals {
+            background: #51cf66;
+            grid-column: span 2;
+        }
+
+        .calc-btn.equals:hover {
+            background: #41bf56;
+        }
+
+        /* Website Preview Widget */
+        .website-preview {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        /* Needs Input State */
+        .needs-input-panel {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #fffbf0;
+        }
+
+        .needs-input-content {
+            max-width: 600px;
+            text-align: center;
+            padding: 40px;
+        }
+
+        .needs-input-icon {
+            font-size: 64px;
+            margin-bottom: 24px;
+        }
+
+        .needs-input-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: #2a2a2a;
+            margin-bottom: 16px;
+        }
+
+        .needs-input-question {
+            font-size: 16px;
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 32px;
+        }
+
+        .input-options {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+        }
+
+        .option-btn {
+            padding: 12px 24px;
+            background: white;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #2a2a2a;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .option-btn:hover {
+            border-color: #4a9eff;
+            background: #f0f8ff;
+        }
+    </style>
+</head>
+<body>
+    <div class="workspace-header">
+        <div class="workspace-title">Default Workspace · 3 projects</div>
+        <div class="workspace-actions">
+            <button class="btn btn-secondary">⚙️ Settings</button>
+            <button class="btn btn-primary">+ New Project</button>
+        </div>
+    </div>
+
+    <div class="workspace-content">
+        <!-- Projects Panel -->
+        <div class="projects-panel">
+            <div class="projects-header">
+                <h2>Projects</h2>
+                <div class="projects-stats">3 active · 1 needs attention</div>
+            </div>
+
+            <div class="projects-list">
+                <!-- Project 1: Tic Tac Toe -->
+                <div class="project-item complete active" onclick="showProject('tictactoe')">
+                    <div class="project-header">
+                        <div>
+                            <div class="project-title">Tic Tac Toe Game</div>
+                            <div class="project-type">Interactive Game</div>
+                        </div>
+                        <span class="project-status complete">
+                            <span class="status-dot"></span>
+                            Complete
+                        </span>
+                    </div>
+                    <div class="project-preview">
+                        Built a fully functional tic-tac-toe game with clean UI and win detection.
+                    </div>
+                </div>
+
+                <!-- Project 2: Calculator -->
+                <div class="project-item complete" onclick="showProject('calculator')">
+                    <div class="project-header">
+                        <div>
+                            <div class="project-title">Calculator App</div>
+                            <div class="project-type">Utility Tool</div>
+                        </div>
+                        <span class="project-status complete">
+                            <span class="status-dot"></span>
+                            Complete
+                        </span>
+                    </div>
+                    <div class="project-preview">
+                        Modern calculator with basic operations and clean design.
+                    </div>
+                </div>
+
+                <!-- Project 3: Landing Page -->
+                <div class="project-item needs-attention" onclick="showProject('landing')">
+                    <div class="project-header">
+                        <div>
+                            <div class="project-title">Product Landing Page</div>
+                            <div class="project-type">Website</div>
+                        </div>
+                        <span class="project-status needs-attention">
+                            <span class="status-dot"></span>
+                            Needs Input
+                        </span>
+                    </div>
+                    <div class="project-preview">
+                        Choose your preferred hero section design direction.
+                    </div>
+                </div>
+
+                <!-- Project 4: Running -->
+                <div class="project-item running" onclick="showProject('report')">
+                    <div class="project-header">
+                        <div>
+                            <div class="project-title">Sales Report Q4</div>
+                            <div class="project-type">Data Analysis</div>
+                        </div>
+                        <span class="project-status running">
+                            <span class="status-dot"></span>
+                            Running
+                        </span>
+                    </div>
+                    <div class="project-preview">
+                        Analyzing sales data and generating visualizations...
+                    </div>
+                </div>
+            </div>
+
+            <div class="new-project-btn" onclick="alert('Start a new project')">
+                + Start New Project
+            </div>
+        </div>
+
+        <!-- Widget Display Panel -->
+        <div class="widget-panel" id="widgetPanel">
+            <div class="widget-header">
+                <div class="widget-title" id="widgetTitle">Tic Tac Toe Game</div>
+                <div class="widget-actions">
+                    <button class="btn btn-secondary" onclick="toggleAgent()">
+                        💬 <span id="agentToggle">Hide</span> Agent
+                    </button>
+                    <button class="btn btn-secondary">⚙️ Settings</button>
+                </div>
+            </div>
+
+            <div class="widget-content">
+                <!-- Agent Chat Panel -->
+                <div class="agent-panel" id="agentPanel">
+                    <div class="agent-header">
+                        <span class="agent-title">🤖 Agent 1</span>
+                        <button class="btn btn-secondary" style="padding: 4px 8px; font-size: 11px;">—</button>
+                    </div>
+                    <div class="agent-messages" id="agentMessages">
+                        <div class="message">
+                            <div class="message-timestamp">13:38:32 [INFO]</div>
+                            <div class="message-content">Agent 1 initialized</div>
+                        </div>
+                        <div class="message">
+                            <div class="message-timestamp">13:39:48 [INFO]</div>
+                            <div class="message-info">> Build me a tic tac toe app</div>
+                            <div class="message-content">
+                                I'll create a tic-tac-toe app for you with a clean, modern interface!<br><br>
+                                [Tool: spawn_widget]<br>
+                                Created new app widget: "Tic Tac Toe"<br><br>
+                                I've created a fully functional Tic Tac Toe game for you! Here's what it features:<br><br>
+                                ✓ Classic 3x3 tic-tac-toe gameplay<br>
+                                ✓ Player X (blue) vs Player O (red)<br>
+                                ✓ Automatic win detection with highlighted winning cells<br>
+                                ✓ New Game button to restart
+                            </div>
+                        </div>
+                    </div>
+                    <div class="agent-input">
+                        <input type="text" placeholder="Enter command... (↑ history, @ files, / commands)">
+                    </div>
+                </div>
+
+                <!-- Output Panel -->
+                <div class="output-panel" id="outputPanel">
+                    <!-- Tic Tac Toe Widget -->
+                    <div class="tictactoe-widget" id="tictactoeWidget">
+                        <h2>Tic Tac Toe</h2>
+                        <div class="tictactoe-status" id="status">Next player: O</div>
+                        <div class="tictactoe-board" id="board">
+                            <div class="tictactoe-cell" onclick="makeMove(0)"></div>
+                            <div class="tictactoe-cell" onclick="makeMove(1)"></div>
+                            <div class="tictactoe-cell" onclick="makeMove(2)"></div>
+                            <div class="tictactoe-cell" onclick="makeMove(3)"></div>
+                            <div class="tictactoe-cell" onclick="makeMove(4)"></div>
+                            <div class="tictactoe-cell" onclick="makeMove(5)"></div>
+                            <div class="tictactoe-cell" onclick="makeMove(6)"></div>
+                            <div class="tictactoe-cell" onclick="makeMove(7)"></div>
+                            <div class="tictactoe-cell" onclick="makeMove(8)"></div>
+                        </div>
+                        <button class="tictactoe-reset" onclick="resetGame()">New Game</button>
+                    </div>
+
+                    <!-- Calculator Widget (hidden by default) -->
+                    <div class="calculator-widget" id="calculatorWidget" style="display: none;">
+                        <div class="calculator">
+                            <div class="calculator-display" id="calcDisplay">0</div>
+                            <div class="calculator-buttons">
+                                <button class="calc-btn" onclick="calcInput('7')">7</button>
+                                <button class="calc-btn" onclick="calcInput('8')">8</button>
+                                <button class="calc-btn" onclick="calcInput('9')">9</button>
+                                <button class="calc-btn operator" onclick="calcInput('/')">÷</button>
+                                <button class="calc-btn" onclick="calcInput('4')">4</button>
+                                <button class="calc-btn" onclick="calcInput('5')">5</button>
+                                <button class="calc-btn" onclick="calcInput('6')">6</button>
+                                <button class="calc-btn operator" onclick="calcInput('*')">×</button>
+                                <button class="calc-btn" onclick="calcInput('1')">1</button>
+                                <button class="calc-btn" onclick="calcInput('2')">2</button>
+                                <button class="calc-btn" onclick="calcInput('3')">3</button>
+                                <button class="calc-btn operator" onclick="calcInput('-')">−</button>
+                                <button class="calc-btn" onclick="calcInput('0')">0</button>
+                                <button class="calc-btn" onclick="calcClear()">C</button>
+                                <button class="calc-btn operator" onclick="calcInput('+')">+</button>
+                                <button class="calc-btn equals" onclick="calcEquals()">=</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Needs Input Panel (hidden by default) -->
+                    <div class="needs-input-panel" id="needsInputPanel" style="display: none;">
+                        <div class="needs-input-content">
+                            <div class="needs-input-icon">🎨</div>
+                            <div class="needs-input-title">Choose Your Design Direction</div>
+                            <div class="needs-input-question">
+                                I've created three hero section designs for your landing page. Which direction feels right for your brand?
+                            </div>
+                            <div class="input-options">
+                                <button class="option-btn">Bold & Colorful</button>
+                                <button class="option-btn">Minimal & Elegant</button>
+                                <button class="option-btn">Data-Driven</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Running/Empty state -->
+                    <div class="output-empty" id="emptyState" style="display: none;">
+                        <div class="output-empty-icon">⏳</div>
+                        <div>Agent is working...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Tic Tac Toe Game Logic
+        let currentPlayer = 'O';
+        let board = ['', '', '', '', '', '', '', '', ''];
+        let gameActive = true;
+
+        function makeMove(index) {
+            if (board[index] === '' && gameActive) {
+                board[index] = currentPlayer;
+                const cell = document.querySelectorAll('.tictactoe-cell')[index];
+                cell.textContent = currentPlayer;
+                cell.classList.add(currentPlayer.toLowerCase());
+                cell.classList.add('occupied');
+
+                if (checkWin()) {
+                    document.getElementById('status').textContent = `Player ${currentPlayer} wins!`;
+                    gameActive = false;
+                } else if (board.every(cell => cell !== '')) {
+                    document.getElementById('status').textContent = "It's a draw!";
+                    gameActive = false;
+                } else {
+                    currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+                    document.getElementById('status').textContent = `Next player: ${currentPlayer}`;
+                }
+            }
+        }
+
+        function checkWin() {
+            const winPatterns = [
+                [0, 1, 2], [3, 4, 5], [6, 7, 8], // rows
+                [0, 3, 6], [1, 4, 7], [2, 5, 8], // columns
+                [0, 4, 8], [2, 4, 6] // diagonals
+            ];
+
+            return winPatterns.some(pattern => {
+                return board[pattern[0]] !== '' &&
+                       board[pattern[0]] === board[pattern[1]] &&
+                       board[pattern[1]] === board[pattern[2]];
+            });
+        }
+
+        function resetGame() {
+            currentPlayer = 'O';
+            board = ['', '', '', '', '', '', '', '', ''];
+            gameActive = true;
+            document.getElementById('status').textContent = 'Next player: O';
+            document.querySelectorAll('.tictactoe-cell').forEach(cell => {
+                cell.textContent = '';
+                cell.classList.remove('x', 'o', 'occupied');
+            });
+        }
+
+        // Calculator Logic
+        let calcValue = '0';
+        let calcOperation = null;
+        let calcPrevValue = null;
+
+        function calcInput(value) {
+            if (['+', '-', '*', '/'].includes(value)) {
+                calcOperation = value;
+                calcPrevValue = calcValue;
+                calcValue = '0';
+            } else {
+                calcValue = calcValue === '0' ? value : calcValue + value;
+                document.getElementById('calcDisplay').textContent = calcValue;
+            }
+        }
+
+        function calcEquals() {
+            if (calcOperation && calcPrevValue) {
+                const prev = parseFloat(calcPrevValue);
+                const curr = parseFloat(calcValue);
+                let result;
+                switch(calcOperation) {
+                    case '+': result = prev + curr; break;
+                    case '-': result = prev - curr; break;
+                    case '*': result = prev * curr; break;
+                    case '/': result = prev / curr; break;
+                }
+                calcValue = result.toString();
+                document.getElementById('calcDisplay').textContent = calcValue;
+                calcOperation = null;
+                calcPrevValue = null;
+            }
+        }
+
+        function calcClear() {
+            calcValue = '0';
+            calcOperation = null;
+            calcPrevValue = null;
+            document.getElementById('calcDisplay').textContent = '0';
+        }
+
+        // Project Switching
+        function showProject(projectType) {
+            // Update active state
+            document.querySelectorAll('.project-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            event.currentTarget.classList.add('active');
+
+            // Hide all widgets
+            document.getElementById('tictactoeWidget').style.display = 'none';
+            document.getElementById('calculatorWidget').style.display = 'none';
+            document.getElementById('needsInputPanel').style.display = 'none';
+            document.getElementById('emptyState').style.display = 'none';
+
+            // Show appropriate widget
+            switch(projectType) {
+                case 'tictactoe':
+                    document.getElementById('widgetTitle').textContent = 'Tic Tac Toe Game';
+                    document.getElementById('tictactoeWidget').style.display = 'block';
+                    break;
+                case 'calculator':
+                    document.getElementById('widgetTitle').textContent = 'Calculator App';
+                    document.getElementById('calculatorWidget').style.display = 'flex';
+                    break;
+                case 'landing':
+                    document.getElementById('widgetTitle').textContent = 'Product Landing Page';
+                    document.getElementById('needsInputPanel').style.display = 'flex';
+                    break;
+                case 'report':
+                    document.getElementById('widgetTitle').textContent = 'Sales Report Q4';
+                    document.getElementById('emptyState').style.display = 'flex';
+                    break;
+            }
+        }
+
+        // Toggle Agent Panel
+        function toggleAgent() {
+            const panel = document.getElementById('agentPanel');
+            const toggle = document.getElementById('agentToggle');
+            if (panel.style.display === 'none') {
+                panel.style.display = 'flex';
+                toggle.textContent = 'Hide';
+            } else {
+                panel.style.display = 'none';
+                toggle.textContent = 'Show';
+            }
+        }
+    </script>
+</body>
+</html>

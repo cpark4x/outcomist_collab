@@ -1,0 +1,853 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Outcomist - Onboarding Flow</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #e8e8e8;
+            overflow: hidden;
+        }
+
+        /* Screen Container */
+        .screen {
+            display: none;
+            width: 100vw;
+            height: 100vh;
+            position: absolute;
+            top: 0;
+            left: 0;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .screen.active {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Welcome Screen */
+        .welcome-content {
+            text-align: center;
+            max-width: 600px;
+            padding: 40px;
+        }
+
+        .logo {
+            font-size: 48px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 24px;
+        }
+
+        h1 {
+            font-size: 42px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            line-height: 1.2;
+        }
+
+        .subtitle {
+            font-size: 18px;
+            color: #aaa;
+            margin-bottom: 40px;
+            line-height: 1.6;
+        }
+
+        /* Buttons */
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 16px 32px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 30px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 12px 24px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-left: 12px;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        /* Workspace Preview */
+        .workspace-preview {
+            width: 90%;
+            max-width: 1400px;
+            height: 70vh;
+            background: rgba(42, 42, 42, 0.6);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 20px;
+            padding: 20px;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            position: relative;
+        }
+
+        .preview-card {
+            background: rgba(30, 30, 30, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .preview-card-header {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: #aaa;
+        }
+
+        .preview-card-content {
+            flex: 1;
+            background: rgba(20, 20, 20, 0.5);
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 13px;
+            color: #888;
+        }
+
+        /* Tooltip Overlay */
+        .tooltip-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+        }
+
+        .tooltip {
+            background: white;
+            color: #1a1a2e;
+            padding: 24px 32px;
+            border-radius: 16px;
+            max-width: 400px;
+            text-align: center;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .tooltip h2 {
+            font-size: 24px;
+            margin-bottom: 12px;
+            color: #1a1a2e;
+        }
+
+        .tooltip p {
+            font-size: 16px;
+            color: #555;
+            margin-bottom: 24px;
+            line-height: 1.6;
+        }
+
+        /* Highlight Effect */
+        .highlight-pulse {
+            animation: pulse 2s infinite;
+            position: relative;
+        }
+
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(102, 126, 234, 0.7); }
+            50% { box-shadow: 0 0 0 20px rgba(102, 126, 234, 0); }
+        }
+
+        /* Navigation */
+        .nav-controls {
+            position: fixed;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            z-index: 1000;
+            pointer-events: auto;
+        }
+
+        .nav-controls * {
+            pointer-events: auto;
+        }
+
+        .progress-dots {
+            display: flex;
+            gap: 8px;
+            margin: 0 20px;
+        }
+
+        .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .dot.active {
+            width: 24px;
+            border-radius: 4px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        /* Feature Showcase */
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 24px;
+            max-width: 900px;
+            margin-top: 40px;
+        }
+
+        .feature-card {
+            background: rgba(42, 42, 42, 0.6);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            padding: 24px;
+            text-align: left;
+            transition: all 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(102, 126, 234, 0.3);
+            box-shadow: 0 8px 30px rgba(102, 126, 234, 0.2);
+            background: rgba(42, 42, 42, 0.8);
+        }
+
+        .feature-card[onclick] {
+            cursor: pointer;
+        }
+
+        .feature-icon {
+            font-size: 36px;
+            margin-bottom: 12px;
+        }
+
+        .feature-card h3 {
+            font-size: 18px;
+            margin-bottom: 8px;
+            transition: color 0.3s ease;
+        }
+
+        .feature-card:hover h3 {
+            color: #667eea;
+        }
+
+        .feature-card p {
+            font-size: 14px;
+            color: #aaa;
+            line-height: 1.6;
+        }
+
+        /* Interactive Demo Area */
+        .demo-workspace {
+            width: 90%;
+            max-width: 1400px;
+            height: 70vh;
+            background: rgba(42, 42, 42, 0.6);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 20px;
+            padding: 20px;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+
+        .demo-card {
+            background: rgba(30, 30, 30, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .demo-card-header {
+            padding: 12px 16px;
+            background: rgba(42, 42, 42, 0.6);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .demo-card-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #aaa;
+        }
+
+        .demo-view-btn {
+            background: rgba(102, 126, 234, 0.2);
+            border: 1px solid rgba(102, 126, 234, 0.3);
+            color: #667eea;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .demo-view-btn:hover {
+            background: rgba(102, 126, 234, 0.3);
+        }
+
+        .demo-content {
+            flex: 1;
+            padding: 16px;
+            background: rgba(20, 20, 20, 0.5);
+            overflow-y: auto;
+        }
+
+        .demo-message {
+            padding: 8px 12px;
+            margin: 4px 0;
+            border-radius: 8px;
+            font-size: 13px;
+        }
+
+        .demo-message.user {
+            background: rgba(59, 130, 246, 0.15);
+            text-align: right;
+            margin-left: 20%;
+        }
+
+        .demo-message.agent {
+            background: rgba(255, 255, 255, 0.03);
+            margin-right: 20%;
+        }
+
+        .demo-input {
+            padding: 12px 16px;
+            background: rgba(30, 30, 30, 0.8);
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            gap: 8px;
+        }
+
+        .demo-input input {
+            flex: 1;
+            background: rgba(42, 42, 42, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 10px 14px;
+            color: #e8e8e8;
+            font-size: 13px;
+            outline: none;
+        }
+
+        .demo-input button {
+            width: 32px;
+            height: 32px;
+            background: rgba(74, 144, 226, 0.15);
+            border: 1px solid rgba(74, 144, 226, 0.3);
+            border-radius: 8px;
+            color: #4A90E2;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Skip Link */
+        .skip-link {
+            position: fixed;
+            top: 40px;
+            right: 40px;
+            color: #aaa;
+            font-size: 14px;
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+
+        .skip-link:hover {
+            color: #667eea;
+        }
+    </style>
+</head>
+<body>
+    <!-- Skip Link -->
+    <a href="#" class="skip-link" onclick="goToScreen(6)">Skip Tutorial →</a>
+
+    <!-- Screen 1: Welcome -->
+    <div class="screen active" id="screen1">
+        <div class="welcome-content">
+            <div class="logo">Outcomist</div>
+            <h1>Your AI-Powered Multi-Project Workspace</h1>
+            <p class="subtitle">
+                Work on multiple projects simultaneously with specialized AI agents.
+                See everything at once, switch contexts instantly.
+            </p>
+            <button class="btn-primary" onclick="nextScreen()">Get Started</button>
+            <button class="btn-secondary" onclick="goToScreen(6)">Skip Tutorial</button>
+        </div>
+    </div>
+
+    <!-- Screen 2: Workspace Overview -->
+    <div class="screen" id="screen2">
+        <h1 style="margin-bottom: 40px;">Your Workspace at a Glance</h1>
+        <div class="workspace-preview">
+            <div class="preview-card">
+                <div class="preview-card-header">📊 Data Analysis</div>
+                <div class="preview-card-content">Project 1 content...</div>
+            </div>
+            <div class="preview-card">
+                <div class="preview-card-header">✍️ Blog Writer</div>
+                <div class="preview-card-content">Project 2 content...</div>
+            </div>
+            <div class="preview-card">
+                <div class="preview-card-header">🎯 Marketing Copy</div>
+                <div class="preview-card-content">Project 3 content...</div>
+            </div>
+            <div class="preview-card">
+                <div class="preview-card-header">🎤 Presentation Helper</div>
+                <div class="preview-card-content">Project 4 content...</div>
+            </div>
+        </div>
+        <p class="subtitle" style="margin-top: 30px; max-width: 700px; text-align: center;">
+            See all your active projects in one view. No more switching tabs or losing context.
+        </p>
+    </div>
+
+    <!-- Screen 3: Agent View Explanation -->
+    <div class="screen" id="screen3">
+        <h1 style="margin-bottom: 40px;">Two Views for Every Project</h1>
+        <div class="demo-workspace">
+            <div class="demo-card highlight-pulse">
+                <div class="demo-card-header">
+                    <div class="demo-card-title">📊 Data Analysis</div>
+                    <button class="demo-view-btn">Preview</button>
+                </div>
+                <div class="demo-content">
+                    <div class="demo-message agent">Hello! I'm your data analysis agent.</div>
+                    <div class="demo-message user">Can you analyze the Q4 sales data?</div>
+                    <div class="demo-message agent">I'll analyze the data and create visualizations for you...</div>
+                </div>
+                <div class="demo-input">
+                    <button>+</button>
+                    <input type="text" placeholder="Type your message..." />
+                    <button>↑</button>
+                </div>
+            </div>
+            <div class="demo-card" style="opacity: 0.4;">
+                <div class="demo-card-header">
+                    <div class="demo-card-title">✍️ Blog Writer</div>
+                    <button class="demo-view-btn">Preview</button>
+                </div>
+                <div class="demo-content">
+                    <div class="demo-message agent">Ready to help you write!</div>
+                </div>
+                <div class="demo-input">
+                    <button>+</button>
+                    <input type="text" placeholder="Type your message..." />
+                    <button>↑</button>
+                </div>
+            </div>
+            <div class="demo-card" style="opacity: 0.4;">
+                <div class="demo-card-header">
+                    <div class="demo-card-title">🎯 Marketing Copy</div>
+                    <button class="demo-view-btn">Preview</button>
+                </div>
+                <div class="demo-content">
+                    <div class="demo-message agent">Let's create compelling copy!</div>
+                </div>
+                <div class="demo-input">
+                    <button>+</button>
+                    <input type="text" placeholder="Type your message..." />
+                    <button>↑</button>
+                </div>
+            </div>
+            <div class="demo-card" style="opacity: 0.4;">
+                <div class="demo-card-header">
+                    <div class="demo-card-title">🎤 Presentation Helper</div>
+                    <button class="demo-view-btn">Preview</button>
+                </div>
+                <div class="demo-content">
+                    <div class="demo-message agent">I'll help with your presentation!</div>
+                </div>
+                <div class="demo-input">
+                    <button>+</button>
+                    <input type="text" placeholder="Type your message..." />
+                    <button>↑</button>
+                </div>
+            </div>
+        </div>
+        <div class="tooltip-overlay">
+            <div class="tooltip">
+                <h2>💬 Agent View</h2>
+                <p>Chat directly with your AI agent. Ask questions, give instructions, and iterate on your work through natural conversation.</p>
+                <button class="btn-primary" onclick="nextScreen()">Got it</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Screen 4: Preview View Explanation -->
+    <div class="screen" id="screen4">
+        <h1 style="margin-bottom: 40px;">Switch to Preview Anytime</h1>
+        <div class="demo-workspace">
+            <div class="demo-card highlight-pulse">
+                <div class="demo-card-header">
+                    <div class="demo-card-title">📊 Data Analysis</div>
+                    <button class="demo-view-btn" style="background: rgba(102, 126, 234, 0.3);">Agent</button>
+                </div>
+                <div class="demo-content" style="display: flex; align-items: center; justify-content: center; color: #667eea; font-size: 16px;">
+                    📈 Q4 Sales Dashboard<br><br>
+                    <div style="font-size: 13px; color: #aaa; margin-top: 20px;">
+                        [Preview of generated output would appear here]
+                    </div>
+                </div>
+                <div class="demo-input">
+                    <button>+</button>
+                    <input type="text" placeholder="Type your message..." />
+                    <button>↑</button>
+                </div>
+            </div>
+            <div class="demo-card" style="opacity: 0.4;">
+                <div class="demo-card-header">
+                    <div class="demo-card-title">✍️ Blog Writer</div>
+                    <button class="demo-view-btn">Preview</button>
+                </div>
+                <div class="demo-content">
+                    <div class="demo-message agent">Ready to help you write!</div>
+                </div>
+                <div class="demo-input">
+                    <button>+</button>
+                    <input type="text" placeholder="Type your message..." />
+                    <button>↑</button>
+                </div>
+            </div>
+            <div class="demo-card" style="opacity: 0.4;">
+                <div class="demo-card-header">
+                    <div class="demo-card-title">🎯 Marketing Copy</div>
+                    <button class="demo-view-btn">Preview</button>
+                </div>
+                <div class="demo-content">
+                    <div class="demo-message agent">Let's create compelling copy!</div>
+                </div>
+                <div class="demo-input">
+                    <button>+</button>
+                    <input type="text" placeholder="Type your message..." />
+                    <button>↑</button>
+                </div>
+            </div>
+            <div class="demo-card" style="opacity: 0.4;">
+                <div class="demo-card-header">
+                    <div class="demo-card-title">🎤 Presentation Helper</div>
+                    <button class="demo-view-btn">Preview</button>
+                </div>
+                <div class="demo-content">
+                    <div class="demo-message agent">I'll help with your presentation!</div>
+                </div>
+                <div class="demo-input">
+                    <button>+</button>
+                    <input type="text" placeholder="Type your message..." />
+                    <button>↑</button>
+                </div>
+            </div>
+        </div>
+        <div class="tooltip-overlay">
+            <div class="tooltip">
+                <h2>👁️ Preview View</h2>
+                <p>See the final output your agent is creating. Switch back and forth between conversation and result as you refine your work.</p>
+                <button class="btn-primary" onclick="nextScreen()">Got it</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Screen 5: Key Features -->
+    <div class="screen" id="screen5">
+        <div class="welcome-content">
+            <h1>Powerful Features</h1>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">⚡</div>
+                    <h3>Instant Context Switching</h3>
+                    <p>Jump between projects without losing your flow. See all conversations at once.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🎯</div>
+                    <h3>Specialized AI Agents</h3>
+                    <p>Each project has a dedicated agent optimized for specific tasks and workflows.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">👀</div>
+                    <h3>Dual View System</h3>
+                    <p>Toggle between conversation and preview to see both process and result.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">💬</div>
+                    <h3>Natural Conversation</h3>
+                    <p>Interact with AI agents through simple, natural language. No complex commands.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Screen 6: Let's Create Your First Project -->
+    <div class="screen" id="screen6">
+        <div class="welcome-content">
+            <h1>Let's Create Your First Project</h1>
+            <p class="subtitle">
+                We'll walk you through creating a project. It only takes a few seconds.
+            </p>
+            <button class="btn-primary" onclick="nextScreen()">Create a Project</button>
+            <button class="btn-secondary" onclick="goToScreen(9)">Skip to Workspace</button>
+        </div>
+    </div>
+
+    <!-- Screen 7: Project Type Selection -->
+    <div class="screen" id="screen7">
+        <div class="welcome-content">
+            <h1>What would you like to create?</h1>
+            <p class="subtitle" style="margin-bottom: 40px;">Choose a project type to get started</p>
+
+            <div class="feature-grid" style="max-width: 800px;">
+                <div class="feature-card" onclick="selectProjectType('game')">
+                    <div class="feature-icon">🎮</div>
+                    <h3>Build a Game</h3>
+                    <p>Create interactive games with your AI agent</p>
+                </div>
+                <div class="feature-card" onclick="selectProjectType('trip')">
+                    <div class="feature-icon">✈️</div>
+                    <h3>Plan a Trip</h3>
+                    <p>Get help planning your next vacation</p>
+                </div>
+                <div class="feature-card" onclick="selectProjectType('content')">
+                    <div class="feature-icon">✍️</div>
+                    <h3>Write Content</h3>
+                    <p>Create blog posts, articles, or copy</p>
+                </div>
+                <div class="feature-card" onclick="selectProjectType('presentation')">
+                    <div class="feature-icon">📊</div>
+                    <h3>Make Presentation</h3>
+                    <p>Design slides and presentation materials</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Screen 8: Project Details -->
+    <div class="screen" id="screen8">
+        <div class="welcome-content">
+            <h1 id="projectTypeTitle">Tell us about your project</h1>
+            <p class="subtitle" style="margin-bottom: 40px;">Give your project a name and describe what you want to create</p>
+
+            <div style="max-width: 500px; margin: 0 auto; text-align: left;">
+                <div style="margin-bottom: 24px;">
+                    <label style="display: block; margin-bottom: 8px; font-size: 14px; color: #aaa;">Project Name</label>
+                    <input type="text" id="projectName" placeholder="e.g., Tic Tac Toe Game"
+                           style="width: 100%; padding: 14px; background: rgba(42, 42, 42, 0.6); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 10px; color: #e8e8e8; font-size: 15px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;">
+                </div>
+                <div style="margin-bottom: 32px;">
+                    <label style="display: block; margin-bottom: 8px; font-size: 14px; color: #aaa;">Description (Optional)</label>
+                    <textarea id="projectDescription" placeholder="Describe what you want to create..."
+                              style="width: 100%; padding: 14px; background: rgba(42, 42, 42, 0.6); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 10px; color: #e8e8e8; font-size: 15px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; min-height: 120px; resize: vertical;"></textarea>
+                </div>
+                <button class="btn-primary" style="width: 100%;" onclick="createProject()">Create Project</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Screen 9: Project Created Success -->
+    <div class="screen" id="screen9">
+        <div class="welcome-content">
+            <div style="font-size: 64px; margin-bottom: 24px;">✨</div>
+            <h1>Project Created!</h1>
+            <p class="subtitle">
+                <span id="createdProjectName">Your project</span> is ready to go.<br>
+                Your AI agent is standing by to help you build it.
+            </p>
+            <button class="btn-primary" onclick="goToScreen(10)">Continue</button>
+        </div>
+    </div>
+
+    <!-- Screen 10: Final Ready to Start -->
+    <div class="screen" id="screen10">
+        <div class="welcome-content">
+            <div class="logo">Outcomist</div>
+            <h1>You're All Set!</h1>
+            <p class="subtitle">
+                Your workspace is ready with your first project. Start chatting with your AI agent
+                and watch your ideas come to life.
+            </p>
+            <button class="btn-primary" onclick="window.location.href='workspace_with_view_toggle.html'">
+                Open My Workspace
+            </button>
+            <button class="btn-secondary" onclick="goToScreen(1)">Review Tutorial</button>
+        </div>
+    </div>
+
+    <!-- Navigation Controls -->
+    <div class="nav-controls">
+        <button class="btn-secondary" onclick="prevScreen()" id="prevBtn" style="display: none;">← Back</button>
+        <div class="progress-dots">
+            <div class="dot active" data-screen="1"></div>
+            <div class="dot" data-screen="2"></div>
+            <div class="dot" data-screen="3"></div>
+            <div class="dot" data-screen="4"></div>
+            <div class="dot" data-screen="5"></div>
+            <div class="dot" data-screen="6"></div>
+            <div class="dot" data-screen="7"></div>
+            <div class="dot" data-screen="8"></div>
+            <div class="dot" data-screen="9"></div>
+            <div class="dot" data-screen="10"></div>
+        </div>
+        <button class="btn-secondary" onclick="nextScreen()" id="nextBtn">Next →</button>
+    </div>
+
+    <script>
+        let currentScreen = 1;
+        const totalScreens = 10;
+        let selectedProjectType = '';
+        let projectData = {
+            name: '',
+            description: '',
+            type: ''
+        };
+
+        function showScreen(screenNum) {
+            // Hide all screens
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+
+            // Show target screen
+            document.getElementById('screen' + screenNum).classList.add('active');
+
+            // Update progress dots
+            document.querySelectorAll('.dot').forEach((dot, idx) => {
+                dot.classList.toggle('active', idx + 1 === screenNum);
+            });
+
+            // Update navigation buttons
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+
+            prevBtn.style.display = screenNum === 1 ? 'none' : 'block';
+            nextBtn.style.display = screenNum === totalScreens ? 'none' : 'block';
+
+            currentScreen = screenNum;
+        }
+
+        function nextScreen() {
+            if (currentScreen < totalScreens) {
+                showScreen(currentScreen + 1);
+            }
+        }
+
+        function prevScreen() {
+            if (currentScreen > 1) {
+                showScreen(currentScreen - 1);
+            }
+        }
+
+        function goToScreen(screenNum) {
+            showScreen(screenNum);
+        }
+
+        // Project creation functions
+        function selectProjectType(type) {
+            selectedProjectType = type;
+            projectData.type = type;
+
+            // Update the title on screen 8 based on type
+            const titles = {
+                'game': 'Tell us about your game',
+                'trip': 'Tell us about your trip',
+                'content': 'Tell us about your content',
+                'presentation': 'Tell us about your presentation'
+            };
+
+            const placeholders = {
+                'game': 'e.g., Tic Tac Toe Game',
+                'trip': 'e.g., Vegas Family Trip',
+                'content': 'e.g., Tech Blog Posts',
+                'presentation': 'e.g., Q4 Sales Review'
+            };
+
+            document.getElementById('projectTypeTitle').textContent = titles[type] || 'Tell us about your project';
+            document.getElementById('projectName').placeholder = placeholders[type] || 'e.g., My Project';
+
+            nextScreen();
+        }
+
+        function createProject() {
+            const name = document.getElementById('projectName').value.trim();
+            const description = document.getElementById('projectDescription').value.trim();
+
+            if (!name) {
+                alert('Please enter a project name');
+                return;
+            }
+
+            projectData.name = name;
+            projectData.description = description;
+
+            // Store project data (in a real app, this would go to backend)
+            localStorage.setItem('newProject', JSON.stringify(projectData));
+
+            // Update the success message
+            document.getElementById('createdProjectName').textContent = `"${name}"`;
+
+            nextScreen();
+        }
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight') nextScreen();
+            if (e.key === 'ArrowLeft') prevScreen();
+            // Enter key on project details screen creates project
+            if (e.key === 'Enter' && currentScreen === 8) {
+                createProject();
+            }
+        });
+
+        // Initialize
+        showScreen(1);
+    </script>
+</body>
+</html>

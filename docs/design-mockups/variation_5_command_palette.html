@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Variation 5: Command Palette</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #FFFFFF;
+            color: #1F2937;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .zen-screen {
+            text-align: center;
+            max-width: 600px;
+        }
+
+        .prompt-text {
+            font-size: 1.5em;
+            color: #9CA3AF;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+
+        .keyboard-hint {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 24px;
+            background: #F3F4F6;
+            border-radius: 12px;
+            font-size: 1em;
+            color: #4B5563;
+            margin-bottom: 60px;
+        }
+
+        .key {
+            background: white;
+            border: 2px solid #E5E7EB;
+            border-radius: 6px;
+            padding: 4px 12px;
+            font-family: 'Courier New', monospace;
+            font-weight: 700;
+        }
+
+        .status-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: #F9FAFB;
+            border-top: 1px solid #E5E7EB;
+            padding: 12px 30px;
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            font-size: 0.9em;
+            color: #6B7280;
+        }
+
+        .stat {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .stat-number {
+            font-weight: 700;
+            color: #1F2937;
+        }
+
+        /* Command Palette Overlay */
+        .command-palette-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+            animation: fadeIn 0.2s;
+        }
+
+        .command-palette-overlay.active {
+            display: flex;
+            align-items: start;
+            justify-content: center;
+            padding-top: 100px;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .command-palette {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            width: 90%;
+            max-width: 600px;
+            overflow: hidden;
+            animation: slideDown 0.3s ease-out;
+        }
+
+        @keyframes slideDown {
+            from {
+                transform: translateY(-20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .palette-input {
+            width: 100%;
+            padding: 20px 25px;
+            border: none;
+            font-size: 1.3em;
+            outline: none;
+            border-bottom: 1px solid #E5E7EB;
+        }
+
+        .palette-input::placeholder {
+            color: #9CA3AF;
+        }
+
+        .palette-results {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .result-section {
+            padding: 15px 25px;
+            border-bottom: 1px solid #F3F4F6;
+        }
+
+        .section-title {
+            font-size: 0.75em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #9CA3AF;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+
+        .result-item {
+            padding: 12px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-bottom: 6px;
+        }
+
+        .result-item:hover,
+        .result-item.selected {
+            background: #EFF6FF;
+        }
+
+        .result-title {
+            font-weight: 600;
+            margin-bottom: 4px;
+            color: #1F2937;
+        }
+
+        .result-meta {
+            font-size: 0.85em;
+            color: #6B7280;
+        }
+
+        .result-icon {
+            font-size: 1.2em;
+            margin-right: 12px;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.75em;
+            font-weight: 600;
+            margin-left: 8px;
+        }
+
+        .badge-complete {
+            background: #D1FAE5;
+            color: #065F46;
+        }
+
+        .badge-running {
+            background: #DBEAFE;
+            color: #1E40AF;
+        }
+
+        .badge-needs-attention {
+            background: #FED7AA;
+            color: #C2410C;
+        }
+
+        .empty-state {
+            padding: 60px 25px;
+            text-align: center;
+            color: #9CA3AF;
+        }
+
+        .empty-icon {
+            font-size: 3em;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Zen Screen (Default State) -->
+    <div class="zen-screen">
+        <div class="prompt-text">Press to open command palette</div>
+        <div class="keyboard-hint">
+            <span class="key">⌘</span>
+            <span>+</span>
+            <span class="key">K</span>
+        </div>
+        <div style="color: #D1D5DB; font-size: 0.9em;">
+            Or type to search...
+        </div>
+    </div>
+
+    <!-- Status Bar -->
+    <div class="status-bar">
+        <div class="stat">
+            <span>Active:</span>
+            <span class="stat-number">3</span>
+        </div>
+        <div class="stat">
+            <span>Attention:</span>
+            <span class="stat-number" style="color: #F97316;">1</span>
+        </div>
+        <div class="stat">
+            <span>Complete:</span>
+            <span class="stat-number">5</span>
+        </div>
+    </div>
+
+    <!-- Command Palette Overlay -->
+    <div class="command-palette-overlay" id="paletteOverlay">
+        <div class="command-palette">
+            <input type="text" class="palette-input" id="paletteInput" placeholder="Type to search or command..." autofocus>
+            <div class="palette-results" id="paletteResults">
+                <div class="result-section">
+                    <div class="section-title">Recent Projects</div>
+                    <div class="result-item selected">
+                        <div class="result-title">
+                            <span class="result-icon">📸</span>
+                            Remember12
+                            <span class="status-badge badge-complete">Complete</span>
+                        </div>
+                        <div class="result-meta">Photo Gallery • Completed 2h ago</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-title">
+                            <span class="result-icon">⚠️</span>
+                            Outcomist
+                            <span class="status-badge badge-needs-attention">Needs You</span>
+                        </div>
+                        <div class="result-meta">Waiting for your response</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-title">
+                            <span class="result-icon">⏳</span>
+                            New Claude Session
+                            <span class="status-badge badge-running">Running</span>
+                        </div>
+                        <div class="result-meta">72% complete • ~2 min remaining</div>
+                    </div>
+                </div>
+
+                <div class="result-section">
+                    <div class="section-title">Quick Actions</div>
+                    <div class="result-item">
+                        <div class="result-title">
+                            <span class="result-icon">➕</span>
+                            New Project
+                        </div>
+                        <div class="result-meta">Start a new autonomous task</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-title">
+                            <span class="result-icon">📋</span>
+                            View All Projects
+                        </div>
+                        <div class="result-meta">See all active and completed work</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-title">
+                            <span class="result-icon">🔔</span>
+                            Open Notifications
+                        </div>
+                        <div class="result-meta">1 item needs attention</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const overlay = document.getElementById('paletteOverlay');
+        const input = document.getElementById('paletteInput');
+        const results = document.getElementById('paletteResults');
+
+        // Open palette with Cmd+K or Ctrl+K
+        document.addEventListener('keydown', (e) => {
+            if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+                e.preventDefault();
+                openPalette();
+            }
+            if (e.key === 'Escape') {
+                closePalette();
+            }
+        });
+
+        // Close on overlay click
+        overlay.addEventListener('click', (e) => {
+            if (e.target === overlay) {
+                closePalette();
+            }
+        });
+
+        function openPalette() {
+            overlay.classList.add('active');
+            input.focus();
+        }
+
+        function closePalette() {
+            overlay.classList.remove('active');
+            input.value = '';
+            showDefaultResults();
+        }
+
+        // Search functionality
+        input.addEventListener('input', (e) => {
+            const query = e.target.value.toLowerCase();
+            if (query === '') {
+                showDefaultResults();
+                return;
+            }
+
+            if (query.includes('rem')) {
+                results.innerHTML = `
+                    <div class="result-section">
+                        <div class="section-title">Projects</div>
+                        <div class="result-item selected">
+                            <div class="result-title">
+                                <span class="result-icon">📸</span>
+                                Remember12
+                                <span class="status-badge badge-complete">Complete</span>
+                            </div>
+                            <div class="result-meta">Photo Gallery • Completed 2h ago</div>
+                        </div>
+                    </div>
+                    <div class="result-section">
+                        <div class="section-title">Actions</div>
+                        <div class="result-item">
+                            <div class="result-title">
+                                <span class="result-icon">⬇️</span>
+                                Download Remember12 artifact
+                            </div>
+                        </div>
+                        <div class="result-item">
+                            <div class="result-title">
+                                <span class="result-icon">📄</span>
+                                View Remember12 logs
+                            </div>
+                        </div>
+                        <div class="result-item">
+                            <div class="result-title">
+                                <span class="result-icon">📋</span>
+                                Clone Remember12 project
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else if (query.includes('new') || query.includes('create')) {
+                results.innerHTML = `
+                    <div class="result-section">
+                        <div class="section-title">Create New</div>
+                        <div class="result-item selected">
+                            <div class="result-title">
+                                <span class="result-icon">➕</span>
+                                New Project
+                            </div>
+                            <div class="result-meta">Start a new autonomous task</div>
+                        </div>
+                        <div class="result-item">
+                            <div class="result-title">
+                                <span class="result-icon">📝</span>
+                                New from Template
+                            </div>
+                            <div class="result-meta">Use a project template</div>
+                        </div>
+                    </div>
+                `;
+            } else {
+                results.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">🔍</div>
+                        <div>No results found for "${query}"</div>
+                        <div style="margin-top: 10px; font-size: 0.9em;">Try searching for projects, actions, or commands</div>
+                    </div>
+                `;
+            }
+        });
+
+        // Arrow key navigation
+        let selectedIndex = 0;
+        document.addEventListener('keydown', (e) => {
+            if (!overlay.classList.contains('active')) return;
+
+            const items = results.querySelectorAll('.result-item');
+            if (items.length === 0) return;
+
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                items[selectedIndex].classList.remove('selected');
+                selectedIndex = (selectedIndex + 1) % items.length;
+                items[selectedIndex].classList.add('selected');
+                items[selectedIndex].scrollIntoView({ block: 'nearest' });
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                items[selectedIndex].classList.remove('selected');
+                selectedIndex = (selectedIndex - 1 + items.length) % items.length;
+                items[selectedIndex].classList.add('selected');
+                items[selectedIndex].scrollIntoView({ block: 'nearest' });
+            } else if (e.key === 'Enter') {
+                e.preventDefault();
+                const selectedItem = items[selectedIndex];
+                const title = selectedItem.querySelector('.result-title').textContent;
+                alert('Opening: ' + title.trim());
+                closePalette();
+            }
+        });
+
+        function showDefaultResults() {
+            results.innerHTML = `
+                <div class="result-section">
+                    <div class="section-title">Recent Projects</div>
+                    <div class="result-item selected">
+                        <div class="result-title">
+                            <span class="result-icon">📸</span>
+                            Remember12
+                            <span class="status-badge badge-complete">Complete</span>
+                        </div>
+                        <div class="result-meta">Photo Gallery • Completed 2h ago</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-title">
+                            <span class="result-icon">⚠️</span>
+                            Outcomist
+                            <span class="status-badge badge-needs-attention">Needs You</span>
+                        </div>
+                        <div class="result-meta">Waiting for your response</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-title">
+                            <span class="result-icon">⏳</span>
+                            New Claude Session
+                            <span class="status-badge badge-running">Running</span>
+                        </div>
+                        <div class="result-meta">72% complete • ~2 min remaining</div>
+                    </div>
+                </div>
+
+                <div class="result-section">
+                    <div class="section-title">Quick Actions</div>
+                    <div class="result-item">
+                        <div class="result-title">
+                            <span class="result-icon">➕</span>
+                            New Project
+                        </div>
+                        <div class="result-meta">Start a new autonomous task</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-title">
+                            <span class="result-icon">📋</span>
+                            View All Projects
+                        </div>
+                        <div class="result-meta">See all active and completed work</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-title">
+                            <span class="result-icon">🔔</span>
+                            Open Notifications
+                        </div>
+                        <div class="result-meta">1 item needs attention</div>
+                    </div>
+                </div>
+            `;
+            selectedIndex = 0;
+        }
+    </script>
+</body>
+</html>

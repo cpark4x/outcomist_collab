@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multi-Project Dashboard - 5 Style Variations</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #F8F9FA;
+            color: #212529;
+        }
+
+        .showcase-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 60px 40px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .showcase-header h1 {
+            font-size: 48px;
+            font-weight: 800;
+            margin-bottom: 16px;
+        }
+
+        .showcase-header p {
+            font-size: 20px;
+            opacity: 0.9;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .variation-section {
+            padding: 60px 0;
+            border-bottom: 2px solid #DEE2E6;
+        }
+
+        .variation-section:last-child {
+            border-bottom: none;
+        }
+
+        .variation-header {
+            max-width: 1400px;
+            margin: 0 auto 40px;
+            padding: 0 40px;
+        }
+
+        .variation-title {
+            font-size: 36px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .variation-number {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border-radius: 12px;
+            font-size: 24px;
+            font-weight: 800;
+        }
+
+        .variation-description {
+            font-size: 18px;
+            color: #6C757D;
+            line-height: 1.6;
+            max-width: 800px;
+        }
+
+        .variation-traits {
+            display: flex;
+            gap: 16px;
+            margin-top: 16px;
+            flex-wrap: wrap;
+        }
+
+        .trait-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: #E9ECEF;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .trait-icon {
+            font-size: 16px;
+        }
+
+        .iframe-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 40px;
+        }
+
+        .variation-iframe {
+            width: 100%;
+            height: 900px;
+            border: 2px solid #DEE2E6;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .quick-nav {
+            position: fixed;
+            top: 50%;
+            right: 40px;
+            transform: translateY(-50%);
+            background: white;
+            border-radius: 12px;
+            padding: 16px 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            z-index: 1000;
+        }
+
+        .quick-nav-item {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            margin: 8px 0;
+            background: #F8F9FA;
+            border-radius: 8px;
+            text-decoration: none;
+            color: #495057;
+            font-weight: 700;
+            font-size: 16px;
+            transition: all 0.2s;
+        }
+
+        .quick-nav-item:hover {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            transform: scale(1.1);
+        }
+
+        .quick-nav-item.active {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        /* Style-specific backgrounds */
+        .variation-section.corporate-clean {
+            background: #F5F7FA;
+        }
+
+        .variation-section.dark-mode {
+            background: #0F172A;
+        }
+
+        .variation-section.dark-mode .variation-header {
+            color: white;
+        }
+
+        .variation-section.dark-mode .variation-description {
+            color: #94A3B8;
+        }
+
+        .variation-section.warm-minimal {
+            background: #FFFBF5;
+        }
+
+        .variation-section.vibrant-modern {
+            background: linear-gradient(135deg, #f6f7fb 0%, #fef5fb 100%);
+        }
+
+        .variation-section.technical-dense {
+            background: #0D1117;
+        }
+
+        .variation-section.technical-dense .variation-header {
+            color: #C9D1D9;
+        }
+
+        .variation-section.technical-dense .variation-description {
+            color: #8B949E;
+        }
+
+        @media (max-width: 768px) {
+            .showcase-header {
+                padding: 40px 20px;
+            }
+
+            .showcase-header h1 {
+                font-size: 32px;
+            }
+
+            .variation-section {
+                padding: 40px 0;
+            }
+
+            .variation-header {
+                padding: 0 20px;
+            }
+
+            .variation-title {
+                font-size: 28px;
+            }
+
+            .iframe-container {
+                padding: 0 20px;
+            }
+
+            .variation-iframe {
+                height: 700px;
+            }
+
+            .quick-nav {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="showcase-header">
+        <h1>Multi-Project Dashboard Styles</h1>
+        <p>5 visual style variations of the same multi-project viewer interface. Same UX approach, different aesthetic treatments.</p>
+    </div>
+
+    <nav class="quick-nav">
+        <a href="#style-1" class="quick-nav-item">1</a>
+        <a href="#style-2" class="quick-nav-item">2</a>
+        <a href="#style-3" class="quick-nav-item">3</a>
+        <a href="#style-4" class="quick-nav-item">4</a>
+        <a href="#style-5" class="quick-nav-item">5</a>
+    </nav>
+
+    <!-- Style 1: Corporate Clean -->
+    <section id="style-1" class="variation-section corporate-clean">
+        <div class="variation-header">
+            <div class="variation-title">
+                <span class="variation-number">1</span>
+                Corporate Clean
+            </div>
+            <p class="variation-description">
+                Professional, polished, and approachable. Light color palette with clear hierarchy and subtle shadows. Perfect for business environments that value clarity and professionalism.
+            </p>
+            <div class="variation-traits">
+                <span class="trait-badge">
+                    <span class="trait-icon">💼</span>
+                    Business-focused
+                </span>
+                <span class="trait-badge">
+                    <span class="trait-icon">📊</span>
+                    High readability
+                </span>
+                <span class="trait-badge">
+                    <span class="trait-icon">🎯</span>
+                    Clear hierarchy
+                </span>
+                <span class="trait-badge">
+                    <span class="trait-icon">☀️</span>
+                    Light theme
+                </span>
+            </div>
+        </div>
+        <div class="iframe-container">
+            <iframe src="style_variation_1_corporate_clean.html" class="variation-iframe" frameborder="0"></iframe>
+        </div>
+    </section>
+
+    <!-- Style 2: Dark Mode Professional -->
+    <section id="style-2" class="variation-section dark-mode">
+        <div class="variation-header">
+            <div class="variation-title">
+                <span class="variation-number">2</span>
+                Dark Mode Professional
+            </div>
+            <p class="variation-description">
+                Sleek dark interface with gradient accents and glowing effects. Modern, sophisticated, and easy on the eyes during extended work sessions. Great for developers and power users.
+            </p>
+            <div class="variation-traits">
+                <span class="trait-badge">
+                    <span class="trait-icon">🌙</span>
+                    Dark theme
+                </span>
+                <span class="trait-badge">
+                    <span class="trait-icon">✨</span>
+                    Gradient accents
+                </span>
+                <span class="trait-badge">
+                    <span class="trait-icon">👁️</span>
+                    Eye-friendly
+                </span>
+                <span class="trait-badge">
+                    <span class="trait-icon">🎨</span>
+                    Modern aesthetic
+                </span>
+            </div>
+        </div>
+        <div class="iframe-container">
+            <iframe src="style_variation_2_dark_mode.html" class="variation-iframe" frameborder="0"></iframe>
+        </div>
+    </section>
+
+    <!-- Style 3: Warm Minimal -->
+    <section id="style-3" class="variation-section warm-minimal">
+        <div class="variation-header">
+            <div class="variation-title">
+                <span class="variation-number">3</span>
+                Warm Minimal
+            </div>
+            <p class="variation-description">
+                Gentle, human-centered design with warm earth tones and serif typography. Creates a calm, approachable atmosphere. Ideal for creative teams and thoughtful work environments.
+            </p>
+            <div class="variation-traits">
+                <span class="trait-badge">
+                    <span class="trait-icon">🎨</span>
+                    Warm palette
+                </span>
+                <span class="trait-badge">
+                    <span class="trait-icon">📖</span>
+                    Serif typography
+                </span>
+                <span class="trait-badge">
+                    <span class="trait-icon">🧘</span>
+                    Calm & centered
+                </span>
+                <span class="trait-badge">
+                    <span class="trait-icon">☕</span>
+                    Approachable
+                </span>
+            </div>
+        </div>
+        <div class="iframe-container">
+            <iframe src="style_variation_3_warm_minimal.html" class="variation-iframe" frameborder="0"></iframe>
+        </div>
+    </section>
+
+    <!-- Style 4: Vibrant Modern -->
+    <section id="style-4" class="variation-section vibrant-modern">
+        <div class="variation-header">
+            <div class="variation-title">
+                <span class="variation-number">4</span>
+                Vibrant Modern
+            </div>
+            <p class="variation-description">
+                Bold, energetic design with gradient backgrounds and vibrant colors. Eye-catching and engaging. Perfect for creative agencies, startups, and teams that value personality and energy.
+            </p>
+            <div class="variation-traits">
+                <span class="trait-badge">
+                    <span class="trait-icon">🚀</span>
+                    High energy
+                </span>
+                <span class="trait-badge">
+                    <span class="trait-icon">🌈</span>
+                    Vibrant colors
+                </span>
+                <span class="trait-badge">
+                    <span class="trait-icon">💫</span>
+                    Bold gradients
+                </span>
+                <span class="trait-badge">
+                    <span class="trait-icon">⚡</span>
+                    Dynamic feel
+                </span>
+            </div>
+        </div>
+        <div class="iframe-container">
+            <iframe src="style_variation_4_vibrant_modern.html" class="variation-iframe" frameborder="0"></iframe>
+        </div>
+    </section>
+
+    <!-- Style 5: Technical Dense -->
+    <section id="style-5" class="variation-section technical-dense">
+        <div class="variation-header">
+            <div class="variation-title">
+                <span class="variation-number">5</span>
+                Technical Dense
+            </div>
+            <p class="variation-description">
+                Terminal-inspired interface with monospace fonts and high information density. Efficient, precise, and no-nonsense. Perfect for technical users, developers, and data-heavy workflows.
+            </p>
+            <div class="variation-traits">
+                <span class="trait-badge">
+                    <span class="trait-icon">💻</span>
+                    Terminal-inspired
+                </span>
+                <span class="trait-badge">
+                    <span class="trait-icon">📊</span>
+                    High density
+                </span>
+                <span class="trait-badge">
+                    <span class="trait-icon">⚙️</span>
+                    Developer-focused
+                </span>
+                <span class="trait-badge">
+                    <span class="trait-icon">🎯</span>
+                    Efficiency-first
+                </span>
+            </div>
+        </div>
+        <div class="iframe-container">
+            <iframe src="style_variation_5_technical_dense.html" class="variation-iframe" frameborder="0"></iframe>
+        </div>
+    </section>
+
+    <script>
+        // Smooth scroll for quick nav
+        document.querySelectorAll('.quick-nav-item').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            });
+        });
+
+        // Active state for quick nav
+        const sections = document.querySelectorAll('.variation-section');
+        const navItems = document.querySelectorAll('.quick-nav-item');
+
+        window.addEventListener('scroll', () => {
+            let current = '';
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                const sectionHeight = section.clientHeight;
+                if (pageYOffset >= (sectionTop - 200)) {
+                    current = section.getAttribute('id');
+                }
+            });
+
+            navItems.forEach(item => {
+                item.classList.remove('active');
+                if (item.getAttribute('href') === `#${current}`) {
+                    item.classList.add('active');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

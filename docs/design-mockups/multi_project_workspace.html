@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multi-Project Workspace</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #1a1a1a;
+            color: #e0e0e0;
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        /* Top Toolbar */
+        .toolbar {
+            background: #2a2a2a;
+            border-bottom: 1px solid #3a3a3a;
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .toolbar-title {
+            color: #e0e0e0;
+            font-size: 14px;
+            font-weight: 500;
+            margin-right: auto;
+        }
+
+        .toolbar-btn {
+            background: #4A90E2;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            transition: background 0.2s;
+        }
+
+        .toolbar-btn:hover {
+            background: #3a7bc8;
+        }
+
+        .toolbar-info {
+            color: #888;
+            font-size: 12px;
+        }
+
+        /* Canvas Workspace */
+        .canvas-workspace {
+            position: relative;
+            width: 100%;
+            height: calc(100vh - 49px);
+            background: #1a1a1a;
+            overflow: auto;
+        }
+
+        /* Project Card */
+        .project-card {
+            position: absolute;
+            background: #2a2a2a;
+            border: 1px solid #3a3a3a;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            resize: both;
+            min-width: 600px;
+            min-height: 400px;
+        }
+
+        /* Card Header */
+        .card-header {
+            background: #333;
+            padding: 10px 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: move;
+            user-select: none;
+            border-bottom: 1px solid #3a3a3a;
+        }
+
+        .card-status {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #50C878;
+        }
+
+        .card-status.idle {
+            background: #888;
+        }
+
+        .card-title {
+            flex: 1;
+            font-size: 13px;
+            font-weight: 500;
+            color: #e0e0e0;
+        }
+
+        .card-controls {
+            display: flex;
+            gap: 8px;
+        }
+
+        .card-control-btn {
+            background: none;
+            border: none;
+            color: #888;
+            cursor: pointer;
+            font-size: 16px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+
+        .card-control-btn:hover {
+            background: #444;
+            color: #e0e0e0;
+        }
+
+        /* Card Content - Side by Side */
+        .card-content {
+            display: grid;
+            grid-template-columns: 45% 55%;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        /* Agent Panel */
+        .agent-panel {
+            background: #252525;
+            border-right: 1px solid #3a3a3a;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .panel-header {
+            padding: 10px 15px;
+            background: #2a2a2a;
+            border-bottom: 1px solid #3a3a3a;
+            font-size: 12px;
+            font-weight: 600;
+            color: #aaa;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .conversation-area {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+        }
+
+        .message {
+            background: #2a2a2a;
+            border: 1px solid #3a3a3a;
+            border-radius: 6px;
+            padding: 10px 12px;
+            margin-bottom: 10px;
+        }
+
+        .message-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 6px;
+        }
+
+        .message-timestamp {
+            color: #666;
+            font-size: 11px;
+        }
+
+        .message-role {
+            font-size: 11px;
+            font-weight: 600;
+            padding: 2px 6px;
+            border-radius: 3px;
+        }
+
+        .message-role.user {
+            background: #4A90E2;
+            color: white;
+        }
+
+        .message-role.assistant {
+            background: #50C878;
+            color: white;
+        }
+
+        .message-content {
+            color: #ccc;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        .command-input-area {
+            border-top: 1px solid #3a3a3a;
+            padding: 12px;
+            background: #2a2a2a;
+        }
+
+        .command-input {
+            width: 100%;
+            background: #1a1a1a;
+            border: 1px solid #3a3a3a;
+            border-radius: 6px;
+            padding: 10px 12px;
+            color: #e0e0e0;
+            font-size: 13px;
+            font-family: inherit;
+        }
+
+        .command-input:focus {
+            outline: none;
+            border-color: #4A90E2;
+        }
+
+        .command-input::placeholder {
+            color: #666;
+        }
+
+        /* Output Panel */
+        .output-panel {
+            background: #1e1e1e;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .output-area {
+            flex: 1;
+            overflow: auto;
+            padding: 20px;
+        }
+
+        .output-content {
+            background: #252525;
+            border: 1px solid #3a3a3a;
+            border-radius: 6px;
+            padding: 20px;
+            min-height: 200px;
+        }
+
+        /* Game/Output specific styling */
+        .game-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 300px;
+        }
+
+        .game-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 100px);
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        .game-cell {
+            width: 100px;
+            height: 100px;
+            background: #2a2a2a;
+            border: 2px solid #3a3a3a;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 48px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .game-cell:hover:empty {
+            background: #333;
+            border-color: #4A90E2;
+        }
+
+        .game-cell.x {
+            color: #4A90E2;
+        }
+
+        .game-cell.o {
+            color: #E74C3C;
+        }
+
+        .game-status {
+            color: #aaa;
+            font-size: 16px;
+            margin-bottom: 15px;
+        }
+
+        /* Document Output */
+        .document-output {
+            color: #ccc;
+            font-size: 13px;
+            line-height: 1.8;
+        }
+
+        .document-output h3 {
+            color: #e0e0e0;
+            margin: 15px 0 8px 0;
+            font-size: 16px;
+        }
+
+        .document-output ul {
+            padding-left: 20px;
+            color: #aaa;
+        }
+
+        .document-output li {
+            margin: 5px 0;
+        }
+
+        /* File Info */
+        .file-info {
+            padding: 8px 15px;
+            background: #222;
+            border-top: 1px solid #3a3a3a;
+            font-size: 11px;
+            color: #666;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .file-info-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .saved-indicator {
+            color: #50C878;
+        }
+
+        /* Scrollbar Styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #1a1a1a;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #444;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+    </style>
+</head>
+<body>
+    <!-- Top Toolbar -->
+    <div class="toolbar">
+        <div class="toolbar-title">Default Workspace</div>
+        <button class="toolbar-btn" onclick="addProject()">+ New</button>
+        <div class="toolbar-info">Projects: 4 | Selected: BSNgaIGR</div>
+        <div class="toolbar-info">Synced 1:50:20 PM</div>
+    </div>
+
+    <!-- Canvas Workspace -->
+    <div class="canvas-workspace" id="workspace">
+
+        <!-- Project Card 1: Tic Tac Toe -->
+        <div class="project-card" style="top: 30px; left: 650px; width: 800px; height: 500px;">
+            <div class="card-header">
+                <div class="card-status"></div>
+                <div class="card-title">Tic Tac Toe</div>
+                <div class="card-controls">
+                    <button class="card-control-btn">−</button>
+                    <button class="card-control-btn">×</button>
+                </div>
+            </div>
+            <div class="card-content">
+                <!-- Agent Panel -->
+                <div class="agent-panel">
+                    <div class="panel-header">
+                        💬 Agent Conversation
+                    </div>
+                    <div class="conversation-area">
+                        <div class="message">
+                            <div class="message-header">
+                                <span class="message-timestamp">13:45:12</span>
+                                <span class="message-role user">USER</span>
+                            </div>
+                            <div class="message-content">Create a tic tac toe game</div>
+                        </div>
+                        <div class="message">
+                            <div class="message-header">
+                                <span class="message-timestamp">13:45:15</span>
+                                <span class="message-role assistant">ASSISTANT</span>
+                            </div>
+                            <div class="message-content">I'll create a tic tac toe game with:
+- Interactive 3x3 grid
+- Alternating turns between X and O
+- Automatic win detection with highlighted winning cells in green
+- Draw detection when the board is full
+- "New Game" button to reset and play again
+
+✨ **Design Features:**
+- Clean, modern dark theme interface
+- Smooth hover effects on cells
+- Large, easy-to-click buttons
+- Clear status display showing whose turn it is or who won
+- Responsive animations and transitions</div>
+                        </div>
+                    </div>
+                    <div class="command-input-area">
+                        <input type="text" class="command-input" placeholder="Enter command... (↑↓ history, @ files, / commands)">
+                    </div>
+                </div>
+
+                <!-- Output Panel -->
+                <div class="output-panel">
+                    <div class="panel-header">
+                        🎮 Game Output
+                    </div>
+                    <div class="output-area">
+                        <div class="output-content">
+                            <div class="game-container">
+                                <div class="game-status">Current turn: X</div>
+                                <div class="game-grid">
+                                    <div class="game-cell x">X</div>
+                                    <div class="game-cell"></div>
+                                    <div class="game-cell"></div>
+                                    <div class="game-cell o">O</div>
+                                    <div class="game-cell"></div>
+                                    <div class="game-cell"></div>
+                                    <div class="game-cell"></div>
+                                    <div class="game-cell x">X</div>
+                                    <div class="game-cell"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Project Card 2: Agent 1 -->
+        <div class="project-card" style="top: 30px; left: 30px; width: 600px; height: 400px;">
+            <div class="card-header">
+                <div class="card-status idle"></div>
+                <div class="card-title">Agent 1</div>
+                <div class="card-controls">
+                    <button class="card-control-btn">−</button>
+                    <button class="card-control-btn">×</button>
+                </div>
+            </div>
+            <div class="card-content">
+                <div class="agent-panel">
+                    <div class="panel-header">
+                        💬 Agent Conversation
+                    </div>
+                    <div class="conversation-area">
+                        <div class="message">
+                            <div class="message-header">
+                                <span class="message-timestamp">13:42:01</span>
+                                <span class="message-role user">USER</span>
+                            </div>
+                            <div class="message-content">Help me plan a presentation</div>
+                        </div>
+                    </div>
+                    <div class="command-input-area">
+                        <input type="text" class="command-input" placeholder="Enter command...">
+                    </div>
+                </div>
+                <div class="output-panel">
+                    <div class="panel-header">
+                        📄 Output
+                    </div>
+                    <div class="output-area">
+                        <div class="output-content">
+                            <div style="color: #666; text-align: center; padding: 40px;">
+                                No output yet
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Project Card 3: Vegas Family Trip Planning -->
+        <div class="project-card" style="top: 560px; left: 650px; width: 800px; height: 400px;">
+            <div class="card-header">
+                <div class="card-status"></div>
+                <div class="card-title">Vegas Family Trip Planning</div>
+                <div class="card-controls">
+                    <button class="card-control-btn">−</button>
+                    <button class="card-control-btn">×</button>
+                </div>
+            </div>
+            <div class="card-content">
+                <div class="agent-panel">
+                    <div class="panel-header">
+                        💬 Agent Conversation
+                    </div>
+                    <div class="conversation-area">
+                        <div class="message">
+                            <div class="message-header">
+                                <span class="message-timestamp">13:46:03</span>
+                                <span class="message-role user">USER</span>
+                            </div>
+                            <div class="message-content">Help me plan a comprehensive Vegas family trip</div>
+                        </div>
+                        <div class="message">
+                            <div class="message-header">
+                                <span class="message-timestamp">13:46:08</span>
+                                <span class="message-role assistant">ASSISTANT</span>
+                            </div>
+                            <div class="message-content">I can create a detailed day-by-day itinerary with specific recommendations tailored to your family's needs and interests.
+
+Feel free to edit the document directly, or just tell me the details here and I'll update it with a complete customized plan!</div>
+                        </div>
+                    </div>
+                    <div class="command-input-area">
+                        <input type="text" class="command-input" placeholder="Enter command... (↑↓ history, @ files, / commands)">
+                    </div>
+                </div>
+                <div class="output-panel">
+                    <div class="panel-header">
+                        📄 Document Output
+                    </div>
+                    <div class="output-area">
+                        <div class="output-content">
+                            <div class="document-output">
+                                <h3>**Trip Duration:**</h3>
+                                <ul>
+                                    <li>Dates: Next week</li>
+                                    <li>Number of days: ________</li>
+                                </ul>
+                                <h3>**Family Information:**</h3>
+                                <ul>
+                                    <li>Number of travelers: ________</li>
+                                    <li>Ages of children (if any): ________</li>
+                                </ul>
+                                <h3>**Interests & Preferences:**</h3>
+                                <ul>
+                                    <li>Shows/Entertainment: □</li>
+                                    <li>Attractions (Grand Canyon, Hoover Dam, etc.): □</li>
+                                    <li>Shopping: □</li>
+                                    <li>Dining experiences: □</li>
+                                    <li>Outdoor activities: □</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="file-info">
+                        <div class="file-info-item saved-indicator">
+                            <span>✓</span>
+                            <span>Saved</span>
+                        </div>
+                        <div class="file-info-item">
+                            📄 /Users/chrispark/amplifier/canvas-ai
+                        </div>
+                        <div class="file-info-item">
+                            plaintext • 1497 chars • 69 lines
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Project Card 4: Agent 3 -->
+        <div class="project-card" style="top: 460px; left: 30px; width: 600px; height: 350px;">
+            <div class="card-header">
+                <div class="card-status idle"></div>
+                <div class="card-title">Agent 3</div>
+                <div class="card-controls">
+                    <button class="card-control-btn">−</button>
+                    <button class="card-control-btn">×</button>
+                </div>
+            </div>
+            <div class="card-content">
+                <div class="agent-panel">
+                    <div class="panel-header">
+                        💬 Agent Conversation
+                    </div>
+                    <div class="conversation-area">
+                        <div class="message">
+                            <div class="message-header">
+                                <span class="message-timestamp">13:46:15</span>
+                                <span class="message-role assistant">ASSISTANT</span>
+                            </div>
+                            <div class="message-content">Can you move this to an artifact [Tools> spawn_widget]
+
+Created new document widget: "Vegas Family Trip Planning"
+
+Perfect! I've created a Vegas Family Trip Planning document for you.</div>
+                        </div>
+                    </div>
+                    <div class="command-input-area">
+                        <input type="text" class="command-input" placeholder="Enter command...">
+                    </div>
+                </div>
+                <div class="output-panel">
+                    <div class="panel-header">
+                        📄 Output
+                    </div>
+                    <div class="output-area">
+                        <div class="output-content">
+                            <div style="color: #666; text-align: center; padding: 40px;">
+                                Artifact spawned
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // Make cards draggable
+        const cards = document.querySelectorAll('.project-card');
+
+        cards.forEach(card => {
+            const header = card.querySelector('.card-header');
+            let isDragging = false;
+            let currentX;
+            let currentY;
+            let initialX;
+            let initialY;
+
+            header.addEventListener('mousedown', dragStart);
+            document.addEventListener('mousemove', drag);
+            document.addEventListener('mouseup', dragEnd);
+
+            function dragStart(e) {
+                if (e.target.closest('.card-control-btn')) return;
+
+                initialX = e.clientX - card.offsetLeft;
+                initialY = e.clientY - card.offsetTop;
+                isDragging = true;
+                card.style.zIndex = 1000;
+            }
+
+            function drag(e) {
+                if (!isDragging) return;
+
+                e.preventDefault();
+                currentX = e.clientX - initialX;
+                currentY = e.clientY - initialY;
+
+                card.style.left = currentX + 'px';
+                card.style.top = currentY + 'px';
+            }
+
+            function dragEnd() {
+                isDragging = false;
+                card.style.zIndex = 1;
+            }
+        });
+
+        // Add new project function
+        function addProject() {
+            alert('New project functionality would be implemented here');
+        }
+    </script>
+</body>
+</html>

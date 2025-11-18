@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Status Visibility Options</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #1a1a1a;
+            color: #e0e0e0;
+            padding: 40px;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            color: #e0e0e0;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #888;
+            margin-bottom: 40px;
+            font-size: 16px;
+        }
+
+        .comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .option {
+            background: #2a2a2a;
+            border: 2px solid #3a3a3a;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .option-header {
+            background: #333;
+            padding: 20px;
+            border-bottom: 2px solid #3a3a3a;
+        }
+
+        .option-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #e0e0e0;
+            margin-bottom: 8px;
+        }
+
+        .option-subtitle {
+            font-size: 14px;
+            color: #888;
+        }
+
+        /* Project Card Preview */
+        .project-card-mini {
+            background: #2a2a2a;
+            border: 2px solid #3a3a3a;
+            border-radius: 8px;
+            width: 100%;
+            margin: 20px;
+            overflow: hidden;
+        }
+
+        .mini-header {
+            background: #333;
+            padding: 12px 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 1px solid #3a3a3a;
+        }
+
+        .mini-title {
+            flex: 1;
+            font-size: 13px;
+            font-weight: 600;
+            color: #e0e0e0;
+        }
+
+        .status-badge {
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(80, 200, 120, 0.2);
+            color: #50C878;
+            border: 1px solid rgba(80, 200, 120, 0.3);
+        }
+
+        .status-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: currentColor;
+        }
+
+        .status-details {
+            padding: 15px;
+            background: #252525;
+            border-bottom: 1px solid #3a3a3a;
+            font-size: 12px;
+            color: #aaa;
+        }
+
+        .status-details.hidden {
+            display: none;
+        }
+
+        .game-preview {
+            padding: 30px;
+            background: #1e1e1e;
+            text-align: center;
+        }
+
+        .game-icon {
+            font-size: 60px;
+            margin-bottom: 15px;
+        }
+
+        .game-title {
+            font-size: 18px;
+            color: #e0e0e0;
+            margin-bottom: 8px;
+        }
+
+        .game-subtitle {
+            font-size: 13px;
+            color: #888;
+        }
+
+        .mini-meta {
+            padding: 10px 15px;
+            background: #252525;
+            border-top: 1px solid #3a3a3a;
+            font-size: 11px;
+            color: #666;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        /* Analysis Section */
+        .analysis {
+            background: #2a2a2a;
+            border: 2px solid #3a3a3a;
+            border-radius: 12px;
+            padding: 30px;
+            margin-top: 40px;
+        }
+
+        .analysis h2 {
+            color: #e0e0e0;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .analysis-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+
+        .analysis-section h3 {
+            color: #4A90E2;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+
+        .pros-cons {
+            margin-top: 15px;
+        }
+
+        .pros-cons h4 {
+            color: #50C878;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .pros-cons h4.cons {
+            color: #E74C3C;
+            margin-top: 20px;
+        }
+
+        .pros-cons ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .pros-cons li {
+            padding: 6px 0;
+            color: #aaa;
+            font-size: 14px;
+            line-height: 1.5;
+            padding-left: 20px;
+            position: relative;
+        }
+
+        .pros-cons li:before {
+            content: "✓";
+            color: #50C878;
+            font-weight: bold;
+            position: absolute;
+            left: 0;
+        }
+
+        .pros-cons .cons li:before {
+            content: "✗";
+            color: #E74C3C;
+        }
+
+        .recommendation {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 12px;
+            margin-top: 30px;
+            text-align: center;
+        }
+
+        .recommendation h2 {
+            color: white;
+            margin-bottom: 15px;
+            font-size: 24px;
+        }
+
+        .recommendation p {
+            font-size: 16px;
+            line-height: 1.6;
+            opacity: 0.95;
+        }
+
+        .recommendation strong {
+            font-weight: 600;
+            text-decoration: underline;
+        }
+
+        /* Context-aware examples */
+        .context-examples {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .context-card {
+            background: #252525;
+            border: 2px solid #3a3a3a;
+            border-radius: 8px;
+            padding: 20px;
+        }
+
+        .context-card h4 {
+            color: #e0e0e0;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .context-card .state {
+            color: #4A90E2;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .context-card .action {
+            color: #888;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Status Bar Visibility: Complete vs In-Progress Projects</h1>
+        <p class="subtitle">Should completed projects show status details or just the output?</p>
+
+        <div class="comparison">
+            <!-- OPTION A: Always Show Status -->
+            <div class="option">
+                <div class="option-header">
+                    <div class="option-title">Option A: Always Show Status</div>
+                    <div class="option-subtitle">Keep status bar visible for all projects</div>
+                </div>
+
+                <div class="project-card-mini">
+                    <div class="mini-header">
+                        <div class="mini-title">Snake Game</div>
+                        <div class="status-badge">
+                            <div class="status-dot"></div>
+                            Complete
+                        </div>
+                    </div>
+                    <div class="status-details">
+                        <strong>Completed:</strong> All requested features implemented. Ready to play!
+                    </div>
+                    <div class="game-preview">
+                        <div class="game-icon">🐍</div>
+                        <div class="game-title">Snake Game</div>
+                        <div class="game-subtitle">Click to play</div>
+                    </div>
+                    <div class="mini-meta">
+                        <span>Last updated: 1 hour ago</span>
+                        <span>12 messages</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- OPTION B: Hide Status When Complete -->
+            <div class="option">
+                <div class="option-header">
+                    <div class="option-title">Option B: Hide Status When Complete</div>
+                    <div class="option-subtitle">Focus on the output/game for finished projects</div>
+                </div>
+
+                <div class="project-card-mini">
+                    <div class="mini-header">
+                        <div class="mini-title">Snake Game</div>
+                        <div class="status-badge">
+                            <div class="status-dot"></div>
+                            Complete
+                        </div>
+                    </div>
+                    <!-- No status details - goes straight to game -->
+                    <div class="game-preview" style="padding: 50px 30px;">
+                        <div class="game-icon">🐍</div>
+                        <div class="game-title">Snake Game</div>
+                        <div class="game-subtitle">Click to play</div>
+                    </div>
+                    <div class="mini-meta">
+                        <span>Last updated: 1 hour ago</span>
+                        <span>12 messages</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Context-Aware Approach -->
+        <div class="analysis">
+            <h2>💡 Better Approach: Context-Aware Status Display</h2>
+
+            <div class="context-examples">
+                <div class="context-card">
+                    <h4>🔵 AI Running</h4>
+                    <div class="state">Status: SHOW</div>
+                    <div class="action">Display: "Currently working on X..."<br><br>Why: User needs to know what's happening</div>
+                </div>
+
+                <div class="context-card">
+                    <h4>🟡 Needs Input</h4>
+                    <div class="state">Status: SHOW</div>
+                    <div class="action">Display: "Waiting for your response..."<br><br>Why: Action required, must be visible</div>
+                </div>
+
+                <div class="context-card">
+                    <h4>🟢 Complete (Game/Interactive)</h4>
+                    <div class="state">Status: HIDE</div>
+                    <div class="action">Display: Just the game/output<br><br>Why: User wants to USE it, not read about it</div>
+                </div>
+
+                <div class="context-card">
+                    <h4>🟢 Complete (Document)</h4>
+                    <div class="state">Status: HIDE</div>
+                    <div class="action">Display: Just the document preview<br><br>Why: User wants to READ it, not status</div>
+                </div>
+
+                <div class="context-card">
+                    <h4>⚫ Idle</h4>
+                    <div class="state">Status: SHOW (minimal)</div>
+                    <div class="action">Display: "No recent activity"<br><br>Why: Explains why nothing's showing</div>
+                </div>
+
+                <div class="context-card">
+                    <h4>🔴 Error</h4>
+                    <div class="state">Status: SHOW</div>
+                    <div class="action">Display: Error message + fix options<br><br>Why: User needs to know what went wrong</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Full Analysis -->
+        <div class="analysis" style="margin-top: 30px;">
+            <h2>Detailed Analysis</h2>
+            <div class="analysis-grid">
+                <div class="analysis-section">
+                    <h3>Option A: Always Show Status</h3>
+                    <div class="pros-cons">
+                        <h4>Pros</h4>
+                        <ul>
+                            <li>Consistent across all projects</li>
+                            <li>User always knows the state</li>
+                            <li>Good for debugging/transparency</li>
+                            <li>Easier to implement (no conditional logic)</li>
+                        </ul>
+                        <h4 class="cons">Cons</h4>
+                        <ul class="cons">
+                            <li>Wastes space on completed projects</li>
+                            <li>Status bar becomes noise when done</li>
+                            <li>User wants to USE the output, not read status</li>
+                            <li>Less room for actual game/content</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="analysis-section">
+                    <h3>Option B: Context-Aware (Recommended)</h3>
+                    <div class="pros-cons">
+                        <h4>Pros</h4>
+                        <ul>
+                            <li>Shows status only when it matters</li>
+                            <li>More space for completed outputs</li>
+                            <li>Better UX - user sees what they need</li>
+                            <li>Focus on the product, not the process</li>
+                            <li>Reduces visual clutter</li>
+                        </ul>
+                        <h4 class="cons">Cons</h4>
+                        <ul class="cons">
+                            <li>Slightly more complex logic</li>
+                            <li>Less consistent (changes based on state)</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recommendation -->
+        <div class="recommendation">
+            <h2>🎯 Recommendation</h2>
+            <p>
+                <strong>Use Context-Aware Status Display</strong><br><br>
+
+                Show status details when they matter (AI Running, Needs Input, Error)<br>
+                Hide status details when the user wants to USE the output (Complete projects)<br><br>
+
+                The badge in the header is enough to show "Complete" status.<br>
+                The preview area should maximize the actual game/document - that's what the user came for.<br><br>
+
+                Think of it this way:<br>
+                • In-progress = Show me the process<br>
+                • Complete = Show me the product
+            </p>
+        </div>
+    </div>
+</body>
+</html>

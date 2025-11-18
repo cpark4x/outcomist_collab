@@ -1,0 +1,1135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Autonomous Agent - 5 UX Proposals</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+            margin-bottom: 20px;
+        }
+
+        .header .subtitle {
+            font-size: 0.9em;
+            opacity: 0.7;
+            font-style: italic;
+        }
+
+        .tab-navigation {
+            display: flex;
+            background: #f5f5f5;
+            border-bottom: 3px solid #e0e0e0;
+            overflow-x: auto;
+        }
+
+        .tab-btn {
+            flex: 1;
+            min-width: 200px;
+            padding: 20px;
+            background: #f5f5f5;
+            border: none;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 600;
+            transition: all 0.3s;
+            border-bottom: 3px solid transparent;
+            position: relative;
+        }
+
+        .tab-btn:hover {
+            background: #ebebeb;
+        }
+
+        .tab-btn.active {
+            background: white;
+            border-bottom-color: #667eea;
+            color: #667eea;
+        }
+
+        .tab-content {
+            display: none;
+            padding: 40px;
+            animation: fadeIn 0.5s;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .proposal-header {
+            margin-bottom: 40px;
+            padding-bottom: 30px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .proposal-header h2 {
+            font-size: 2.2em;
+            margin-bottom: 10px;
+            color: #1a1a2e;
+        }
+
+        .proposal-header .metaphor {
+            font-size: 1.2em;
+            color: #667eea;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+
+        .proposal-header .description {
+            font-size: 1.1em;
+            line-height: 1.6;
+            color: #555;
+        }
+
+        .mockup-container {
+            margin: 40px 0;
+            background: #f9f9f9;
+            border-radius: 12px;
+            padding: 30px;
+            border: 2px solid #e0e0e0;
+        }
+
+        .mockup-title {
+            font-size: 1.4em;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #1a1a2e;
+        }
+
+        .mockup {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            min-height: 400px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        /* Mission Control Styles */
+        .mission-control-dashboard {
+            display: grid;
+            grid-template-columns: 30% 40% 30%;
+            gap: 20px;
+            height: 500px;
+        }
+
+        .mc-column {
+            background: #0A1628;
+            border-radius: 8px;
+            padding: 15px;
+            color: white;
+            overflow-y: auto;
+        }
+
+        .mc-column h4 {
+            color: #00D9FF;
+            margin-bottom: 15px;
+            font-size: 0.9em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .mc-task-card {
+            background: #1a2942;
+            border-radius: 6px;
+            padding: 12px;
+            margin-bottom: 10px;
+            border-left: 4px solid #00D9FF;
+        }
+
+        .mc-task-title {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .mc-progress {
+            background: #0d1a2e;
+            height: 4px;
+            border-radius: 2px;
+            margin-top: 8px;
+            overflow: hidden;
+        }
+
+        .mc-progress-bar {
+            background: #00D9FF;
+            height: 100%;
+            width: 65%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+
+        .mc-pipeline {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .mc-stage {
+            background: #1a2942;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 10px 0;
+            width: 100%;
+            text-align: center;
+            transition: all 0.3s;
+        }
+
+        .mc-stage.active {
+            background: #00D9FF;
+            color: #0A1628;
+            box-shadow: 0 0 20px rgba(0, 217, 255, 0.5);
+        }
+
+        /* Delegation Desk Styles */
+        .delegation-kanban {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            height: 500px;
+        }
+
+        .dd-column {
+            background: #F7F7F5;
+            border-radius: 8px;
+            padding: 15px;
+        }
+
+        .dd-column-header {
+            font-weight: 600;
+            font-size: 1.1em;
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .dd-task-card {
+            background: white;
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            border-left: 4px solid #008B8B;
+        }
+
+        .dd-task-title {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333;
+        }
+
+        .dd-task-desc {
+            font-size: 0.9em;
+            color: #666;
+        }
+
+        .dd-progress-simple {
+            height: 6px;
+            background: #e0e0e0;
+            border-radius: 3px;
+            margin-top: 10px;
+            overflow: hidden;
+        }
+
+        .dd-progress-fill {
+            height: 100%;
+            background: #4A90E2;
+            width: 45%;
+        }
+
+        /* Workspace Canvas Styles */
+        .workspace-canvas {
+            background: #FAFAFA;
+            height: 500px;
+            position: relative;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .canvas-node {
+            position: absolute;
+            background: white;
+            border: 3px solid #3498DB;
+            border-radius: 8px;
+            padding: 15px;
+            min-width: 180px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .canvas-node.executing {
+            border-color: #2ECC71;
+        }
+
+        .canvas-node.complete {
+            border-color: #F39C12;
+        }
+
+        .canvas-node-title {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .canvas-node-status {
+            font-size: 0.8em;
+            color: #666;
+        }
+
+        .canvas-connection {
+            position: absolute;
+            height: 2px;
+            background: #95A5A6;
+            transform-origin: left center;
+        }
+
+        /* Timeline Narrative Styles */
+        .timeline-container {
+            background: #FAF9F6;
+            height: 500px;
+            overflow-y: auto;
+            padding: 20px;
+            border-radius: 8px;
+        }
+
+        .timeline-entry {
+            display: flex;
+            margin-bottom: 30px;
+            position: relative;
+        }
+
+        .timeline-time {
+            width: 20%;
+            color: #7F8C8D;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            padding-right: 20px;
+        }
+
+        .timeline-content {
+            width: 60%;
+            background: white;
+            padding: 15px;
+            border-radius: 6px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            border-left: 4px solid #3498DB;
+        }
+
+        .timeline-content.execution {
+            border-left-color: #27AE60;
+        }
+
+        .timeline-content.verification {
+            border-left-color: #8E44AD;
+        }
+
+        .timeline-entry-title {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .timeline-entry-desc {
+            font-size: 0.9em;
+            color: #555;
+        }
+
+        .timeline-meta {
+            width: 20%;
+            padding-left: 20px;
+            font-size: 0.85em;
+            color: #999;
+        }
+
+        /* Hybrid Chat Styles */
+        .hybrid-layout {
+            display: grid;
+            grid-template-columns: 40% 60%;
+            gap: 0;
+            height: 500px;
+        }
+
+        .chat-panel {
+            background: #F5F5F5;
+            padding: 20px;
+            overflow-y: auto;
+            border-right: 2px solid #e0e0e0;
+        }
+
+        .chat-message {
+            margin-bottom: 15px;
+            display: flex;
+        }
+
+        .chat-message.user {
+            justify-content: flex-end;
+        }
+
+        .chat-bubble {
+            max-width: 80%;
+            padding: 12px 16px;
+            border-radius: 18px;
+            font-size: 0.95em;
+        }
+
+        .chat-bubble.user {
+            background: #007AFF;
+            color: white;
+        }
+
+        .chat-bubble.agent {
+            background: #E8E8E8;
+            color: #1C1C1E;
+        }
+
+        .work-panel {
+            background: white;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .work-panel h4 {
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .work-card {
+            background: #f9f9f9;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 12px;
+            border-left: 4px solid #007AFF;
+        }
+
+        .work-card-title {
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .work-pipeline {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .pipeline-stage {
+            flex: 1;
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 4px;
+        }
+
+        .pipeline-stage.active {
+            background: #FF9500;
+        }
+
+        .pipeline-stage.complete {
+            background: #34C759;
+        }
+
+        .strengths-tradeoffs {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-top: 40px;
+        }
+
+        .strengths, .tradeoffs {
+            background: #f9f9f9;
+            padding: 25px;
+            border-radius: 8px;
+        }
+
+        .strengths {
+            border-left: 4px solid #2ECC71;
+        }
+
+        .tradeoffs {
+            border-left: 4px solid #E74C3C;
+        }
+
+        .strengths h3, .tradeoffs h3 {
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+
+        .strengths ul, .tradeoffs ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .strengths li, .tradeoffs li {
+            padding: 8px 0;
+            padding-left: 25px;
+            position: relative;
+        }
+
+        .strengths li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #2ECC71;
+            font-weight: bold;
+        }
+
+        .tradeoffs li:before {
+            content: "⚠";
+            position: absolute;
+            left: 0;
+            color: #E74C3C;
+        }
+
+        .comparison-note {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 20px;
+            margin-top: 30px;
+            border-radius: 4px;
+        }
+
+        .comparison-note h4 {
+            margin-bottom: 10px;
+            color: #856404;
+        }
+
+        @media (max-width: 768px) {
+            .mission-control-dashboard,
+            .delegation-kanban,
+            .hybrid-layout {
+                grid-template-columns: 1fr;
+                height: auto;
+            }
+
+            .strengths-tradeoffs {
+                grid-template-columns: 1fr;
+            }
+
+            .tab-btn {
+                min-width: 150px;
+                font-size: 0.9em;
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🤖 Autonomous Agent</h1>
+            <p>5 UX Design Proposals</p>
+            <div class="subtitle">An AI worker that completes tasks end-to-end with verification</div>
+        </div>
+
+        <div class="tab-navigation">
+            <button class="tab-btn active" onclick="showTab(0)">
+                <div>Mission Control</div>
+                <small style="opacity:0.7">NASA Ground Control</small>
+            </button>
+            <button class="tab-btn" onclick="showTab(1)">
+                <div>Delegation Desk</div>
+                <small style="opacity:0.7">Executive Assistant</small>
+            </button>
+            <button class="tab-btn" onclick="showTab(2)">
+                <div>Workspace Canvas</div>
+                <small style="opacity:0.7">Digital Whiteboard</small>
+            </button>
+            <button class="tab-btn" onclick="showTab(3)">
+                <div>Timeline Narrative</div>
+                <small style="opacity:0.7">Lab Notebook</small>
+            </button>
+            <button class="tab-btn" onclick="showTab(4)">
+                <div>Hybrid Chat</div>
+                <small style="opacity:0.7">Chat → Handoff</small>
+            </button>
+        </div>
+
+        <!-- Proposal 1: Mission Control -->
+        <div class="tab-content active">
+            <div class="proposal-header">
+                <h2>Proposal 1: Mission Control</h2>
+                <div class="metaphor">Core Metaphor: NASA Ground Control / Air Traffic Control</div>
+                <div class="description">
+                    Users are mission commanders overseeing multiple autonomous operations.
+                    The interface emphasizes real-time status monitoring, system health, and pipeline visibility.
+                    Designed for power users managing 10+ concurrent complex tasks.
+                </div>
+            </div>
+
+            <div class="mockup-container">
+                <div class="mockup-title">Command Center Dashboard</div>
+                <div class="mockup">
+                    <div class="mission-control-dashboard">
+                        <div class="mc-column">
+                            <h4>Active Tasks</h4>
+                            <div class="mc-task-card">
+                                <div class="mc-task-title">Market Research Q4</div>
+                                <div style="font-size:0.85em; color: #00D9FF;">Executing</div>
+                                <div class="mc-progress">
+                                    <div class="mc-progress-bar"></div>
+                                </div>
+                            </div>
+                            <div class="mc-task-card" style="border-left-color: #2ECC71;">
+                                <div class="mc-task-title">Competitor Analysis</div>
+                                <div style="font-size:0.85em; color: #2ECC71;">Verifying</div>
+                                <div class="mc-progress">
+                                    <div class="mc-progress-bar" style="width: 90%; background: #2ECC71;"></div>
+                                </div>
+                            </div>
+                            <div class="mc-task-card" style="border-left-color: #FFA500;">
+                                <div class="mc-task-title">Sales Deck Draft</div>
+                                <div style="font-size:0.85em; color: #FFA500;">Planning</div>
+                                <div class="mc-progress">
+                                    <div class="mc-progress-bar" style="width: 25%; background: #FFA500;"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mc-column mc-pipeline">
+                            <h4 style="align-self: flex-start;">Pipeline Visualizer</h4>
+                            <div class="mc-stage">
+                                <strong>Planner</strong>
+                                <div style="font-size:0.8em; margin-top:5px;">Analyzing requirements</div>
+                            </div>
+                            <div style="color: #00D9FF; font-size:1.5em;">↓</div>
+                            <div class="mc-stage active">
+                                <strong>Executor</strong>
+                                <div style="font-size:0.8em; margin-top:5px;">Running 5 research queries</div>
+                            </div>
+                            <div style="color: #00D9FF; font-size:1.5em;">↓</div>
+                            <div class="mc-stage">
+                                <strong>Verifier</strong>
+                                <div style="font-size:0.8em; margin-top:5px;">Awaiting completion</div>
+                            </div>
+                        </div>
+
+                        <div class="mc-column">
+                            <h4>Quick Stats</h4>
+                            <div style="background: #1a2942; padding: 15px; border-radius: 6px; margin-bottom: 15px;">
+                                <div style="font-size: 2em; font-weight: bold; color: #00D9FF;">89%</div>
+                                <div style="font-size: 0.9em; opacity: 0.8;">Completion Rate</div>
+                            </div>
+                            <div style="background: #1a2942; padding: 15px; border-radius: 6px; margin-bottom: 15px;">
+                                <div style="font-size: 2em; font-weight: bold; color: #2ECC71;">4.2 min</div>
+                                <div style="font-size: 0.9em; opacity: 0.8;">Avg Task Time</div>
+                            </div>
+                            <div style="background: #1a2942; padding: 15px; border-radius: 6px;">
+                                <div style="font-size: 2em; font-weight: bold; color: #F39C12;">23</div>
+                                <div style="font-size: 0.9em; opacity: 0.8;">Tasks This Week</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="strengths-tradeoffs">
+                <div class="strengths">
+                    <h3>✓ Unique Strengths</h3>
+                    <ul>
+                        <li>Complete situational awareness - see everything at once</li>
+                        <li>Designed for managing 5-10 concurrent tasks</li>
+                        <li>Real-time pipeline transparency builds trust</li>
+                        <li>Professional enterprise aesthetic</li>
+                    </ul>
+                </div>
+                <div class="tradeoffs">
+                    <h3>⚠ Trade-offs</h3>
+                    <ul>
+                        <li>Information-dense interface requires onboarding</li>
+                        <li>Can feel overwhelming for first-time users</li>
+                        <li>Requires large displays (not mobile-first)</li>
+                        <li>Technical metaphor may alienate non-technical users</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="comparison-note">
+                <h4>Best For:</h4>
+                <p>Power users, technical PMs, data analysts managing multiple complex tasks who need complete transparency and situational awareness.</p>
+            </div>
+        </div>
+
+        <!-- Proposal 2: Delegation Desk -->
+        <div class="tab-content">
+            <div class="proposal-header">
+                <h2>Proposal 2: Delegation Desk</h2>
+                <div class="metaphor">Core Metaphor: Personal Assistant's Task Inbox / Kanban Board</div>
+                <div class="description">
+                    Simple, outcome-focused interface with minimal chrome. Tasks move from "Assigned" to "In Progress" to "Delivered."
+                    Users interact as if delegating to a capable executive assistant. Focus on deliverables, not process.
+                </div>
+            </div>
+
+            <div class="mockup-container">
+                <div class="mockup-title">Task Board</div>
+                <div class="mockup">
+                    <div class="delegation-kanban">
+                        <div class="dd-column">
+                            <div class="dd-column-header">📋 Assigned</div>
+                            <div class="dd-task-card">
+                                <div class="dd-task-title">Analyze Customer Feedback</div>
+                                <div class="dd-task-desc">Extract key themes from 200+ responses</div>
+                            </div>
+                            <div class="dd-task-card">
+                                <div class="dd-task-title">Create Product Brief</div>
+                                <div class="dd-task-desc">Draft PRD for mobile app feature</div>
+                            </div>
+                        </div>
+
+                        <div class="dd-column">
+                            <div class="dd-column-header">🔄 In Progress</div>
+                            <div class="dd-task-card" style="border-left-color: #4A90E2;">
+                                <div class="dd-task-title">Market Research Report</div>
+                                <div class="dd-task-desc">Researching 5 competitor products</div>
+                                <div class="dd-progress-simple">
+                                    <div class="dd-progress-fill"></div>
+                                </div>
+                            </div>
+                            <div class="dd-task-card" style="border-left-color: #4A90E2;">
+                                <div class="dd-task-title">Design Mockups</div>
+                                <div class="dd-task-desc">Creating 3 layout variations</div>
+                                <div class="dd-progress-simple">
+                                    <div class="dd-progress-fill" style="width: 70%;"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="dd-column">
+                            <div class="dd-column-header">✅ Delivered</div>
+                            <div class="dd-task-card" style="border-left-color: #2D5016;">
+                                <div class="dd-task-title">Q4 Sales Analysis</div>
+                                <div class="dd-task-desc">15-page report with visualizations</div>
+                                <div style="margin-top: 10px;">
+                                    <button style="padding: 6px 12px; background: #2D5016; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.9em;">Download</button>
+                                </div>
+                            </div>
+                            <div class="dd-task-card" style="border-left-color: #2D5016;">
+                                <div class="dd-task-title">Competitive Pricing Study</div>
+                                <div class="dd-task-desc">Comparison table + recommendations</div>
+                                <div style="margin-top: 10px;">
+                                    <button style="padding: 6px 12px; background: #2D5016; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.9em;">Download</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="strengths-tradeoffs">
+                <div class="strengths">
+                    <h3>✓ Unique Strengths</h3>
+                    <ul>
+                        <li>Minimal cognitive load - simple and clear</li>
+                        <li>Mobile-first design works on any device</li>
+                        <li>Fastest delegation path (no wizards or forms)</li>
+                        <li>Reinforces "artifacts matter, process doesn't"</li>
+                    </ul>
+                </div>
+                <div class="tradeoffs">
+                    <h3>⚠ Trade-offs</h3>
+                    <ul>
+                        <li>Limited visibility into agent reasoning</li>
+                        <li>Harder to track many concurrent tasks</li>
+                        <li>Requires extra clicks to access audit trail</li>
+                        <li>Advanced controls hidden behind optionals</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="comparison-note">
+                <h4>Best For:</h4>
+                <p>Busy executives, designers, marketers who want quick outcomes without technical details. Ideal for users who trust the agent and focus on deliverables.</p>
+            </div>
+        </div>
+
+        <!-- Proposal 3: Workspace Canvas -->
+        <div class="tab-content">
+            <div class="proposal-header">
+                <h2>Proposal 3: Workspace Canvas</h2>
+                <div class="metaphor">Core Metaphor: Digital Whiteboard / Spatial Thinking Tool</div>
+                <div class="description">
+                    Users arrange tasks spatially on an infinite canvas, creating visual relationships between work items.
+                    Tasks related to the same project cluster together. Perfect for users who think spatially and manage interconnected work.
+                </div>
+            </div>
+
+            <div class="mockup-container">
+                <div class="mockup-title">Infinite Canvas</div>
+                <div class="mockup">
+                    <div class="workspace-canvas">
+                        <!-- Nodes -->
+                        <div class="canvas-node" style="left: 50px; top: 50px;">
+                            <div class="canvas-node-title">Market Research</div>
+                            <div class="canvas-node-status">Planning</div>
+                        </div>
+
+                        <div class="canvas-node executing" style="left: 280px; top: 50px;">
+                            <div class="canvas-node-title">Competitor Analysis</div>
+                            <div class="canvas-node-status">Executing</div>
+                        </div>
+
+                        <div class="canvas-node complete" style="left: 520px; top: 50px;">
+                            <div class="canvas-node-title">Sales Report Q4</div>
+                            <div class="canvas-node-status">Complete</div>
+                        </div>
+
+                        <div class="canvas-node executing" style="left: 165px; top: 200px;">
+                            <div class="canvas-node-title">Product Brief</div>
+                            <div class="canvas-node-status">Executing</div>
+                        </div>
+
+                        <div class="canvas-node" style="left: 400px; top: 200px;">
+                            <div class="canvas-node-title">Design Mockups</div>
+                            <div class="canvas-node-status">Assigned</div>
+                        </div>
+
+                        <div class="canvas-node complete" style="left: 50px; top: 350px;">
+                            <div class="canvas-node-title">User Interviews</div>
+                            <div class="canvas-node-status">Complete</div>
+                        </div>
+
+                        <!-- Connection lines -->
+                        <div class="canvas-connection" style="left: 240px; top: 85px; width: 150px;"></div>
+                        <div class="canvas-connection" style="left: 155px; top: 130px; width: 2px; height: 70px; transform: rotate(0deg);"></div>
+                        <div class="canvas-connection" style="left: 380px; top: 130px; width: 2px; height: 70px; transform: rotate(0deg);"></div>
+
+                        <!-- Minimap indicator -->
+                        <div style="position: absolute; bottom: 20px; right: 20px; width: 120px; height: 80px; background: white; border: 2px solid #ddd; border-radius: 4px; padding: 5px;">
+                            <div style="font-size: 0.7em; margin-bottom: 3px; color: #666;">Minimap</div>
+                            <div style="background: #f0f0f0; height: 50px; position: relative;">
+                                <div style="position: absolute; width: 30px; height: 20px; border: 1px solid #3498DB; left: 5px; top: 5px;"></div>
+                            </div>
+                        </div>
+
+                        <!-- Floating toolbar -->
+                        <div style="position: absolute; top: 20px; right: 20px; background: white; border-radius: 8px; padding: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+                            <button style="margin: 0 5px; padding: 8px 12px; border: none; background: #3498DB; color: white; border-radius: 4px; cursor: pointer;">+ Add Task</button>
+                            <button style="margin: 0 5px; padding: 8px 12px; border: 1px solid #ddd; background: white; border-radius: 4px; cursor: pointer;">🔍</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="strengths-tradeoffs">
+                <div class="strengths">
+                    <h3>✓ Unique Strengths</h3>
+                    <ul>
+                        <li>Matches how creative thinkers organize work</li>
+                        <li>Visual relationships make dependencies obvious</li>
+                        <li>Spatial memory aids recall of work location</li>
+                        <li>Flexible organization (user-imposed structure)</li>
+                        <li>Connecting lines reveal artifact reuse patterns</li>
+                    </ul>
+                </div>
+                <div class="tradeoffs">
+                    <h3>⚠ Trade-offs</h3>
+                    <ul>
+                        <li>Blank canvas intimidating for first-time users</li>
+                        <li>Users must manage layout (not automatic)</li>
+                        <li>50+ tasks can become cluttered</li>
+                        <li>Least familiar interface pattern</li>
+                        <li>Canvas interactions difficult on mobile</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="comparison-note">
+                <h4>Best For:</h4>
+                <p>Strategic thinkers, researchers, creative directors managing interconnected projects where visual relationships and context matter.</p>
+            </div>
+        </div>
+
+        <!-- Proposal 4: Timeline Narrative -->
+        <div class="tab-content">
+            <div class="proposal-header">
+                <h2>Proposal 4: Timeline Narrative</h2>
+                <div class="metaphor">Core Metaphor: Legal Case Timeline / Scientific Lab Notebook</div>
+                <div class="description">
+                    Chronological story of everything the agent has done. Complete auditability with every decision, action,
+                    and verification step as a line item. Perfect for users who need to justify decisions or debug failures.
+                </div>
+            </div>
+
+            <div class="mockup-container">
+                <div class="mockup-title">Chronological Feed</div>
+                <div class="mockup">
+                    <div class="timeline-container">
+                        <div class="timeline-entry">
+                            <div class="timeline-time">14:32:18<br>Nov 17</div>
+                            <div class="timeline-content">
+                                <div class="timeline-entry-title">Task #1847 Created</div>
+                                <div class="timeline-entry-desc">Market research report for Q4 analysis - 5 competitor products</div>
+                            </div>
+                            <div class="timeline-meta">Duration: --<br>Status: Started</div>
+                        </div>
+
+                        <div class="timeline-entry">
+                            <div class="timeline-time">14:32:22<br>Nov 17</div>
+                            <div class="timeline-content">
+                                <div class="timeline-entry-title">Planner: Strategy Defined</div>
+                                <div class="timeline-entry-desc">Research approach: Web search → Data extraction → Synthesis<br>
+                                <small style="color: #667eea; cursor: pointer;">→ View reasoning</small></div>
+                            </div>
+                            <div class="timeline-meta">4 seconds<br>Planning</div>
+                        </div>
+
+                        <div class="timeline-entry">
+                            <div class="timeline-time">14:32:26<br>Nov 17</div>
+                            <div class="timeline-content execution">
+                                <div class="timeline-entry-title">Executor: Web Search Initiated</div>
+                                <div class="timeline-entry-desc">Searching for "Product A market analysis 2025"<br>
+                                <small style="color: #27AE60;">✓ 12 sources found</small></div>
+                            </div>
+                            <div class="timeline-meta">4 seconds<br>Executing</div>
+                        </div>
+
+                        <div class="timeline-entry">
+                            <div class="timeline-time">14:32:45<br>Nov 17</div>
+                            <div class="timeline-content execution">
+                                <div class="timeline-entry-title">Executor: Data Extracted</div>
+                                <div class="timeline-entry-desc">Extracted pricing, features, and market positioning data<br>
+                                <small style="color: #27AE60;">✓ Validated against 3 sources</small></div>
+                            </div>
+                            <div class="timeline-meta">19 seconds<br>Executing</div>
+                        </div>
+
+                        <div class="timeline-entry">
+                            <div class="timeline-time">14:33:12<br>Nov 17</div>
+                            <div class="timeline-content verification">
+                                <div class="timeline-entry-title">Verifier: Citation Check</div>
+                                <div class="timeline-entry-desc">Verifying all 15 citations are accurate and accessible<br>
+                                <small style="color: #8E44AD;">⏳ In progress...</small></div>
+                            </div>
+                            <div class="timeline-meta">27 seconds<br>Verifying</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="strengths-tradeoffs">
+                <div class="strengths">
+                    <h3>✓ Unique Strengths</h3>
+                    <ul>
+                        <li>Complete auditability - every action recorded</li>
+                        <li>Perfect for regulatory compliance needs</li>
+                        <li>Full execution history makes debugging trivial</li>
+                        <li>Exhaustive transparency builds trust</li>
+                        <li>Timeline becomes searchable knowledge base</li>
+                    </ul>
+                </div>
+                <div class="tradeoffs">
+                    <h3>⚠ Trade-offs</h3>
+                    <ul>
+                        <li>Too much detail can overwhelm casual users</li>
+                        <li>Not optimized for monitoring many concurrent tasks</li>
+                        <li>Long timelines require lots of scrolling</li>
+                        <li>Heavy reading required to understand status</li>
+                        <li>Better for deep investigation than broad overview</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="comparison-note">
+                <h4>Best For:</h4>
+                <p>Compliance officers, auditors, scientists, or anyone needing complete documentation and the ability to justify every decision made.</p>
+            </div>
+        </div>
+
+        <!-- Proposal 5: Hybrid Chat-to-Artifact -->
+        <div class="tab-content">
+            <div class="proposal-header">
+                <h2>Proposal 5: Hybrid Chat-to-Artifact</h2>
+                <div class="metaphor">Core Metaphor: Conversation → Project Handoff</div>
+                <div class="description">
+                    Start with familiar conversational mode to define tasks naturally, then transition to structured tracking
+                    once work begins. Bridges chat UX (familiar) with task management UX (transparent). Easy start, professional execution.
+                </div>
+            </div>
+
+            <div class="mockup-container">
+                <div class="mockup-title">Conversational Lobby + Active Work</div>
+                <div class="mockup">
+                    <div class="hybrid-layout">
+                        <div class="chat-panel">
+                            <div class="chat-message agent">
+                                <div class="chat-bubble agent">
+                                    What can I help you accomplish today?
+                                </div>
+                            </div>
+
+                            <div class="chat-message user">
+                                <div class="chat-bubble user">
+                                    I need to analyze Q4 sales data
+                                </div>
+                            </div>
+
+                            <div class="chat-message agent">
+                                <div class="chat-bubble agent">
+                                    I can help with that. Which data files should I use?
+                                </div>
+                            </div>
+
+                            <div class="chat-message user">
+                                <div class="chat-bubble user">
+                                    I'll upload the CSV files<br>
+                                    <span style="font-size:0.85em; opacity:0.8;">📎 sales_q4.csv</span>
+                                </div>
+                            </div>
+
+                            <div class="chat-message agent">
+                                <div class="chat-bubble agent">
+                                    Perfect! What specific insights are you looking for?
+                                </div>
+                            </div>
+
+                            <div class="chat-message user">
+                                <div class="chat-bubble user">
+                                    Regional trends and top products
+                                </div>
+                            </div>
+
+                            <div class="chat-message agent">
+                                <div class="chat-bubble agent">
+                                    Got it! I'll analyze regional sales trends and top product performance for Q4. Should take about 5 minutes. Start now?
+                                </div>
+                            </div>
+
+                            <div class="chat-message user">
+                                <div class="chat-bubble user">
+                                    Yes, start
+                                </div>
+                            </div>
+
+                            <div class="chat-message agent">
+                                <div class="chat-bubble agent">
+                                    Starting now... You can see progress in the work panel →
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="work-panel">
+                            <h4>Active Work</h4>
+
+                            <div class="work-card">
+                                <div class="work-card-title">Q4 Sales Analysis</div>
+                                <div style="font-size: 0.9em; color: #666; margin-bottom: 10px;">
+                                    Analyzing regional trends...
+                                </div>
+                                <div class="work-pipeline">
+                                    <div class="pipeline-stage complete"></div>
+                                    <div class="pipeline-stage active"></div>
+                                    <div class="pipeline-stage"></div>
+                                </div>
+                                <div style="font-size: 0.8em; color: #999; margin-top: 8px;">
+                                    Plan → Execute → Verify
+                                </div>
+                            </div>
+
+                            <div class="work-card" style="border-left-color: #34C759;">
+                                <div class="work-card-title">Market Research Report</div>
+                                <div style="font-size: 0.9em; color: #34C759; margin-bottom: 10px;">
+                                    ✓ Complete
+                                </div>
+                                <div class="work-pipeline">
+                                    <div class="pipeline-stage complete"></div>
+                                    <div class="pipeline-stage complete"></div>
+                                    <div class="pipeline-stage complete"></div>
+                                </div>
+                                <div style="margin-top: 12px;">
+                                    <button style="padding: 6px 12px; background: #34C759; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.85em;">View Report</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="strengths-tradeoffs">
+                <div class="strengths">
+                    <h3>✓ Unique Strengths</h3>
+                    <ul>
+                        <li>Zero learning curve - chat is universal</li>
+                        <li>Natural clarification through conversation</li>
+                        <li>Flexible switching between chat and monitoring</li>
+                        <li>Rich conversation history provides context</li>
+                        <li>Gentle transition from familiar to powerful</li>
+                    </ul>
+                </div>
+                <div class="tradeoffs">
+                    <h3>⚠ Trade-offs</h3>
+                    <ul>
+                        <li>Chat messages take more space than forms</li>
+                        <li>Combining chat + tasks can feel inconsistent</li>
+                        <li>Clarifying questions add time</li>
+                        <li>Long chat history makes finding artifacts harder</li>
+                        <li>Linear chat conflicts with parallel task management</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="comparison-note">
+                <h4>Best For:</h4>
+                <p>First-time users, casual users, or anyone wanting low-friction entry with familiar chat interface that transitions to structured task management.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showTab(index) {
+            // Hide all tabs
+            const contents = document.querySelectorAll('.tab-content');
+            const buttons = document.querySelectorAll('.tab-btn');
+
+            contents.forEach(content => content.classList.remove('active'));
+            buttons.forEach(btn => btn.classList.remove('active'));
+
+            // Show selected tab
+            contents[index].classList.add('active');
+            buttons[index].classList.add('active');
+
+            // Scroll to top
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>

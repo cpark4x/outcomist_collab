@@ -1,0 +1,861 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multi-Project Workspace - View Toggle</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Inter', sans-serif;
+            background: linear-gradient(135deg, #1a1a1a 0%, #0f0f0f 100%);
+            color: #e0e0e0;
+            overflow: hidden;
+            height: 100vh;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background:
+                radial-gradient(circle at 20% 50%, rgba(74, 144, 226, 0.03) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(80, 200, 120, 0.03) 0%, transparent 50%);
+            pointer-events: none;
+        }
+
+        /* Toolbar */
+        .toolbar {
+            background: rgba(42, 42, 42, 0.95);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 14px 24px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            position: relative;
+            z-index: 100;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .toolbar-left {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .toolbar-title {
+            color: #e0e0e0;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .toolbar-actions {
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .toolbar-btn {
+            background: linear-gradient(135deg, #4A90E2 0%, #357ABD 100%);
+            color: white;
+            border: none;
+            padding: 9px 18px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            transition: all 0.2s;
+            box-shadow: 0 2px 8px rgba(74, 144, 226, 0.3);
+        }
+
+        .toolbar-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(74, 144, 226, 0.4);
+        }
+
+        /* Overview Mode */
+        .overview-mode {
+            display: block;
+            width: 100%;
+            height: calc(100vh - 57px);
+            overflow: auto;
+            padding: 24px;
+        }
+
+        .canvas-workspace {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
+            gap: 24px;
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        /* Project Cards */
+        .project-card {
+            background: rgba(42, 42, 42, 0.6);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            overflow: hidden;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            position: relative;
+        }
+
+        .project-card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(74, 144, 226, 0.3);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+        }
+
+        .card-header {
+            padding: 16px 18px;
+            background: rgba(51, 51, 51, 0.4);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .card-icon {
+            font-size: 20px;
+        }
+
+        .card-title {
+            flex: 1;
+            font-size: 15px;
+            font-weight: 600;
+            color: #e0e0e0;
+        }
+
+        .status-badge {
+            padding: 5px 12px;
+            border-radius: 14px;
+            font-size: 11px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status-badge.running {
+            background: linear-gradient(135deg, rgba(74, 144, 226, 0.2), rgba(74, 144, 226, 0.15));
+            color: #6BA3E8;
+            border: 1px solid rgba(74, 144, 226, 0.3);
+        }
+
+        .status-badge.waiting {
+            background: linear-gradient(135deg, rgba(255, 193, 7, 0.2), rgba(255, 193, 7, 0.15));
+            color: #FFD54F;
+            border: 1px solid rgba(255, 193, 7, 0.3);
+        }
+
+        .status-badge.complete {
+            background: linear-gradient(135deg, rgba(80, 200, 120, 0.2), rgba(80, 200, 120, 0.15));
+            color: #66D98F;
+            border: 1px solid rgba(80, 200, 120, 0.3);
+        }
+
+        .status-badge.idle {
+            background: rgba(136, 136, 136, 0.15);
+            color: #999;
+            border: 1px solid rgba(136, 136, 136, 0.2);
+        }
+
+        .status-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: currentColor;
+        }
+
+        .status-badge.running .status-dot {
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+
+        /* VIEW TOGGLE - Key Addition */
+        .view-toggle {
+            padding: 12px 18px;
+            background: rgba(30, 30, 30, 0.6);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+            display: flex;
+            gap: 6px;
+        }
+
+        .view-toggle-btn {
+            flex: 1;
+            background: transparent;
+            color: #888;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 8px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .view-toggle-btn:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: #aaa;
+        }
+
+        .view-toggle-btn.active {
+            background: rgba(74, 144, 226, 0.2);
+            color: #6BA3E8;
+            border-color: rgba(74, 144, 226, 0.3);
+        }
+
+        /* Status Details */
+        .status-details {
+            padding: 16px 18px;
+            background: rgba(37, 37, 37, 0.4);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+        }
+
+        .status-details.hidden {
+            display: none;
+        }
+
+        .status-message {
+            font-size: 13px;
+            color: #aaa;
+            line-height: 1.6;
+        }
+
+        .status-message strong {
+            color: #e0e0e0;
+        }
+
+        .action-needed {
+            margin-top: 10px;
+            padding: 10px 12px;
+            background: rgba(255, 193, 7, 0.08);
+            border: 1px solid rgba(255, 193, 7, 0.2);
+            border-radius: 8px;
+            font-size: 12px;
+            color: #FFD54F;
+        }
+
+        /* Quick Actions */
+        .quick-actions {
+            padding: 14px 18px;
+            background: rgba(30, 30, 30, 0.6);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .quick-input {
+            flex: 1;
+            min-width: 150px;
+            background: rgba(42, 42, 42, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 9px 12px;
+            color: #e0e0e0;
+            font-size: 13px;
+        }
+
+        .quick-input:focus {
+            outline: none;
+            border-color: rgba(74, 144, 226, 0.5);
+            box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
+        }
+
+        .quick-action-btn {
+            background: rgba(51, 51, 51, 0.8);
+            color: #e0e0e0;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 9px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .quick-action-btn:hover {
+            background: rgba(58, 58, 58, 1);
+            border-color: rgba(74, 144, 226, 0.4);
+        }
+
+        .quick-action-btn.primary {
+            background: linear-gradient(135deg, #4A90E2 0%, #357ABD 100%);
+            border-color: rgba(74, 144, 226, 0.4);
+            color: white;
+            font-weight: 600;
+        }
+
+        /* Content Area - Toggleable Views */
+        .content-area {
+            position: relative;
+            background: rgba(30, 30, 30, 0.3);
+        }
+
+        .content-view {
+            display: none;
+        }
+
+        .content-view.active {
+            display: block;
+        }
+
+        /* Agent View - Terminal Style */
+        .agent-view {
+            padding: 0;
+            max-height: 400px;
+            overflow-y: auto;
+            background: #1e1e1e;
+            font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+        }
+
+        /* Output View */
+        .output-view {
+            min-height: 280px;
+        }
+
+        .message-mini {
+            padding: 16px 20px;
+            margin: 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+            background: transparent;
+        }
+
+        .message-mini:hover {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .message-mini-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 10px;
+        }
+
+        .message-mini-time {
+            font-size: 11px;
+            color: #666;
+            font-weight: 500;
+        }
+
+        .message-mini-role {
+            font-size: 11px;
+            font-weight: 700;
+            padding: 0;
+            text-transform: none;
+            letter-spacing: 0;
+        }
+
+        .message-mini-role.user {
+            color: #4A90E2;
+        }
+
+        .message-mini-role.assistant {
+            color: #50C878;
+        }
+
+        .message-mini-content {
+            font-size: 13px;
+            color: #d4d4d4;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .message-mini-content strong {
+            color: #e0e0e0;
+            font-weight: 600;
+        }
+
+        /* Output View */
+        .output-view {
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .preview-content {
+            text-align: center;
+        }
+
+        .preview-icon {
+            font-size: 64px;
+            margin-bottom: 16px;
+        }
+
+        .preview-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #e0e0e0;
+            margin-bottom: 8px;
+        }
+
+        .preview-subtitle {
+            font-size: 14px;
+            color: #888;
+        }
+
+        .game-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 80px);
+            gap: 8px;
+            margin: 20px auto;
+            width: fit-content;
+        }
+
+        .game-cell {
+            width: 80px;
+            height: 80px;
+            background: rgba(42, 42, 42, 0.8);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+        }
+
+        .game-cell.x {
+            color: #4A90E2;
+        }
+
+        .game-cell.o {
+            color: #E74C3C;
+        }
+
+        /* Card Footer */
+        .card-footer {
+            padding: 12px 18px;
+            background: rgba(37, 37, 37, 0.4);
+            border-top: 1px solid rgba(255, 255, 255, 0.03);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 11px;
+            color: #666;
+        }
+
+        .footer-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(26, 26, 26, 0.4);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(68, 68, 68, 0.6);
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(85, 85, 85, 0.8);
+        }
+    </style>
+</head>
+<body>
+    <!-- Toolbar -->
+    <div class="toolbar">
+        <div class="toolbar-left">
+            <div class="toolbar-title">Multi-Project Workspace</div>
+        </div>
+        <div class="toolbar-actions">
+            <button class="toolbar-btn">+ New Project</button>
+        </div>
+    </div>
+
+    <!-- Overview Mode -->
+    <div class="overview-mode">
+        <div class="canvas-workspace">
+
+            <!-- Project 1: AI Running -->
+            <div class="project-card">
+                <div class="card-header">
+                    <div class="card-icon">🎮</div>
+                    <div class="card-title">Tic Tac Toe Game</div>
+                    <div class="status-badge running">
+                        <div class="status-dot"></div>
+                        Running
+                    </div>
+                </div>
+
+                <!-- VIEW TOGGLE -->
+                <div class="view-toggle">
+                    <button class="view-toggle-btn" onclick="switchView(this, 'output')">
+                        🎮 Output
+                    </button>
+                    <button class="view-toggle-btn active" onclick="switchView(this, 'agent')">
+                        💬 Agent
+                    </button>
+                </div>
+
+                <div class="status-details">
+                    <div class="status-message">
+                        <strong>Currently:</strong> Implementing score counter and reset functionality...
+                    </div>
+                </div>
+
+                <!-- CONTENT AREA with toggleable views -->
+                <div class="content-area">
+                    <!-- Output View -->
+                    <div class="content-view output-view">
+                        <div>
+                            <div class="game-grid">
+                                <div class="game-cell x">X</div>
+                                <div class="game-cell"></div>
+                                <div class="game-cell"></div>
+                                <div class="game-cell o">O</div>
+                                <div class="game-cell"></div>
+                                <div class="game-cell"></div>
+                                <div class="game-cell"></div>
+                                <div class="game-cell x">X</div>
+                                <div class="game-cell"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Agent View (Active) -->
+                    <div class="content-view agent-view active">
+                        <div class="message-mini">
+                            <div class="message-mini-header">
+                                <span class="message-mini-time">13:45:12</span>
+                                <span class="message-mini-role user">[USER]</span>
+                            </div>
+                            <div class="message-mini-content">> Create a tic tac toe game</div>
+                        </div>
+                        <div class="message-mini">
+                            <div class="message-mini-header">
+                                <span class="message-mini-time">13:45:15</span>
+                                <span class="message-mini-role assistant">[AGENT]</span>
+                            </div>
+                            <div class="message-mini-content">Creating game with interactive grid, win detection, and smooth animations...
+
+Features:
+- Alternating turns between X and O
+- Automatic win detection
+- Draw detection when board is full
+- "New Game" button to reset</div>
+                        </div>
+                        <div class="message-mini">
+                            <div class="message-mini-header">
+                                <span class="message-mini-time">13:47:20</span>
+                                <span class="message-mini-role user">[USER]</span>
+                            </div>
+                            <div class="message-mini-content">> Add score tracking</div>
+                        </div>
+                        <div class="message-mini">
+                            <div class="message-mini-header">
+                                <span class="message-mini-time">13:47:25</span>
+                                <span class="message-mini-role assistant">[AGENT]</span>
+                            </div>
+                            <div class="message-mini-content">🔄 Working on it... Adding score counter now.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-footer">
+                    <div class="footer-item">
+                        <span>⏱</span>
+                        <span>2 min ago</span>
+                    </div>
+                    <div class="footer-item">
+                        <span>💬</span>
+                        <span>8 messages</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Project 2: Waiting for Input -->
+            <div class="project-card">
+                <div class="card-header">
+                    <div class="card-icon">✈️</div>
+                    <div class="card-title">Vegas Family Trip</div>
+                    <div class="status-badge waiting">
+                        <div class="status-dot"></div>
+                        Needs Input
+                    </div>
+                </div>
+
+                <!-- VIEW TOGGLE -->
+                <div class="view-toggle">
+                    <button class="view-toggle-btn active" onclick="switchView(this, 'output')">
+                        📄 Output
+                    </button>
+                    <button class="view-toggle-btn" onclick="switchView(this, 'agent')">
+                        💬 Agent
+                    </button>
+                </div>
+
+                <div class="status-details">
+                    <div class="action-needed">
+                        ⚠️ How many travelers? What dates?
+                    </div>
+                </div>
+
+                <div class="quick-actions">
+                    <input type="text" class="quick-input" placeholder="Type your answer...">
+                    <button class="quick-action-btn primary">✓ Send</button>
+                </div>
+
+                <!-- CONTENT AREA -->
+                <div class="content-area">
+                    <!-- Output View -->
+                    <div class="content-view output-view active">
+                        <div class="preview-content">
+                            <div class="preview-icon">📋</div>
+                            <div class="preview-title">Planning Document</div>
+                            <div class="preview-subtitle">Add details to generate itinerary</div>
+                        </div>
+                    </div>
+
+                    <!-- Agent View -->
+                    <div class="content-view agent-view">
+                        <div class="message-mini">
+                            <div class="message-mini-header">
+                                <span class="message-mini-time">13:46:03</span>
+                                <span class="message-mini-role user">[USER]</span>
+                            </div>
+                            <div class="message-mini-content">> Help me plan a comprehensive Vegas family trip</div>
+                        </div>
+                        <div class="message-mini">
+                            <div class="message-mini-header">
+                                <span class="message-mini-time">13:46:08</span>
+                                <span class="message-mini-role assistant">[AGENT]</span>
+                            </div>
+                            <div class="message-mini-content">I've created a planning document template.
+
+Please provide:
+- Travel dates
+- Number of travelers
+- Ages of children (if any)
+- Interests and preferences
+
+Once you fill these in, I'll create a detailed day-by-day itinerary!</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-footer">
+                    <div class="footer-item">
+                        <span>⏱</span>
+                        <span>5 min ago</span>
+                    </div>
+                    <div class="footer-item">
+                        <span>💬</span>
+                        <span>4 messages</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Project 3: Complete -->
+            <div class="project-card">
+                <div class="card-header">
+                    <div class="card-icon">🐍</div>
+                    <div class="card-title">Snake Game</div>
+                    <div class="status-badge complete">
+                        <div class="status-dot"></div>
+                        Complete
+                    </div>
+                </div>
+
+                <!-- VIEW TOGGLE -->
+                <div class="view-toggle">
+                    <button class="view-toggle-btn active" onclick="switchView(this, 'output')">
+                        🎮 Play
+                    </button>
+                    <button class="view-toggle-btn" onclick="switchView(this, 'agent')">
+                        💬 Agent
+                    </button>
+                </div>
+
+                <!-- CONTENT AREA -->
+                <div class="content-area">
+                    <!-- Output View -->
+                    <div class="content-view output-view active">
+                        <div class="preview-content">
+                            <div class="preview-icon">🐍</div>
+                            <div class="preview-title">Snake Game Ready!</div>
+                            <div class="preview-subtitle">Click to start playing</div>
+                        </div>
+                    </div>
+
+                    <!-- Agent View -->
+                    <div class="content-view agent-view">
+                        <div class="message-mini">
+                            <div class="message-mini-header">
+                                <span class="message-mini-time">12:30:45</span>
+                                <span class="message-mini-role user">[USER]</span>
+                            </div>
+                            <div class="message-mini-content">> Create a snake game with arrow key controls</div>
+                        </div>
+                        <div class="message-mini">
+                            <div class="message-mini-header">
+                                <span class="message-mini-time">12:30:52</span>
+                                <span class="message-mini-role assistant">[AGENT]</span>
+                            </div>
+                            <div class="message-mini-content">Created classic snake game!
+
+Features:
+- Arrow key controls
+- Growing snake when eating food
+- Collision detection
+- Score tracking</div>
+                        </div>
+                        <div class="message-mini">
+                            <div class="message-mini-header">
+                                <span class="message-mini-time">12:35:12</span>
+                                <span class="message-mini-role user">[USER]</span>
+                            </div>
+                            <div class="message-mini-content">> Make it faster and add high score</div>
+                        </div>
+                        <div class="message-mini">
+                            <div class="message-mini-header">
+                                <span class="message-mini-time">12:35:18</span>
+                                <span class="message-mini-role assistant">[AGENT]</span>
+                            </div>
+                            <div class="message-mini-content">✅ Done! Increased speed to 150ms interval and added persistent high score tracking using localStorage.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-footer">
+                    <div class="footer-item">
+                        <span>⏱</span>
+                        <span>1 hour ago</span>
+                    </div>
+                    <div class="footer-item">
+                        <span>💬</span>
+                        <span>12 messages</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Project 4: Idle -->
+            <div class="project-card">
+                <div class="card-header">
+                    <div class="card-icon">📊</div>
+                    <div class="card-title">Presentation Helper</div>
+                    <div class="status-badge idle">
+                        <div class="status-dot"></div>
+                        Idle
+                    </div>
+                </div>
+
+                <!-- VIEW TOGGLE -->
+                <div class="view-toggle">
+                    <button class="view-toggle-btn active" onclick="switchView(this, 'output')">
+                        📄 Output
+                    </button>
+                    <button class="view-toggle-btn" onclick="switchView(this, 'agent')">
+                        💬 Agent
+                    </button>
+                </div>
+
+                <div class="status-details">
+                    <div class="status-message">
+                        <strong>Status:</strong> Project started but no recent activity
+                    </div>
+                </div>
+
+                <!-- CONTENT AREA -->
+                <div class="content-area">
+                    <!-- Output View -->
+                    <div class="content-view output-view active">
+                        <div class="preview-content">
+                            <div class="preview-icon">💤</div>
+                            <div class="preview-title">Waiting for Details</div>
+                            <div class="preview-subtitle">Provide topic to begin</div>
+                        </div>
+                    </div>
+
+                    <!-- Agent View -->
+                    <div class="content-view agent-view">
+                        <div class="message-mini">
+                            <div class="message-mini-header">
+                                <span class="message-mini-time">10:15:30</span>
+                                <span class="message-mini-role user">[USER]</span>
+                            </div>
+                            <div class="message-mini-content">> Help me plan a presentation</div>
+                        </div>
+                        <div class="message-mini">
+                            <div class="message-mini-header">
+                                <span class="message-mini-time">10:15:35</span>
+                                <span class="message-mini-role assistant">[AGENT]</span>
+                            </div>
+                            <div class="message-mini-content">I'd be happy to help!
+
+What's the topic and who's your audience?</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-footer">
+                    <div class="footer-item">
+                        <span>⏱</span>
+                        <span>3 hours ago</span>
+                    </div>
+                    <div class="footer-item">
+                        <span>💬</span>
+                        <span>1 message</span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        function switchView(button, viewType) {
+            const card = button.closest('.project-card');
+            const contentArea = card.querySelector('.content-area');
+            const buttons = card.querySelectorAll('.view-toggle-btn');
+            const views = contentArea.querySelectorAll('.content-view');
+
+            // Update button states
+            buttons.forEach(btn => btn.classList.remove('active'));
+            button.classList.add('active');
+
+            // Update view visibility
+            views.forEach(view => {
+                if (view.classList.contains(`${viewType}-view`)) {
+                    view.classList.add('active');
+                } else {
+                    view.classList.remove('active');
+                }
+            });
+        }
+    </script>
+</body>
+</html>

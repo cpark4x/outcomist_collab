@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Style 4: Vibrant Modern</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 30%, #f093fb 100%);
+            color: #1a1a2e;
+            padding: 40px;
+            min-height: 100vh;
+        }
+
+        .header {
+            margin-bottom: 40px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 36px;
+            font-weight: 800;
+            color: white;
+            margin-bottom: 8px;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .header p {
+            font-size: 16px;
+            color: rgba(255, 255, 255, 0.9);
+            font-weight: 500;
+        }
+
+        .projects-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+            gap: 28px;
+        }
+
+        .project-card {
+            background: white;
+            border-radius: 20px;
+            padding: 28px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .project-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 6px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+        }
+
+        .project-card.needs-attention::before {
+            background: linear-gradient(90deg, #f093fb, #f5576c);
+        }
+
+        .project-card.running::before {
+            background: linear-gradient(90deg, #4facfe, #00f2fe);
+        }
+
+        .project-card.complete::before {
+            background: linear-gradient(90deg, #43e97b, #38f9d7);
+        }
+
+        .project-card:hover {
+            transform: translateY(-6px) scale(1.02);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 20px;
+        }
+
+        .project-title {
+            font-size: 20px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 6px;
+        }
+
+        .project-card.needs-attention .project-title {
+            background: linear-gradient(135deg, #f093fb, #f5576c);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .project-card.running .project-title {
+            background: linear-gradient(135deg, #4facfe, #00f2fe);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .project-card.complete .project-title {
+            background: linear-gradient(135deg, #43e97b, #38f9d7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .project-meta {
+            font-size: 13px;
+            color: #7C3AED;
+            font-weight: 600;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 18px;
+            border-radius: 30px;
+            font-size: 12px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .status-badge.needs-attention {
+            background: linear-gradient(135deg, #f093fb, #f5576c);
+            color: white;
+        }
+
+        .status-badge.running {
+            background: linear-gradient(135deg, #4facfe, #00f2fe);
+            color: white;
+        }
+
+        .status-badge.complete {
+            background: linear-gradient(135deg, #43e97b, #38f9d7);
+            color: white;
+        }
+
+        .status-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: white;
+            animation: pulse-bright 1.5s infinite;
+        }
+
+        @keyframes pulse-bright {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.3); opacity: 0.7; }
+        }
+
+        .project-content {
+            margin-bottom: 20px;
+        }
+
+        .task-info {
+            font-size: 15px;
+            color: #4B5563;
+            margin-bottom: 16px;
+            font-weight: 500;
+        }
+
+        .progress-bar {
+            height: 10px;
+            background: #F3F4F6;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 20px;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.06);
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 0 10px rgba(102, 126, 234, 0.5);
+        }
+
+        .progress-fill.complete {
+            background: linear-gradient(90deg, #43e97b, #38f9d7);
+            box-shadow: 0 0 10px rgba(67, 233, 123, 0.5);
+        }
+
+        .preview-section {
+            background: linear-gradient(135deg, #f6f7fb 0%, #f1f3fb 100%);
+            border-radius: 14px;
+            padding: 20px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            color: #374151;
+            line-height: 1.7;
+            border: 2px solid #E5E7EB;
+        }
+
+        .preview-label {
+            font-size: 11px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #7C3AED;
+            margin-bottom: 10px;
+        }
+
+        .card-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 14px 24px;
+            border-radius: 12px;
+            border: none;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.5);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: #667eea;
+            border: 2px solid #667eea;
+        }
+
+        .btn-secondary:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .timestamp {
+            font-size: 12px;
+            color: #9CA3AF;
+            margin-top: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🚀 My Projects</h1>
+        <p>3 active projects · 1 needs your attention</p>
+    </div>
+
+    <div class="projects-grid">
+        <!-- Project 1: Needs Attention -->
+        <div class="project-card needs-attention">
+            <div class="card-header">
+                <div>
+                    <div class="project-title">Outcomist Collab</div>
+                    <div class="project-meta">Marketing Website</div>
+                </div>
+                <div class="status-badge needs-attention">
+                    <span class="status-indicator"></span>
+                    Needs Input
+                </div>
+            </div>
+
+            <div class="project-content">
+                <div class="task-info">Review homepage design options</div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 65%"></div>
+                </div>
+
+                <div class="preview-section">
+                    <div class="preview-label">🎨 Question for You</div>
+                    I've created three hero section designs. Which direction feels right for your brand: bold & colorful, minimal & elegant, or data-driven & professional?
+                </div>
+            </div>
+
+            <div class="card-actions">
+                <button class="btn btn-primary">Review Now</button>
+                <button class="btn btn-secondary">Details</button>
+            </div>
+
+            <div class="timestamp">⏱ Waiting 14 minutes</div>
+        </div>
+
+        <!-- Project 2: Running -->
+        <div class="project-card running">
+            <div class="card-header">
+                <div>
+                    <div class="project-title">Q4 Financial Report</div>
+                    <div class="project-meta">Data Analysis</div>
+                </div>
+                <div class="status-badge running">
+                    <span class="status-indicator"></span>
+                    Running
+                </div>
+            </div>
+
+            <div class="project-content">
+                <div class="task-info">Analyzing expense trends across departments</div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 45%"></div>
+                </div>
+
+                <div class="preview-section">
+                    <div class="preview-label">📊 Current Progress</div>
+                    • Processed 847 transactions<br>
+                    • Identified 3 anomalies<br>
+                    • Running statistical analysis...
+                </div>
+            </div>
+
+            <div class="card-actions">
+                <button class="btn btn-secondary">View Progress</button>
+            </div>
+
+            <div class="timestamp">⚡ Started 8 minutes ago</div>
+        </div>
+
+        <!-- Project 3: Complete -->
+        <div class="project-card complete">
+            <div class="card-header">
+                <div>
+                    <div class="project-title">Blog Post: AI Trends 2025</div>
+                    <div class="project-meta">Content Creation</div>
+                </div>
+                <div class="status-badge complete">
+                    <span class="status-indicator"></span>
+                    Complete
+                </div>
+            </div>
+
+            <div class="project-content">
+                <div class="task-info">Article written, edited, and formatted</div>
+                <div class="progress-bar">
+                    <div class="progress-fill complete" style="width: 100%"></div>
+                </div>
+
+                <div class="preview-section">
+                    <div class="preview-label">✨ Draft Preview</div>
+                    <strong>5 AI Trends That Will Transform Business in 2025</strong><br><br>
+                    The landscape of artificial intelligence is evolving rapidly. From autonomous agents to multi-modal systems, businesses that adapt early will gain significant advantages...
+                </div>
+            </div>
+
+            <div class="card-actions">
+                <button class="btn btn-primary">Open Draft</button>
+                <button class="btn btn-secondary">Edit</button>
+            </div>
+
+            <div class="timestamp">✅ Completed 2 hours ago</div>
+        </div>
+    </div>
+</body>
+</html>

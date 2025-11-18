@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Style 5: Technical Dense</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'JetBrains Mono', 'Courier New', monospace;
+            background: #0D1117;
+            color: #C9D1D9;
+            padding: 24px;
+            font-size: 13px;
+        }
+
+        .header {
+            margin-bottom: 24px;
+            padding: 16px;
+            background: #161B22;
+            border: 1px solid #30363D;
+            border-radius: 6px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 16px;
+            font-weight: 600;
+            color: #58A6FF;
+            margin-bottom: 4px;
+            letter-spacing: -0.5px;
+        }
+
+        .header p {
+            font-size: 11px;
+            color: #8B949E;
+        }
+
+        .header-stats {
+            display: flex;
+            gap: 20px;
+        }
+
+        .stat-item {
+            text-align: right;
+        }
+
+        .stat-value {
+            font-size: 18px;
+            font-weight: 700;
+            color: #58A6FF;
+        }
+
+        .stat-label {
+            font-size: 10px;
+            color: #8B949E;
+            text-transform: uppercase;
+        }
+
+        .projects-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+            gap: 16px;
+        }
+
+        .project-card {
+            background: #161B22;
+            border: 1px solid #30363D;
+            border-radius: 6px;
+            padding: 16px;
+            transition: all 0.2s;
+            font-size: 12px;
+        }
+
+        .project-card:hover {
+            border-color: #58A6FF;
+            box-shadow: 0 0 0 1px #58A6FF;
+        }
+
+        .project-card.needs-attention {
+            border-left: 3px solid #F85149;
+            background: #1C1416;
+        }
+
+        .project-card.running {
+            border-left: 3px solid #58A6FF;
+        }
+
+        .project-card.complete {
+            border-left: 3px solid #3FB950;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 12px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #21262D;
+        }
+
+        .project-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #C9D1D9;
+            margin-bottom: 4px;
+        }
+
+        .project-meta {
+            font-size: 11px;
+            color: #8B949E;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 10px;
+            border-radius: 3px;
+            font-size: 11px;
+            font-weight: 600;
+            border: 1px solid;
+        }
+
+        .status-badge.needs-attention {
+            background: rgba(248, 81, 73, 0.15);
+            color: #F85149;
+            border-color: #F85149;
+        }
+
+        .status-badge.running {
+            background: rgba(88, 166, 255, 0.15);
+            color: #58A6FF;
+            border-color: #58A6FF;
+        }
+
+        .status-badge.complete {
+            background: rgba(63, 185, 80, 0.15);
+            color: #3FB950;
+            border-color: #3FB950;
+        }
+
+        .status-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: currentColor;
+            animation: blink 1.5s infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        .project-content {
+            margin-bottom: 12px;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            padding: 8px;
+            background: #0D1117;
+            border-radius: 3px;
+        }
+
+        .info-label {
+            color: #8B949E;
+            font-size: 11px;
+        }
+
+        .info-value {
+            color: #C9D1D9;
+            font-weight: 600;
+        }
+
+        .progress-section {
+            margin-bottom: 12px;
+        }
+
+        .progress-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 6px;
+            font-size: 11px;
+        }
+
+        .progress-bar {
+            height: 6px;
+            background: #21262D;
+            border-radius: 3px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: #58A6FF;
+            transition: width 0.3s ease;
+            position: relative;
+        }
+
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .progress-fill.complete {
+            background: #3FB950;
+        }
+
+        .preview-section {
+            background: #0D1117;
+            border: 1px solid #21262D;
+            border-radius: 3px;
+            padding: 12px;
+            margin-bottom: 12px;
+            font-size: 11px;
+            color: #8B949E;
+            line-height: 1.6;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .preview-label {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: #58A6FF;
+            margin-bottom: 8px;
+            letter-spacing: 1px;
+        }
+
+        .code-block {
+            background: #000000;
+            border: 1px solid #30363D;
+            border-radius: 3px;
+            padding: 8px;
+            margin-top: 8px;
+            overflow-x: auto;
+        }
+
+        .card-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 8px 12px;
+            border-radius: 3px;
+            border: 1px solid;
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .btn-primary {
+            background: #238636;
+            color: white;
+            border-color: #238636;
+        }
+
+        .btn-primary:hover {
+            background: #2EA043;
+            border-color: #2EA043;
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: #C9D1D9;
+            border-color: #30363D;
+        }
+
+        .btn-secondary:hover {
+            background: #21262D;
+            border-color: #58A6FF;
+        }
+
+        .timestamp {
+            font-size: 10px;
+            color: #6E7681;
+            margin-top: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .timestamp::before {
+            content: '•';
+            color: #58A6FF;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div>
+            <h1>$ project-dashboard --list-active</h1>
+            <p>system.status: operational | env: production</p>
+        </div>
+        <div class="header-stats">
+            <div class="stat-item">
+                <div class="stat-value">3</div>
+                <div class="stat-label">Active</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value">1</div>
+                <div class="stat-label">Blocked</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value">8</div>
+                <div class="stat-label">Total</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="projects-grid">
+        <!-- Project 1: Needs Attention -->
+        <div class="project-card needs-attention">
+            <div class="card-header">
+                <div>
+                    <div class="project-title">outcomist_collab</div>
+                    <div class="project-meta">type: marketing_site | priority: high</div>
+                </div>
+                <div class="status-badge needs-attention">
+                    <span class="status-indicator"></span>
+                    BLOCKED
+                </div>
+            </div>
+
+            <div class="project-content">
+                <div class="info-row">
+                    <span class="info-label">current_task:</span>
+                    <span class="info-value">design_review_required</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">agent_state:</span>
+                    <span class="info-value">awaiting_user_input</span>
+                </div>
+
+                <div class="progress-section">
+                    <div class="progress-label">
+                        <span style="color: #8B949E;">completion:</span>
+                        <span style="color: #C9D1D9; font-weight: 600;">65%</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 65%"></div>
+                    </div>
+                </div>
+
+                <div class="preview-section">
+                    <div class="preview-label">→ USER INPUT REQUIRED</div>
+                    <div class="code-block">
+                    query: design_direction_choice<br>
+                    options: [<br>
+                    &nbsp;&nbsp;"bold_colorful",<br>
+                    &nbsp;&nbsp;"minimal_elegant",<br>
+                    &nbsp;&nbsp;"data_driven_professional"<br>
+                    ]<br>
+                    prompt: "Select preferred hero section design"
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-actions">
+                <button class="btn btn-primary">→ RESPOND</button>
+                <button class="btn btn-secondary">$ view --details</button>
+            </div>
+
+            <div class="timestamp">blocked_duration: 14m 32s</div>
+        </div>
+
+        <!-- Project 2: Running -->
+        <div class="project-card running">
+            <div class="card-header">
+                <div>
+                    <div class="project-title">q4_financial_report</div>
+                    <div class="project-meta">type: data_analysis | priority: medium</div>
+                </div>
+                <div class="status-badge running">
+                    <span class="status-indicator"></span>
+                    RUNNING
+                </div>
+            </div>
+
+            <div class="project-content">
+                <div class="info-row">
+                    <span class="info-label">current_task:</span>
+                    <span class="info-value">expense_trend_analysis</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">agent_state:</span>
+                    <span class="info-value">executing</span>
+                </div>
+
+                <div class="progress-section">
+                    <div class="progress-label">
+                        <span style="color: #8B949E;">completion:</span>
+                        <span style="color: #C9D1D9; font-weight: 600;">45%</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 45%"></div>
+                    </div>
+                </div>
+
+                <div class="preview-section">
+                    <div class="preview-label">→ EXECUTION LOG</div>
+                    <div class="code-block">
+                    [info] processed: 847 transactions<br>
+                    [warn] anomalies_detected: 3<br>
+                    [info] running: statistical_analysis<br>
+                    [info] eta: ~12 minutes
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-actions">
+                <button class="btn btn-secondary">$ tail -f logs</button>
+            </div>
+
+            <div class="timestamp">runtime: 8m 17s</div>
+        </div>
+
+        <!-- Project 3: Complete -->
+        <div class="project-card complete">
+            <div class="card-header">
+                <div>
+                    <div class="project-title">ai_trends_blog_2025</div>
+                    <div class="project-meta">type: content_creation | priority: low</div>
+                </div>
+                <div class="status-badge complete">
+                    <span class="status-indicator"></span>
+                    COMPLETE
+                </div>
+            </div>
+
+            <div class="project-content">
+                <div class="info-row">
+                    <span class="info-label">final_task:</span>
+                    <span class="info-value">format_and_export</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">agent_state:</span>
+                    <span class="info-value">success</span>
+                </div>
+
+                <div class="progress-section">
+                    <div class="progress-label">
+                        <span style="color: #8B949E;">completion:</span>
+                        <span style="color: #3FB950; font-weight: 600;">100%</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill complete" style="width: 100%"></div>
+                    </div>
+                </div>
+
+                <div class="preview-section">
+                    <div class="preview-label">→ OUTPUT PREVIEW</div>
+                    <div class="code-block">
+                    title: "5 AI Trends That Will Transform<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Business in 2025"<br>
+                    word_count: 2847<br>
+                    format: markdown<br>
+                    status: ready_for_review
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-actions">
+                <button class="btn btn-primary">$ open draft.md</button>
+                <button class="btn btn-secondary">$ edit</button>
+            </div>
+
+            <div class="timestamp">completed: 2h 14m ago</div>
+        </div>
+    </div>
+</body>
+</html>

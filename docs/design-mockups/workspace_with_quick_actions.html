@@ -1,0 +1,914 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Workspace with Quick Actions</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #1a1a1a;
+            color: #e0e0e0;
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        /* Top Toolbar */
+        .toolbar {
+            background: #2a2a2a;
+            border-bottom: 1px solid #3a3a3a;
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .toolbar-title {
+            color: #e0e0e0;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .mode-switcher {
+            display: flex;
+            gap: 8px;
+            margin-left: 20px;
+        }
+
+        .mode-btn {
+            background: #333;
+            color: #aaa;
+            border: 1px solid #444;
+            padding: 6px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .mode-btn:hover {
+            background: #3a3a3a;
+            color: #e0e0e0;
+        }
+
+        .mode-btn.active {
+            background: #4A90E2;
+            color: white;
+            border-color: #4A90E2;
+        }
+
+        .toolbar-btn {
+            background: #4A90E2;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            transition: background 0.2s;
+            margin-left: auto;
+        }
+
+        .toolbar-btn:hover {
+            background: #3a7bc8;
+        }
+
+        .toolbar-info {
+            color: #888;
+            font-size: 12px;
+        }
+
+        /* OVERVIEW MODE */
+        .overview-mode {
+            display: block;
+            position: relative;
+            width: 100%;
+            height: calc(100vh - 49px);
+            overflow: auto;
+        }
+
+        .overview-mode.hidden {
+            display: none;
+        }
+
+        .canvas-workspace {
+            position: relative;
+            width: 100%;
+            min-height: 100%;
+            padding: 20px;
+        }
+
+        /* Project Cards */
+        .project-card-mini {
+            position: absolute;
+            background: #2a2a2a;
+            border: 2px solid #3a3a3a;
+            border-radius: 8px;
+            width: 380px;
+            height: 340px;
+            cursor: pointer;
+            transition: all 0.2s;
+            overflow: hidden;
+        }
+
+        .project-card-mini:hover {
+            border-color: #4A90E2;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(74, 144, 226, 0.3);
+        }
+
+        .mini-header {
+            background: #333;
+            padding: 12px 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 1px solid #3a3a3a;
+        }
+
+        .mini-title {
+            flex: 1;
+            font-size: 13px;
+            font-weight: 600;
+            color: #e0e0e0;
+        }
+
+        /* Status Badge */
+        .status-badge {
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            white-space: nowrap;
+        }
+
+        .status-badge.running {
+            background: rgba(74, 144, 226, 0.2);
+            color: #4A90E2;
+            border: 1px solid rgba(74, 144, 226, 0.3);
+        }
+
+        .status-badge.waiting {
+            background: rgba(255, 193, 7, 0.2);
+            color: #FFC107;
+            border: 1px solid rgba(255, 193, 7, 0.3);
+        }
+
+        .status-badge.complete {
+            background: rgba(80, 200, 120, 0.2);
+            color: #50C878;
+            border: 1px solid rgba(80, 200, 120, 0.3);
+        }
+
+        .status-badge.error {
+            background: rgba(231, 76, 60, 0.2);
+            color: #E74C3C;
+            border: 1px solid rgba(231, 76, 60, 0.3);
+        }
+
+        .status-badge.idle {
+            background: rgba(136, 136, 136, 0.2);
+            color: #888;
+            border: 1px solid rgba(136, 136, 136, 0.3);
+        }
+
+        /* Status indicator dot animation */
+        .status-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: currentColor;
+        }
+
+        .status-badge.running .status-dot {
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(0.8); }
+        }
+
+        .status-badge.waiting .status-dot {
+            animation: blink 1s ease-in-out infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        /* Status Details Section */
+        .status-details {
+            padding: 15px;
+            background: #252525;
+            border-bottom: 1px solid #3a3a3a;
+        }
+
+        .status-message {
+            font-size: 12px;
+            color: #aaa;
+            line-height: 1.5;
+        }
+
+        .status-message strong {
+            color: #e0e0e0;
+        }
+
+        .action-needed {
+            margin-top: 8px;
+            padding: 8px 12px;
+            background: rgba(255, 193, 7, 0.1);
+            border: 1px solid rgba(255, 193, 7, 0.3);
+            border-radius: 6px;
+            font-size: 11px;
+            color: #FFC107;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* QUICK ACTIONS - The key addition */
+        .quick-actions {
+            padding: 12px 15px;
+            background: #1e1e1e;
+            border-bottom: 1px solid #3a3a3a;
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .quick-action-btn {
+            background: #333;
+            color: #e0e0e0;
+            border: 1px solid #444;
+            padding: 8px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 500;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .quick-action-btn:hover {
+            background: #3a3a3a;
+            border-color: #4A90E2;
+            color: #4A90E2;
+            transform: translateY(-1px);
+        }
+
+        .quick-action-btn.primary {
+            background: #4A90E2;
+            border-color: #4A90E2;
+            color: white;
+        }
+
+        .quick-action-btn.primary:hover {
+            background: #3a7bc8;
+            color: white;
+        }
+
+        .quick-action-btn.secondary {
+            background: #50C878;
+            border-color: #50C878;
+            color: white;
+        }
+
+        .quick-action-btn.secondary:hover {
+            background: #40b368;
+            color: white;
+        }
+
+        /* Quick input field */
+        .quick-input {
+            flex: 1;
+            min-width: 150px;
+            background: #2a2a2a;
+            border: 1px solid #3a3a3a;
+            border-radius: 6px;
+            padding: 8px 12px;
+            color: #e0e0e0;
+            font-size: 12px;
+            font-family: inherit;
+        }
+
+        .quick-input:focus {
+            outline: none;
+            border-color: #4A90E2;
+        }
+
+        .quick-input::placeholder {
+            color: #666;
+        }
+
+        /* Hide quick actions by default, show only for cards that need them */
+        .quick-actions.hidden {
+            display: none;
+        }
+
+        .mini-preview {
+            padding: 15px;
+            color: #aaa;
+            font-size: 12px;
+            line-height: 1.6;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .mini-meta {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 10px 15px;
+            background: #252525;
+            border-top: 1px solid #3a3a3a;
+            font-size: 11px;
+            color: #666;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        /* FOCUS MODE */
+        .focus-mode {
+            display: none;
+            width: 100%;
+            height: calc(100vh - 49px);
+        }
+
+        .focus-mode.active {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .focus-header {
+            background: #2a2a2a;
+            border-bottom: 1px solid #3a3a3a;
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .back-btn {
+            background: #333;
+            border: 1px solid #444;
+            color: #aaa;
+            padding: 8px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+
+        .back-btn:hover {
+            background: #3a3a3a;
+            color: #e0e0e0;
+        }
+
+        .focus-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #e0e0e0;
+            flex: 1;
+        }
+
+        .focus-content {
+            display: grid;
+            grid-template-columns: 45% 55%;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        /* Agent Panel */
+        .agent-panel {
+            background: #252525;
+            border-right: 1px solid #3a3a3a;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .panel-header {
+            padding: 12px 20px;
+            background: #2a2a2a;
+            border-bottom: 1px solid #3a3a3a;
+            font-size: 13px;
+            font-weight: 600;
+            color: #aaa;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .conversation-area {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .message {
+            background: #2a2a2a;
+            border: 1px solid #3a3a3a;
+            border-radius: 8px;
+            padding: 12px 15px;
+            margin-bottom: 12px;
+        }
+
+        .message-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+
+        .message-timestamp {
+            color: #666;
+            font-size: 11px;
+        }
+
+        .message-role {
+            font-size: 11px;
+            font-weight: 600;
+            padding: 3px 8px;
+            border-radius: 4px;
+        }
+
+        .message-role.user {
+            background: #4A90E2;
+            color: white;
+        }
+
+        .message-role.assistant {
+            background: #50C878;
+            color: white;
+        }
+
+        .message-content {
+            color: #ccc;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .command-input-area {
+            border-top: 1px solid #3a3a3a;
+            padding: 15px 20px;
+            background: #2a2a2a;
+        }
+
+        .command-input {
+            width: 100%;
+            background: #1a1a1a;
+            border: 1px solid #3a3a3a;
+            border-radius: 8px;
+            padding: 12px 15px;
+            color: #e0e0e0;
+            font-size: 14px;
+            font-family: inherit;
+        }
+
+        .command-input:focus {
+            outline: none;
+            border-color: #4A90E2;
+        }
+
+        .command-input::placeholder {
+            color: #666;
+        }
+
+        /* Output Panel */
+        .output-panel {
+            background: #1e1e1e;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .output-area {
+            flex: 1;
+            overflow: auto;
+            padding: 20px;
+        }
+
+        .output-content {
+            background: #252525;
+            border: 1px solid #3a3a3a;
+            border-radius: 8px;
+            padding: 30px;
+            min-height: 100%;
+        }
+
+        /* Game styling */
+        .game-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 400px;
+        }
+
+        .game-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 120px);
+            gap: 12px;
+            margin: 30px 0;
+        }
+
+        .game-cell {
+            width: 120px;
+            height: 120px;
+            background: #2a2a2a;
+            border: 2px solid #3a3a3a;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 60px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .game-cell:hover:empty {
+            background: #333;
+            border-color: #4A90E2;
+        }
+
+        .game-cell.x {
+            color: #4A90E2;
+        }
+
+        .game-cell.o {
+            color: #E74C3C;
+        }
+
+        .game-status {
+            color: #e0e0e0;
+            font-size: 20px;
+            font-weight: 500;
+            margin-bottom: 20px;
+        }
+
+        /* Document styling */
+        .document-output {
+            color: #ccc;
+            font-size: 14px;
+            line-height: 1.8;
+        }
+
+        .document-output h3 {
+            color: #e0e0e0;
+            margin: 20px 0 10px 0;
+            font-size: 18px;
+        }
+
+        .document-output ul {
+            padding-left: 25px;
+            color: #aaa;
+        }
+
+        .document-output li {
+            margin: 8px 0;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #1a1a1a;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #444;
+            border-radius: 5px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+    </style>
+</head>
+<body>
+    <!-- Top Toolbar -->
+    <div class="toolbar">
+        <div class="toolbar-title">Default Workspace</div>
+
+        <div class="mode-switcher">
+            <button class="mode-btn active" onclick="switchMode('overview')">📊 Overview</button>
+            <button class="mode-btn" onclick="switchMode('focus')" id="focusModeBtn" disabled>🎯 Focus</button>
+        </div>
+
+        <button class="toolbar-btn" onclick="addProject()">+ New Project</button>
+        <div class="toolbar-info">Projects: 4</div>
+        <div class="toolbar-info">Synced 1:50:20 PM</div>
+    </div>
+
+    <!-- OVERVIEW MODE -->
+    <div class="overview-mode" id="overviewMode">
+        <div class="canvas-workspace">
+
+            <!-- Project 1: AI Running -->
+            <div class="project-card-mini" style="top: 20px; left: 20px;" onclick="handleCardClick(event, 'tictactoe')">
+                <div class="mini-header">
+                    <div class="mini-title">Tic Tac Toe Game</div>
+                    <div class="status-badge running">
+                        <div class="status-dot"></div>
+                        AI Running
+                    </div>
+                </div>
+                <div class="status-details">
+                    <div class="status-message">
+                        <strong>Currently:</strong> Implementing score counter and reset functionality...
+                    </div>
+                </div>
+                <div class="mini-preview">
+                    Created interactive 3x3 grid with alternating turns, win detection, and smooth animations.
+                </div>
+                <div class="mini-meta">
+                    <span>Last updated: 2 min ago</span>
+                    <span>8 messages</span>
+                </div>
+            </div>
+
+            <!-- Project 2: Waiting for Input - WITH QUICK ACTIONS -->
+            <div class="project-card-mini" style="top: 20px; left: 420px;" onclick="handleCardClick(event, 'vegas')">
+                <div class="mini-header">
+                    <div class="mini-title">Vegas Family Trip</div>
+                    <div class="status-badge waiting">
+                        <div class="status-dot"></div>
+                        Needs Input
+                    </div>
+                </div>
+                <div class="status-details">
+                    <div class="action-needed">
+                        ⚠️ How many travelers? What dates?
+                    </div>
+                </div>
+                <!-- QUICK ACTIONS -->
+                <div class="quick-actions" onclick="event.stopPropagation()">
+                    <input type="text" class="quick-input" placeholder="Type your answer..." id="vegasInput">
+                    <button class="quick-action-btn primary" onclick="quickReply('vegas', 'input')">
+                        ✓ Send
+                    </button>
+                    <button class="quick-action-btn" onclick="quickReply('vegas', 'later')">
+                        Later
+                    </button>
+                </div>
+                <div class="mini-preview">
+                    Planning document template created. Ready for your family details to generate itinerary.
+                </div>
+                <div class="mini-meta">
+                    <span>Last updated: 5 min ago</span>
+                    <span>4 messages</span>
+                </div>
+            </div>
+
+            <!-- Project 3: Complete - WITH QUICK ACTIONS -->
+            <div class="project-card-mini" style="top: 380px; left: 20px;" onclick="handleCardClick(event, 'snake')">
+                <div class="mini-header">
+                    <div class="mini-title">Snake Game</div>
+                    <div class="status-badge complete">
+                        <div class="status-dot"></div>
+                        Complete
+                    </div>
+                </div>
+                <div class="status-details">
+                    <div class="status-message">
+                        <strong>AI:</strong> All features implemented. Want to add anything else?
+                    </div>
+                </div>
+                <!-- QUICK ACTIONS -->
+                <div class="quick-actions" onclick="event.stopPropagation()">
+                    <button class="quick-action-btn secondary" onclick="quickReply('snake', 'yes')">
+                        ✓ Yes, improve it
+                    </button>
+                    <button class="quick-action-btn" onclick="quickReply('snake', 'no')">
+                        No, looks good
+                    </button>
+                    <button class="quick-action-btn" onclick="openProject('snake')">
+                        💬 Open
+                    </button>
+                </div>
+                <div class="mini-preview">
+                    Classic snake game with arrow key controls, score tracking, high score persistence, adjustable speed.
+                </div>
+                <div class="mini-meta">
+                    <span>Last updated: 1 hour ago</span>
+                    <span>12 messages</span>
+                </div>
+            </div>
+
+            <!-- Project 4: Idle -->
+            <div class="project-card-mini" style="top: 380px; left: 420px;" onclick="handleCardClick(event, 'presentation')">
+                <div class="mini-header">
+                    <div class="mini-title">Presentation Helper</div>
+                    <div class="status-badge idle">
+                        <div class="status-dot"></div>
+                        Idle
+                    </div>
+                </div>
+                <div class="status-details">
+                    <div class="status-message">
+                        <strong>Status:</strong> Project started but no recent activity
+                    </div>
+                </div>
+                <div class="mini-preview">
+                    Initial setup complete. Waiting for presentation topic and requirements to begin planning.
+                </div>
+                <div class="mini-meta">
+                    <span>Last updated: 3 hours ago</span>
+                    <span>1 message</span>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- FOCUS MODE -->
+    <div class="focus-mode" id="focusMode">
+        <div class="focus-header">
+            <button class="back-btn" onclick="switchMode('overview')">
+                ← Back to Overview
+            </button>
+            <div class="focus-title" id="focusProjectTitle">Project</div>
+            <div id="focusStatusBadge"></div>
+        </div>
+
+        <div class="focus-content">
+            <!-- Agent Conversation Panel -->
+            <div class="agent-panel">
+                <div class="panel-header">
+                    💬 Agent Conversation
+                </div>
+                <div class="conversation-area" id="conversationArea">
+                    <!-- Messages loaded dynamically -->
+                </div>
+                <div class="command-input-area">
+                    <input type="text" class="command-input" placeholder="Enter command... (↑↓ history, @ files, / commands)">
+                </div>
+            </div>
+
+            <!-- Output Panel -->
+            <div class="output-panel">
+                <div class="panel-header">
+                    🎮 Live Output
+                </div>
+                <div class="output-area">
+                    <div class="output-content" id="outputArea">
+                        <!-- Output loaded dynamically -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentMode = 'overview';
+        let currentProject = null;
+
+        const projects = {
+            tictactoe: {
+                title: 'Tic Tac Toe Game',
+                status: 'running',
+                statusText: 'AI Running',
+                conversation: [
+                    { time: '13:45:12', role: 'user', content: 'Create a tic tac toe game' },
+                    { time: '13:45:15', role: 'assistant', content: 'Creating game with interactive grid, win detection, and smooth animations...' },
+                ],
+                output: '<div class="game-container"><div class="game-status">Current turn: X</div><div class="game-grid"><div class="game-cell x">X</div><div class="game-cell"></div><div class="game-cell"></div><div class="game-cell o">O</div><div class="game-cell"></div><div class="game-cell"></div><div class="game-cell"></div><div class="game-cell x">X</div><div class="game-cell"></div></div></div>'
+            },
+            vegas: {
+                title: 'Vegas Family Trip',
+                status: 'waiting',
+                statusText: 'Needs Input',
+                conversation: [
+                    { time: '13:46:03', role: 'user', content: 'Help me plan Vegas trip' },
+                    { time: '13:46:08', role: 'assistant', content: 'I need: travel dates, number of travelers, and interests. What are your dates?' }
+                ],
+                output: '<div class="document-output"><h3>Trip Planning</h3><p>Waiting for your details...</p></div>'
+            },
+            snake: {
+                title: 'Snake Game',
+                status: 'complete',
+                statusText: 'Complete',
+                conversation: [
+                    { time: '12:30:45', role: 'user', content: 'Create snake game' },
+                    { time: '12:35:18', role: 'assistant', content: '✅ Complete! All features implemented.' }
+                ],
+                output: '<div class="game-container"><div style="font-size: 48px; margin: 40px 0;">🐍</div><div>Snake Game Ready!</div></div>'
+            },
+            presentation: {
+                title: 'Presentation Helper',
+                status: 'idle',
+                statusText: 'Idle',
+                conversation: [
+                    { time: '10:15:30', role: 'user', content: 'Help with presentation' },
+                    { time: '10:15:35', role: 'assistant', content: 'What\'s the topic?' }
+                ],
+                output: '<div style="text-align: center; padding: 60px; color: #666;"><div style="font-size: 48px;">📊</div><div>Waiting for details...</div></div>'
+            }
+        };
+
+        function handleCardClick(event, projectId) {
+            // Check if click was on quick actions area
+            if (event.target.closest('.quick-actions')) {
+                return; // Don't open project
+            }
+            openProject(projectId);
+        }
+
+        function quickReply(projectId, action) {
+            if (action === 'input') {
+                const input = document.getElementById(projectId + 'Input');
+                const value = input.value.trim();
+                if (value) {
+                    alert(`Sending to ${projectId}: "${value}"`);
+                    // Here you would actually send the message to the AI
+                    input.value = '';
+                } else {
+                    input.focus();
+                }
+            } else if (action === 'yes') {
+                alert(`Opening ${projectId} for improvements`);
+                openProject(projectId);
+            } else if (action === 'no') {
+                alert(`Marked ${projectId} as complete`);
+            } else if (action === 'later') {
+                alert(`Snoozed ${projectId} - will remind you later`);
+            }
+        }
+
+        function switchMode(mode) {
+            currentMode = mode;
+            const overviewMode = document.getElementById('overviewMode');
+            const focusMode = document.getElementById('focusMode');
+            const modeButtons = document.querySelectorAll('.mode-btn');
+
+            if (mode === 'overview') {
+                overviewMode.classList.remove('hidden');
+                focusMode.classList.remove('active');
+                modeButtons[0].classList.add('active');
+                modeButtons[1].classList.remove('active');
+                document.getElementById('focusModeBtn').disabled = true;
+            } else {
+                overviewMode.classList.add('hidden');
+                focusMode.classList.add('active');
+                modeButtons[0].classList.remove('active');
+                modeButtons[1].classList.add('active');
+            }
+        }
+
+        function openProject(projectId) {
+            currentProject = projectId;
+            const project = projects[projectId];
+
+            document.getElementById('focusProjectTitle').textContent = project.title;
+
+            const statusBadge = document.getElementById('focusStatusBadge');
+            statusBadge.className = `status-badge ${project.status}`;
+            statusBadge.innerHTML = `<div class="status-dot"></div>${project.statusText}`;
+
+            const conversationArea = document.getElementById('conversationArea');
+            conversationArea.innerHTML = project.conversation.map(msg => `
+                <div class="message">
+                    <div class="message-header">
+                        <span class="message-timestamp">${msg.time}</span>
+                        <span class="message-role ${msg.role}">${msg.role.toUpperCase()}</span>
+                    </div>
+                    <div class="message-content">${msg.content}</div>
+                </div>
+            `).join('');
+
+            document.getElementById('outputArea').innerHTML = project.output;
+
+            document.getElementById('focusModeBtn').disabled = false;
+            switchMode('focus');
+        }
+
+        function addProject() {
+            alert('New project creation');
+        }
+    </script>
+</body>
+</html>
