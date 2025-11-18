@@ -56,6 +56,9 @@ data/
 *.log
 logs/
 
+# Process ID files
+*.pid
+
 # Testing
 .pytest_cache/
 .coverage

@@ -56,3 +56,13 @@ body {
 .animate-spin {
   animation: spin 1s linear infinite;
 }
+
+/* Typing pulse animation for streaming */
+@keyframes pulse-typing {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+.animate-pulse-typing {
+  animation: pulse-typing 1s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}

@@ -93,14 +93,16 @@ async def send_message(
         async def event_generator():
             """Generate SSE events from Claude streaming response."""
             try:
+                from uuid import UUID
                 async for event in stream_claude_response(
-                    session_id=session_id,
+                    session_id=UUID(session_id),
                     user_message=message.content,
                     db=db,
                     api_key=settings.anthropic_api_key,
                 ):
                     yield event
             except Exception as e:
+                logger.error(f"Stream error: {e}", exc_info=True)
                 yield f'data: {{"type": "error", "error": "{str(e)}"}}\n\n'
 
         return EventSourceResponse(

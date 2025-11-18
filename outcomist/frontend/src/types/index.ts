@@ -1,7 +1,20 @@
 export type ProjectType = 'game' | 'trip' | 'content' | 'presentation';
-export type ProjectStatus = 'idle' | 'running' | 'waiting' | 'complete';
+export type ProjectStatus = 'idle' | 'planning' | 'working' | 'needs_input' | 'verifying' | 'complete';
 export type MessageRole = 'user' | 'assistant' | 'system';
 export type MessageStatus = 'pending' | 'streaming' | 'complete' | 'error';
+export type ProgressPhase = 'understanding' | 'planning' | 'thinking' | 'generating' | 'tool_use' | 'complete';
+
+export interface ProgressData {
+  phase: ProgressPhase;
+  percentage: number;
+  statusText: string;
+  step?: {
+    current: number;
+    total: number;
+  };
+  startTime: Date;
+  filename?: string;
+}
 
 export interface Project {
   id: string;
@@ -30,6 +43,7 @@ export interface Message {
   content: string;
   timestamp: string;
   status: MessageStatus;
+  progress?: ProgressData;
 }
 
 export interface File {
@@ -45,8 +59,15 @@ export interface File {
 export interface SSEEvent {
   type: 'message_start' | 'message_delta' | 'message_complete' | 'status_update' | 'error';
   session_id?: string;
+  project_id?: string;
   content?: string;
   message?: Message;
   status?: ProjectStatus;
+  status_message?: string;
+  status_context?: {
+    agent?: 'planner' | 'executor' | 'verifier';
+    step?: string;
+  };
+  previous_status?: ProjectStatus;
   error?: string;
 }

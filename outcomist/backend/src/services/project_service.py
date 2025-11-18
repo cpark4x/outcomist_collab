@@ -1,8 +1,13 @@
 """Project service."""
 
+from datetime import datetime
+from pathlib import Path
+
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
+from ..database.models import File
 from ..database.models import Project
 from ..database.models import ProjectStatus
 from ..database.models import ProjectType
@@ -33,7 +38,7 @@ class ProjectService:
             name=name,
             description=description,
             type=project_type,
-            status=ProjectStatus.ACTIVE,
+            status=ProjectStatus.IDLE,
         )
         db.add(project)
         await db.commit()
@@ -42,15 +47,19 @@ class ProjectService:
 
     @staticmethod
     async def get_all_projects(db: AsyncSession) -> list[Project]:
-        """Get all projects.
+        """Get all projects (excluding soft-deleted).
 
         Args:
             db: Database session
 
         Returns:
-            List of all projects
+            List of all active projects
         """
-        result = await db.execute(select(Project).order_by(Project.updated_at.desc()))
+        result = await db.execute(
+            select(Project)
+            .where(Project.deleted_at.is_(None))
+            .order_by(Project.updated_at.desc())
+        )
         return list(result.scalars().all())
 
     @staticmethod
@@ -104,7 +113,7 @@ class ProjectService:
 
     @staticmethod
     async def delete_project(db: AsyncSession, project_id: str) -> bool:
-        """Delete project.
+        """Soft delete project and cleanup all associated files.
 
         Args:
             db: Database session
@@ -117,6 +126,20 @@ class ProjectService:
         if not project:
             return False
 
-        await db.delete(project)
+        # Query files separately to avoid lazy loading issues
+        result = await db.execute(
+            select(File).where(File.project_id == project_id)
+        )
+        files = result.scalars().all()
+
+        # Delete all physical files from disk
+        for file in files:
+            try:
+                Path(file.path).unlink(missing_ok=True)
+            except Exception:
+                pass  # Continue even if file deletion fails
+
+        # Soft delete: set deleted_at timestamp
+        project.deleted_at = datetime.utcnow()
         await db.commit()
         return True

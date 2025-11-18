@@ -72,7 +72,12 @@ export const api = {
   getMessages: async (sessionId: string): Promise<Message[]> => {
     const response = await fetch(`${API_BASE}/sessions/${sessionId}/messages`);
     if (!response.ok) throw new Error('Failed to fetch messages');
-    return response.json();
+    const data = await response.json();
+    // Transform backend created_at to frontend timestamp
+    return data.map((msg: any) => ({
+      ...msg,
+      timestamp: msg.created_at || msg.timestamp,
+    }));
   },
 
   sendMessage: async (

@@ -6,12 +6,16 @@ import { AgentView } from './AgentView';
 import { PreviewView } from './PreviewView';
 import { FilesView } from './FilesView';
 import { InlineInput } from './InlineInput';
+import { ActivityBar } from './ActivityBar';
 import { useSessions } from '../../hooks/useSessions';
 import { useMessages } from '../../hooks/useMessages';
 import { api } from '../../api/client';
 
 interface ProjectCardProps {
   project: Project;
+  onDelete?: (projectId: string) => void;
+  className?: string;
+  viewMode?: 'grid' | 'list';
 }
 
 type ViewType = 'agent' | 'preview' | 'files';
@@ -23,11 +27,13 @@ const projectIcons: Record<string, string> = {
   presentation: '📊',
 };
 
-export function ProjectCard({ project }: ProjectCardProps) {
+export function ProjectCard({ project, onDelete, className, viewMode = 'grid' }: ProjectCardProps) {
   const [currentView, setCurrentView] = useState<ViewType>('agent');
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(
     project.current_session_id
   );
+  const [activityBarCollapsed, setActivityBarCollapsed] = useState(true);
+  const [prevStatus, setPrevStatus] = useState(project.status);
 
   // Track if we're creating a session to prevent race conditions
   const creatingSessionRef = useRef(false);
@@ -63,6 +69,33 @@ export function ProjectCard({ project }: ProjectCardProps) {
     initSession();
   }, [sessions, sessionsLoading, currentSessionId, project.id]);
 
+  // Auto-expand activity bar on status change or streaming
+  useEffect(() => {
+    const hasStreamingMessage = messages.some(
+      (m) => m.role === 'assistant' && m.status === 'streaming'
+    );
+
+    if (project.status !== prevStatus) {
+      setPrevStatus(project.status);
+
+      // Expand when status changes to active state
+      if (project.status !== 'idle' && project.status !== 'complete') {
+        setActivityBarCollapsed(false);
+      }
+
+      // Auto-collapse 10s after completion
+      if (project.status === 'complete') {
+        const timer = setTimeout(() => {
+          setActivityBarCollapsed(true);
+        }, 10000);
+        return () => clearTimeout(timer);
+      }
+    } else if (hasStreamingMessage && activityBarCollapsed) {
+      // Expand when streaming starts
+      setActivityBarCollapsed(false);
+    }
+  }, [project.status, prevStatus, messages, activityBarCollapsed]);
+
   const handleSendMessage = async (content: string) => {
     if (!currentSessionId) return;
 
@@ -77,8 +110,9 @@ export function ProjectCard({ project }: ProjectCardProps) {
     };
     addMessage(userMessage);
 
-    // Create placeholder for assistant response
+    // Create placeholder for assistant response with progress tracking
     const assistantMessageId = `temp-assistant-${Date.now()}`;
+    const startTime = new Date();
     addMessage({
       id: assistantMessageId,
       session_id: currentSessionId,
@@ -86,6 +120,12 @@ export function ProjectCard({ project }: ProjectCardProps) {
       content: '',
       timestamp: new Date().toISOString(),
       status: 'streaming',
+      progress: {
+        phase: 'understanding',
+        percentage: 0,
+        statusText: 'Starting...',
+        startTime,
+      },
     });
 
     try {
@@ -105,33 +145,52 @@ export function ProjectCard({ project }: ProjectCardProps) {
           const lines = chunk.split('\n');
 
           for (const line of lines) {
-            if (line.startsWith('data: ')) {
-              const data = line.slice(6).trim();
-              if (!data) continue;
+            // Handle both "data: " and "data: data: " prefixes
+            let data = '';
+            if (line.startsWith('data: data: ')) {
+              data = line.slice(12).trim();
+            } else if (line.startsWith('data: ')) {
+              data = line.slice(6).trim();
+            } else {
+              continue;
+            }
 
-              try {
-                const parsed = JSON.parse(data);
+            if (!data) continue;
 
-                // Handle different event types
-                if (parsed.type === 'message_delta' && parsed.content) {
-                  accumulatedContent += parsed.content;
-                  updateMessage(assistantMessageId, {
-                    content: accumulatedContent,
-                    status: 'streaming',
-                  });
-                } else if (parsed.type === 'message_complete') {
-                  updateMessage(assistantMessageId, {
-                    status: 'complete',
-                  });
-                } else if (parsed.type === 'error') {
-                  updateMessage(assistantMessageId, {
-                    content: `Error: ${parsed.error}`,
-                    status: 'error',
-                  });
-                }
-              } catch (e) {
-                console.error('Failed to parse SSE event:', e, 'Line:', line);
+            try {
+              const parsed = JSON.parse(data);
+
+              // Handle different event types
+              if (parsed.type === 'status_update') {
+                // Update progress data
+                updateMessage(assistantMessageId, {
+                  progress: {
+                    phase: parsed.phase,
+                    percentage: parsed.progress * 100,
+                    statusText: parsed.message,
+                    startTime,
+                  },
+                });
+              } else if (parsed.type === 'message_delta' && parsed.content) {
+                accumulatedContent += parsed.content;
+                updateMessage(assistantMessageId, {
+                  content: accumulatedContent,
+                  status: 'streaming',
+                });
+              } else if (parsed.type === 'message_complete') {
+                updateMessage(assistantMessageId, {
+                  status: 'complete',
+                  progress: undefined, // Clear progress on completion
+                });
+              } else if (parsed.type === 'error') {
+                updateMessage(assistantMessageId, {
+                  content: `Error: ${parsed.error}`,
+                  status: 'error',
+                  progress: undefined,
+                });
               }
+            } catch (e) {
+              console.error('Failed to parse SSE event:', e, 'Line:', line);
             }
           }
         }
@@ -142,8 +201,8 @@ export function ProjectCard({ project }: ProjectCardProps) {
         });
       }
 
-      // Refetch messages from API to get the real saved messages
-      await refetchMessages();
+      // Don't refetch - backend already saved messages, and refetch erases our local state
+      // await refetchMessages();
     } catch (error) {
       console.error('Failed to send message:', error);
       updateMessage(assistantMessageId, {
@@ -158,6 +217,22 @@ export function ProjectCard({ project }: ProjectCardProps) {
     const currentIndex = views.indexOf(currentView);
     const nextIndex = (currentIndex + 1) % views.length;
     setCurrentView(views[nextIndex]);
+  };
+
+  const handleDelete = async () => {
+    const confirmed = window.confirm(
+      `Are you sure you want to delete "${project.name}"?\n\nThis will:\n• Remove the project from your workspace\n• Delete all files\n• Preserve conversation history for learning`
+    );
+
+    if (!confirmed) return;
+
+    try {
+      await api.deleteProject(project.id);
+      onDelete?.(project.id);
+    } catch (error) {
+      console.error('Failed to delete project:', error);
+      alert('Failed to delete project. Please try again.');
+    }
   };
 
   const getViewButtonText = () => {
@@ -183,43 +258,59 @@ export function ProjectCard({ project }: ProjectCardProps) {
   };
 
   return (
-    <div className="bg-[rgba(42,42,42,0.6)] backdrop-blur-[20px] border border-white/[0.08] rounded-2xl overflow-hidden transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:border-[rgba(74,144,226,0.3)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.3)] flex flex-col h-[580px]">
+    <div className={`bg-[rgba(42,42,42,0.6)] backdrop-blur-[20px] border border-white/[0.08] rounded-xl overflow-hidden transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:border-[rgba(74,144,226,0.3)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.3)] flex flex-col ${className || 'h-[580px]'}`}>
       {/* Card Header */}
-      <div className="px-3.5 py-3 bg-[rgba(51,51,51,0.4)] border-b border-white/5 flex items-center gap-2.5">
-        <div className="text-xl">{projectIcons[project.type] || '📁'}</div>
-        <div className="flex-1 text-[15px] font-semibold text-[#e0e0e0]">{project.name}</div>
+      <div
+        className="px-4 py-2.5 flex items-center gap-3 bg-gradient-to-r from-slate-700/80 to-slate-600/80 border-b border-slate-500/30"
+        style={{
+          minHeight: '48px'
+        }}
+      >
+        <div className="text-base">{projectIcons[project.type] || '📁'}</div>
+        <div className="flex-1 text-[13px] font-semibold text-[#e0e0e0]">
+          {project.name || 'Untitled Project'}
+        </div>
         <StatusBadge status={project.status} />
         <button
           onClick={() => setCurrentView(currentView === 'agent' ? 'preview' : 'agent')}
-          className="p-1.5 bg-transparent border border-white/10 rounded-md text-[#888] cursor-pointer transition-all duration-200 flex items-center justify-center w-7 h-7 hover:bg-white/5 hover:text-[#e0e0e0] hover:border-white/20"
+          className="p-1 bg-transparent border border-white/10 rounded-md text-[#888] cursor-pointer transition-all duration-200 flex items-center justify-center w-6 h-6 hover:bg-white/5 hover:text-[#e0e0e0] hover:border-white/20"
           title={currentView === 'agent' ? 'Preview' : 'Chat'}
         >
           {currentView === 'agent' ? (
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <svg width="12" height="12" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M7 9a2 2 0 100-4 2 2 0 000 4z" stroke="currentColor" strokeWidth="1.5"/>
               <path d="M1 7s2-4 6-4 6 4 6 4-2 4-6 4-6-4-6-4z" stroke="currentColor" strokeWidth="1.5"/>
             </svg>
           ) : (
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <svg width="12" height="12" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M12 7.5c0 2.5-2.2 4.5-5 4.5-.6 0-1.2-.1-1.7-.3L2 13l.8-3.3C2.3 9.2 2 8.4 2 7.5 2 5 4.2 3 7 3s5 2 5 4.5z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
           )}
         </button>
         <button
           onClick={() => setCurrentView('files')}
-          className="p-1.5 bg-transparent border border-white/10 rounded-md text-[#888] cursor-pointer text-base transition-all duration-200 flex items-center justify-center w-7 h-7 hover:bg-white/5 hover:text-[#e0e0e0] hover:border-white/20"
+          className="p-1 bg-transparent border border-white/10 rounded-md text-[#888] cursor-pointer text-base transition-all duration-200 flex items-center justify-center w-6 h-6 hover:bg-white/5 hover:text-[#e0e0e0] hover:border-white/20"
           title="Files"
         >
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <svg width="12" height="12" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M12 12H2V2h5l2 2h3v8z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
         </button>
         <button
           onClick={() => window.open(`/project/${project.id}`, '_blank')}
-          className="p-1.5 bg-transparent border border-white/10 rounded-md text-[#888] cursor-pointer text-base transition-all duration-200 flex items-center justify-center w-7 h-7 hover:bg-white/5 hover:text-[#e0e0e0] hover:border-white/20"
+          className="p-1 bg-transparent border border-white/10 rounded-md text-[#888] cursor-pointer text-sm transition-all duration-200 flex items-center justify-center w-6 h-6 hover:bg-white/5 hover:text-[#e0e0e0] hover:border-white/20"
           title="Open in new window"
         >
           ⤢
+        </button>
+        <button
+          onClick={handleDelete}
+          className="p-1 bg-transparent border border-white/10 rounded-md text-[#888] cursor-pointer transition-all duration-200 flex items-center justify-center w-6 h-6 hover:bg-red-500/20 hover:text-red-400 hover:border-red-500/30"
+          title="Delete project"
+        >
+          <svg width="12" height="12" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M2 4h10M5 4V3a1 1 0 011-1h2a1 1 0 011 1v1m1 0v7a1 1 0 01-1 1H5a1 1 0 01-1-1V4h6z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
         </button>
       </div>
 
@@ -232,17 +323,18 @@ export function ProjectCard({ project }: ProjectCardProps) {
         />
       )}
 
-      {/* Inline Progress (when running) */}
-      {project.status === 'running' && (
-        <div className="px-3.5 py-2.5 bg-[rgba(42,42,42,0.5)] border-b border-white/[0.03] flex items-center gap-2.5 text-xs">
-          <span className="text-[#4A90E2] animate-spin">◐</span>
-          <span className="flex-1 text-[#ccc] text-xs">Processing your request...</span>
-          <span className="text-[#666] text-[11px] font-semibold font-mono">0m 30s</span>
-        </div>
-      )}
+      {/* Activity Bar - Shows AI activity in all views */}
+      <ActivityBar
+        status={project.status}
+        messages={messages}
+        collapsed={activityBarCollapsed}
+        onToggle={() => setActivityBarCollapsed(!activityBarCollapsed)}
+        onViewAgent={() => setCurrentView('agent')}
+        compact={viewMode === 'list'}
+      />
 
       {/* Content Area */}
-      <div className="relative bg-[rgba(30,30,30,0.3)] flex-1 flex flex-col">
+      <div className="relative bg-[rgba(30,30,30,0.3)] flex-1 flex flex-col overflow-hidden">
         {currentView === 'agent' && <AgentView messages={messages} />}
         {currentView === 'preview' && <PreviewView project={project} />}
         {currentView === 'files' && <FilesView projectId={project.id} />}

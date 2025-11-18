@@ -1,5 +1,6 @@
 import { Message } from '../../types';
 import { useEffect, useRef } from 'react';
+import { ProgressIndicator } from './ProgressIndicator';
 
 interface AgentViewProps {
   messages: Message[];
@@ -21,7 +22,7 @@ export function AgentView({ messages }: AgentViewProps) {
   }
 
   return (
-    <div className="p-0 max-h-[360px] overflow-y-auto bg-[#1e1e1e]">
+    <div className="p-0 overflow-y-auto bg-[#1e1e1e]" style={{ height: '100%' }}>
       {messages.map((message) => (
         <div
           key={message.id}
@@ -49,6 +50,11 @@ export function AgentView({ messages }: AgentViewProps) {
             <div className="text-sm leading-relaxed whitespace-pre-wrap break-words">
               {message.content}
             </div>
+
+            {/* Show progress indicator when streaming with progress data */}
+            {message.status === 'streaming' && message.progress && (
+              <ProgressIndicator progress={message.progress} />
+            )}
           </div>
         </div>
       ))}

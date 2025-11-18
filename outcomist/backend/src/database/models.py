@@ -34,11 +34,14 @@ class ProjectType(str, enum.Enum):
 
 
 class ProjectStatus(str, enum.Enum):
-    """Project status enumeration."""
+    """Real-time agent execution status."""
 
-    ACTIVE = "active"
-    ARCHIVED = "archived"
-    COMPLETED = "completed"
+    IDLE = "idle"  # No active work, waiting for user
+    PLANNING = "planning"  # Planner agent analyzing request
+    WORKING = "working"  # Executor agent creating deliverables
+    NEEDS_INPUT = "needs_input"  # Blocked on user response
+    VERIFYING = "verifying"  # Verifier agent checking quality
+    COMPLETE = "complete"  # Task finished, ready for next
 
 
 class SessionStatus(str, enum.Enum):
@@ -73,11 +76,13 @@ class Project(Base):
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
     type: Mapped[ProjectType] = mapped_column(Enum(ProjectType), nullable=False)
-    status: Mapped[ProjectStatus] = mapped_column(Enum(ProjectStatus), nullable=False, default=ProjectStatus.ACTIVE)
+    status: Mapped[ProjectStatus] = mapped_column(Enum(ProjectStatus), nullable=False, default=ProjectStatus.IDLE)
+    archived: Mapped[bool] = mapped_column(Integer, nullable=False, default=0)
     created_at: Mapped[datetime] = mapped_column(DateTime, nullable=False, server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(
         DateTime, nullable=False, server_default=func.now(), onupdate=func.now()
     )
+    deleted_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True, default=None)
 
     # Relationships
     sessions: Mapped[list["Session"]] = relationship("Session", back_populates="project", cascade="all, delete-orphan")

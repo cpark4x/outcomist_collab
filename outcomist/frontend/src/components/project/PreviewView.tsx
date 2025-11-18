@@ -130,13 +130,17 @@ function GamePreview({ file }: GamePreviewProps) {
   }
 
   return (
-    <div className="w-full h-full overflow-auto bg-white">
+    <div className="w-full h-full bg-white flex items-center justify-center overflow-auto">
       <iframe
         srcDoc={bundledHtml}
-        className="w-full min-h-full border-0"
+        className="border-0"
         title="Game Preview"
         sandbox="allow-scripts"
-        style={{ height: '100%' }}
+        style={{
+          width: '100%',
+          height: '100%',
+          transformOrigin: 'top left'
+        }}
       />
     </div>
   );

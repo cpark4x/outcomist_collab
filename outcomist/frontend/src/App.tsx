@@ -9,11 +9,21 @@ import type { ProjectType } from './types';
 
 type AppView = 'onboarding' | 'workspace';
 
+type ViewMode = 'grid' | 'list';
+
 export default function App() {
   const { projects, loading, refetch } = useProjects();
   const [currentView, setCurrentView] = useState<AppView>('workspace');
   const [showNewProjectModal, setShowNewProjectModal] = useState(false);
   const [isCreatingProject, setIsCreatingProject] = useState(false);
+  const [viewMode, setViewMode] = useState<ViewMode>('grid');
+
+  // Calculate stats for toolbar
+  const stats = {
+    projects: projects.length,
+    sessions: projects.reduce((sum, p) => sum + (p.sessions?.length || 0), 0),
+    messages: 0, // Will be calculated from actual message counts when available
+  };
   // Skip onboarding - always show workspace
   // useEffect(() => {
   //   if (!loading && projects.length === 0) {
@@ -74,8 +84,13 @@ export default function App() {
 
   return (
     <div className="min-h-screen">
-      <Toolbar onNewProject={handleQuickCreate} />
-      <WorkspaceGrid projects={projects} />
+      <Toolbar
+        onNewProject={handleQuickCreate}
+        stats={stats}
+        viewMode={viewMode}
+        onViewModeChange={setViewMode}
+      />
+      <WorkspaceGrid projects={projects} viewMode={viewMode} />
     </div>
   );
 }
