@@ -51,8 +51,8 @@ export function AgentView({ messages }: AgentViewProps) {
               {message.content}
             </div>
 
-            {/* Show progress indicator when streaming with progress data */}
-            {message.status === 'streaming' && message.progress && (
+            {/* Show progress indicator when message has progress data */}
+            {message.progress && (
               <ProgressIndicator progress={message.progress} />
             )}
           </div>

@@ -15,10 +15,13 @@ export function Toolbar({ onNewProject, stats, viewMode, onViewModeChange }: Too
   return (
     <div className="bg-[rgba(42,42,42,0.95)] backdrop-blur-[20px] border-b border-white/5 px-6 py-3.5 flex items-center gap-5 relative z-[100] shadow-[0_4px_20px_rgba(0,0,0,0.3)]">
       <div className="flex items-center gap-5">
-        <div className="text-sm font-semibold text-[#e0e0e0]">
-          <span className="text-2xl font-bold bg-gradient-to-r from-[#667eea] to-[#764ba2] bg-clip-text text-transparent">
-            Outcomist
-          </span>
+        <div className="flex items-center flex-shrink-0">
+          <img
+            src="/outcomist-primary-light.svg"
+            alt="Outcomist"
+            className="h-12 sm:h-14 md:h-16 w-auto max-w-[240px] sm:max-w-[280px] md:max-w-[320px]"
+            style={{ minHeight: '48px' }}
+          />
         </div>
       </div>
       <div className="ml-auto flex items-center gap-3">

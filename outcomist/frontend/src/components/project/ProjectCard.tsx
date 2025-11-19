@@ -13,7 +13,7 @@ import { api } from '../../api/client';
 
 interface ProjectCardProps {
   project: Project;
-  onDelete?: (projectId: string) => void;
+  onDelete?: () => void;
   className?: string;
   viewMode?: 'grid' | 'list';
 }
@@ -34,6 +34,7 @@ export function ProjectCard({ project, onDelete, className, viewMode = 'grid' }:
   );
   const [activityBarCollapsed, setActivityBarCollapsed] = useState(true);
   const [prevStatus, setPrevStatus] = useState(project.status);
+  const [currentStatus, setCurrentStatus] = useState<ProjectStatus>(project.status);
 
   // Track if we're creating a session to prevent race conditions
   const creatingSessionRef = useRef(false);
@@ -75,26 +76,31 @@ export function ProjectCard({ project, onDelete, className, viewMode = 'grid' }:
       (m) => m.role === 'assistant' && m.status === 'streaming'
     );
 
-    if (project.status !== prevStatus) {
-      setPrevStatus(project.status);
+    if (currentStatus !== prevStatus) {
+      setPrevStatus(currentStatus);
 
       // Expand when status changes to active state
-      if (project.status !== 'idle' && project.status !== 'complete') {
+      if (currentStatus !== 'idle' && currentStatus !== 'complete') {
         setActivityBarCollapsed(false);
       }
 
-      // Auto-collapse 10s after completion
-      if (project.status === 'complete') {
+      // When complete: auto-switch to preview and keep activity bar visible
+      if (currentStatus === 'complete') {
+        setCurrentView('preview');
+        setActivityBarCollapsed(false); // Keep activity bar expanded to show completion message
+
+        // Reset to idle after 15 seconds
         const timer = setTimeout(() => {
+          setCurrentStatus('idle');
           setActivityBarCollapsed(true);
-        }, 10000);
+        }, 15000);
         return () => clearTimeout(timer);
       }
     } else if (hasStreamingMessage && activityBarCollapsed) {
       // Expand when streaming starts
       setActivityBarCollapsed(false);
     }
-  }, [project.status, prevStatus, messages, activityBarCollapsed]);
+  }, [currentStatus, prevStatus, messages, activityBarCollapsed]);
 
   const handleSendMessage = async (content: string) => {
     if (!currentSessionId) return;
@@ -162,6 +168,13 @@ export function ProjectCard({ project, onDelete, className, viewMode = 'grid' }:
 
               // Handle different event types
               if (parsed.type === 'status_update') {
+                // Update local status based on phase
+                if (parsed.phase === 'understanding' || parsed.phase === 'planning') {
+                  setCurrentStatus('planning');
+                } else if (parsed.phase === 'generating' || parsed.phase === 'thinking' || parsed.phase === 'tool_use') {
+                  setCurrentStatus('working');
+                }
+
                 // Update progress data
                 updateMessage(assistantMessageId, {
                   progress: {
@@ -178,9 +191,15 @@ export function ProjectCard({ project, onDelete, className, viewMode = 'grid' }:
                   status: 'streaming',
                 });
               } else if (parsed.type === 'message_complete') {
+                setCurrentStatus('complete');
                 updateMessage(assistantMessageId, {
                   status: 'complete',
-                  progress: undefined, // Clear progress on completion
+                  progress: {
+                    phase: 'complete',
+                    percentage: 100,
+                    statusText: 'Complete',
+                    startTime,
+                  },
                 });
               } else if (parsed.type === 'error') {
                 updateMessage(assistantMessageId, {
@@ -228,7 +247,7 @@ export function ProjectCard({ project, onDelete, className, viewMode = 'grid' }:
 
     try {
       await api.deleteProject(project.id);
-      onDelete?.(project.id);
+      onDelete?.();
     } catch (error) {
       console.error('Failed to delete project:', error);
       alert('Failed to delete project. Please try again.');
@@ -258,7 +277,11 @@ export function ProjectCard({ project, onDelete, className, viewMode = 'grid' }:
   };
 
   return (
-    <div className={`bg-[rgba(42,42,42,0.6)] backdrop-blur-[20px] border border-white/[0.08] rounded-xl overflow-hidden transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:border-[rgba(74,144,226,0.3)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.3)] flex flex-col ${className || 'h-[580px]'}`}>
+    <div className={`bg-[rgba(42,42,42,0.6)] backdrop-blur-[20px] rounded-xl overflow-hidden transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] flex flex-col ${className || 'h-[580px]'} ${
+      currentStatus === 'complete'
+        ? 'border-2 border-green-500/60 shadow-[0_0_32px_rgba(16,185,129,0.4)]'
+        : 'border border-white/[0.08] hover:border-[rgba(74,144,226,0.3)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.3)]'
+    }`}>
       {/* Card Header */}
       <div
         className="px-4 py-2.5 flex items-center gap-3 bg-gradient-to-r from-slate-700/80 to-slate-600/80 border-b border-slate-500/30"
@@ -270,7 +293,7 @@ export function ProjectCard({ project, onDelete, className, viewMode = 'grid' }:
         <div className="flex-1 text-[13px] font-semibold text-[#e0e0e0]">
           {project.name || 'Untitled Project'}
         </div>
-        <StatusBadge status={project.status} />
+        <StatusBadge status={currentStatus} />
         <button
           onClick={() => setCurrentView(currentView === 'agent' ? 'preview' : 'agent')}
           className="p-1 bg-transparent border border-white/10 rounded-md text-[#888] cursor-pointer transition-all duration-200 flex items-center justify-center w-6 h-6 hover:bg-white/5 hover:text-[#e0e0e0] hover:border-white/20"
@@ -323,15 +346,17 @@ export function ProjectCard({ project, onDelete, className, viewMode = 'grid' }:
         />
       )}
 
-      {/* Activity Bar - Shows AI activity in all views */}
-      <ActivityBar
-        status={project.status}
-        messages={messages}
-        collapsed={activityBarCollapsed}
-        onToggle={() => setActivityBarCollapsed(!activityBarCollapsed)}
-        onViewAgent={() => setCurrentView('agent')}
-        compact={viewMode === 'list'}
-      />
+      {/* Activity Bar - Only show in preview/files views (chat has its own progress indicators) */}
+      {currentView !== 'agent' && (
+        <ActivityBar
+          status={currentStatus}
+          messages={messages}
+          collapsed={activityBarCollapsed}
+          onToggle={() => setActivityBarCollapsed(!activityBarCollapsed)}
+          onViewAgent={() => setCurrentView('agent')}
+          compact={viewMode === 'list'}
+        />
+      )}
 
       {/* Content Area */}
       <div className="relative bg-[rgba(30,30,30,0.3)] flex-1 flex flex-col overflow-hidden">
