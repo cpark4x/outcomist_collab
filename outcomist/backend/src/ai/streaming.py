@@ -16,9 +16,11 @@ from ..config import get_settings
 from ..database.connection import AsyncSessionLocal
 from ..database.models import Message
 from ..database.models import ProjectStatus
+from ..database.models import ProjectType
 from ..database.models import Session
 from ..services.file_service import FileService
 from ..services.status_service import StatusService
+from ..services.verify_service import GameVerificationService
 from ..utils.image_utils import validate_base64_image
 from .events import SSEEventType
 from .events import format_sse_event
@@ -386,7 +388,39 @@ async def stream_claude_response(
             await save_db.refresh(assistant_msg)
             message_id = assistant_msg.id
 
-            # Transition to COMPLETE status
+            # Get project to check type (CAREFUL: use fresh query in this session)
+            project_result = await save_db.execute(
+                select(Session).where(Session.id == session_id_str).options(selectinload(Session.project))
+            )
+            session_with_project = project_result.scalar_one_or_none()
+
+            # Verify game projects before marking complete
+            if session_with_project and session_with_project.project.type == ProjectType.GAME:
+                logger.info(f"🔍 Running verification for game project {session_with_project.project_id}")
+
+                # Run verification
+                verifier = GameVerificationService()
+                verification_result = await verifier.verify_project_game(save_db, str(session_with_project.project_id))
+
+                if not verification_result.passed:
+                    # Verification failed - log and report
+                    error_summary = "\n".join(f"- {err}" for err in verification_result.errors)
+                    logger.warning(f"❌ Verification FAILED: {error_summary}")
+
+                    # Add verification failure to stream
+                    yield format_sse_event(
+                        SSEEventType.MESSAGE_DELTA,
+                        {"content": f"\n\n⚠️ Verification found issues:\n{error_summary}\n\n"}
+                    )
+
+                    # Don't mark complete - stay in working status
+                    await StatusService.set_working(save_db, str(session_with_project.project_id), "Needs fixes")
+                    await save_db.commit()
+                    return
+                else:
+                    logger.info(f"✅ Verification PASSED")
+
+            # Transition to COMPLETE status (only if verification passed or not a game)
             await StatusService.set_complete(save_db, str(session.project_id), "Ready for review")
 
         # Emit complete status
