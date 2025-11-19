@@ -10,7 +10,14 @@ export function AgentView({ messages }: AgentViewProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    // Only scroll if element is visible (prevents page jumping when project card is off-screen)
+    if (messagesEndRef.current) {
+      const container = messagesEndRef.current.parentElement;
+      if (container) {
+        // Scroll within container only, don't affect page scroll
+        container.scrollTop = container.scrollHeight;
+      }
+    }
   }, [messages]);
 
   if (messages.length === 0) {
