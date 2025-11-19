@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160">
+  <!-- Outcomist Icon: Discovery Radar Symbol Only -->
+  <!-- Perfect for app icons, favicons, social media profiles -->
+
+  <g transform="translate(80, 80)">
+    <!-- Outer circle with gap at 45° (top-right) - revealing hidden pattern -->
+    <path d="M 52,0 A 52,52 0 1,1 36.77,-36.77"
+          fill="none"
+          stroke="#1a1d21"
+          stroke-width="5.5"
+          stroke-linecap="round"/>
+
+    <!-- Middle circle with gap at 135° (top-left) -->
+    <path d="M 33,0 A 33,33 0 1,1 -23.33,-23.33"
+          fill="none"
+          stroke="#1a1d21"
+          stroke-width="5.5"
+          stroke-linecap="round"/>
+
+    <!-- Inner circle with gap at 225° (bottom-left) -->
+    <path d="M 18,0 A 18,18 0 1,1 -12.73,-12.73"
+          fill="none"
+          stroke="#1a1d21"
+          stroke-width="5.5"
+          stroke-linecap="round"/>
+
+    <!-- Center dot (discovery focal point) -->
+    <circle cx="0" cy="0" r="5.5" fill="#1a1d21"/>
+  </g>
+</svg>

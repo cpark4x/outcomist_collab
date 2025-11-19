@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Outcomist - Layout Improvements</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1e1e1e 0%, #2d2d2d 100%);
+            color: #e0e0e0;
+            min-height: 100vh;
+        }
+
+        /* Toolbar */
+        .toolbar {
+            background: rgba(42, 42, 42, 0.95);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 14px 24px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .toolbar-brand {
+            font-size: 24px;
+            font-weight: 700;
+            background: linear-gradient(to right, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .toolbar-spacer {
+            flex: 1;
+        }
+
+        .layout-controls {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .layout-toggle {
+            display: flex;
+            background: rgba(30, 30, 30, 0.6);
+            border-radius: 8px;
+            padding: 4px;
+            gap: 4px;
+        }
+
+        .layout-toggle button {
+            padding: 6px 12px;
+            background: transparent;
+            border: none;
+            color: #888;
+            cursor: pointer;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .layout-toggle button.active {
+            background: rgba(74, 144, 226, 0.2);
+            color: #4A90E2;
+        }
+
+        .layout-toggle button:hover:not(.active) {
+            background: rgba(255, 255, 255, 0.05);
+            color: #e0e0e0;
+        }
+
+        .density-select {
+            background: rgba(30, 30, 30, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #e0e0e0;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            cursor: pointer;
+        }
+
+        .btn-primary {
+            background: linear-gradient(to bottom right, #4A90E2, #357ABD);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(74, 144, 226, 0.3);
+            transition: all 0.2s;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(74, 144, 226, 0.4);
+        }
+
+        /* Workspace Container */
+        .workspace-container {
+            padding: 32px;
+            max-width: 1920px;
+            margin: 0 auto;
+        }
+
+        /* Grid Layout Options */
+        .workspace-grid {
+            display: grid;
+            gap: 24px;
+        }
+
+        /* Responsive Grid - Default */
+        .workspace-grid.layout-grid {
+            grid-template-columns: repeat(auto-fill, minmax(600px, 1fr));
+        }
+
+        /* Compact Grid - 3 columns on large screens */
+        .workspace-grid.layout-grid.density-compact {
+            grid-template-columns: repeat(auto-fill, minmax(480px, 1fr));
+            gap: 16px;
+        }
+
+        /* Comfortable - 2 columns (default) */
+        .workspace-grid.layout-grid.density-comfortable {
+            grid-template-columns: repeat(auto-fill, minmax(600px, 1fr));
+            gap: 24px;
+        }
+
+        /* Spacious - 1-2 columns with more space */
+        .workspace-grid.layout-grid.density-spacious {
+            grid-template-columns: repeat(auto-fill, minmax(700px, 1fr));
+            gap: 32px;
+        }
+
+        /* List Layout */
+        .workspace-grid.layout-list {
+            grid-template-columns: 1fr;
+            gap: 16px;
+            max-width: 1400px;
+        }
+
+        /* Masonry Layout */
+        .workspace-grid.layout-masonry {
+            columns: 3;
+            column-gap: 24px;
+        }
+
+        .workspace-grid.layout-masonry .project-card {
+            break-inside: avoid;
+            margin-bottom: 24px;
+        }
+
+        /* Project Card */
+        .project-card {
+            background: rgba(42, 42, 42, 0.6);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            overflow: hidden;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .project-card:hover {
+            border-color: rgba(74, 144, 226, 0.3);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+            transform: translateY(-2px);
+        }
+
+        /* Card Heights based on density */
+        .density-compact .project-card {
+            height: 480px;
+        }
+
+        .density-comfortable .project-card {
+            height: 580px;
+        }
+
+        .density-spacious .project-card {
+            height: 680px;
+        }
+
+        .layout-list .project-card {
+            height: 320px;
+            flex-direction: row;
+        }
+
+        /* Card Header */
+        .card-header {
+            background: linear-gradient(to right, rgba(71, 77, 102, 0.8), rgba(71, 77, 102, 0.6));
+            padding: 12px 16px;
+            border-bottom: 1px solid rgba(139, 148, 158, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-height: 48px;
+        }
+
+        .card-icon {
+            font-size: 20px;
+        }
+
+        .card-title {
+            flex: 1;
+            font-size: 13px;
+            font-weight: 600;
+            color: #e0e0e0;
+        }
+
+        .card-status {
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .status-idle {
+            background: rgba(136, 136, 136, 0.2);
+            color: #888;
+        }
+
+        .status-running {
+            background: rgba(74, 144, 226, 0.2);
+            color: #4A90E2;
+        }
+
+        .status-complete {
+            background: rgba(16, 185, 129, 0.2);
+            color: #10b981;
+        }
+
+        .card-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .card-btn {
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 6px;
+            color: #888;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 12px;
+        }
+
+        .card-btn:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: #e0e0e0;
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Card Content */
+        .card-content {
+            flex: 1;
+            background: rgba(30, 30, 30, 0.3);
+            padding: 20px;
+            overflow: auto;
+        }
+
+        .layout-list .card-content {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #666;
+            font-size: 13px;
+        }
+
+        /* Card Footer/Input */
+        .card-footer {
+            padding: 16px;
+            background: rgba(42, 42, 42, 0.8);
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .card-input {
+            width: 100%;
+            background: rgba(30, 30, 30, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 10px 14px;
+            color: #e0e0e0;
+            font-size: 13px;
+            transition: all 0.2s;
+        }
+
+        .card-input:focus {
+            outline: none;
+            border-color: #4A90E2;
+            background: rgba(30, 30, 30, 0.8);
+        }
+
+        .card-input::placeholder {
+            color: #666;
+        }
+
+        /* Empty State */
+        .empty-state {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 80px 40px;
+        }
+
+        .empty-icon {
+            font-size: 64px;
+            margin-bottom: 24px;
+            opacity: 0.5;
+        }
+
+        .empty-title {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: #e0e0e0;
+        }
+
+        .empty-description {
+            font-size: 14px;
+            color: #888;
+            margin-bottom: 32px;
+            line-height: 1.6;
+        }
+
+        /* Comparison Banner */
+        .comparison-banner {
+            background: rgba(74, 144, 226, 0.1);
+            border: 1px solid rgba(74, 144, 226, 0.3);
+            border-radius: 12px;
+            padding: 16px 24px;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .comparison-icon {
+            font-size: 32px;
+        }
+
+        .comparison-text {
+            flex: 1;
+        }
+
+        .comparison-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .comparison-desc {
+            font-size: 13px;
+            color: #aaa;
+        }
+
+        /* Responsive */
+        @media (max-width: 1400px) {
+            .workspace-grid.layout-masonry {
+                columns: 2;
+            }
+        }
+
+        @media (max-width: 900px) {
+            .workspace-grid.layout-grid {
+                grid-template-columns: 1fr !important;
+            }
+
+            .workspace-grid.layout-masonry {
+                columns: 1;
+            }
+
+            .workspace-container {
+                padding: 20px;
+            }
+
+            .layout-controls {
+                flex-direction: column;
+                align-items: stretch;
+                width: 100%;
+            }
+
+            .toolbar {
+                flex-wrap: wrap;
+            }
+        }
+
+        /* Metrics Display */
+        .metrics {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .metric-card {
+            background: rgba(42, 42, 42, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .metric-value {
+            font-size: 32px;
+            font-weight: 700;
+            color: #4A90E2;
+            margin-bottom: 8px;
+        }
+
+        .metric-label {
+            font-size: 13px;
+            color: #888;
+        }
+
+        .metric-change {
+            font-size: 12px;
+            margin-top: 8px;
+        }
+
+        .metric-change.positive {
+            color: #10b981;
+        }
+    </style>
+</head>
+<body>
+    <!-- Toolbar -->
+    <div class="toolbar">
+        <div class="toolbar-brand">Outcomist</div>
+        <div class="toolbar-spacer"></div>
+
+        <div class="layout-controls">
+            <div class="layout-toggle" id="layoutToggle">
+                <button data-layout="grid" class="active">Grid</button>
+                <button data-layout="list">List</button>
+                <button data-layout="masonry">Masonry</button>
+            </div>
+
+            <select class="density-select" id="densitySelect">
+                <option value="compact">Compact</option>
+                <option value="comfortable" selected>Comfortable</option>
+                <option value="spacious">Spacious</option>
+            </select>
+
+            <button class="btn-primary" onclick="alert('Creating new project...')">
+                + New Project
+            </button>
+        </div>
+    </div>
+
+    <!-- Workspace -->
+    <div class="workspace-container">
+        <!-- Comparison Banner -->
+        <div class="comparison-banner">
+            <div class="comparison-icon">✨</div>
+            <div class="comparison-text">
+                <div class="comparison-title">Improved Layout System</div>
+                <div class="comparison-desc">
+                    Responsive grid • Multiple density options • Optimized spacing • Better viewport usage
+                </div>
+            </div>
+        </div>
+
+        <!-- Metrics -->
+        <div class="metrics">
+            <div class="metric-card">
+                <div class="metric-value">3</div>
+                <div class="metric-label">Active Projects</div>
+                <div class="metric-change positive">↑ 2 this week</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value">12</div>
+                <div class="metric-label">Total Sessions</div>
+                <div class="metric-change positive">↑ 5 today</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value">847</div>
+                <div class="metric-label">Messages Exchanged</div>
+                <div class="metric-change positive">↑ 124 today</div>
+            </div>
+        </div>
+
+        <!-- Project Grid -->
+        <div class="workspace-grid layout-grid density-comfortable" id="workspaceGrid">
+            <!-- Project Card 1 -->
+            <div class="project-card">
+                <div class="card-header">
+                    <div class="card-icon">🎮</div>
+                    <div class="card-title">Game Project</div>
+                    <div class="card-status status-running">Running</div>
+                    <div class="card-actions">
+                        <button class="card-btn" title="Preview">👁️</button>
+                        <button class="card-btn" title="Files">📁</button>
+                        <button class="card-btn" title="Open">⤢</button>
+                        <button class="card-btn" title="Delete">🗑️</button>
+                    </div>
+                </div>
+                <div class="card-content">
+                    <div style="color: #aaa; font-size: 13px; line-height: 1.6;">
+                        <div style="margin-bottom: 12px;">
+                            <strong style="color: #e0e0e0;">User:</strong> Create a simple puzzle game
+                        </div>
+                        <div style="margin-bottom: 12px;">
+                            <strong style="color: #4A90E2;">Agent:</strong> I'll create a tile-matching puzzle game. Let me start by designing the game mechanics...
+                        </div>
+                        <div style="background: rgba(74, 144, 226, 0.1); padding: 12px; border-radius: 8px; border-left: 3px solid #4A90E2;">
+                            <div style="font-size: 11px; color: #4A90E2; font-weight: 600; margin-bottom: 4px;">
+                                ⚙️ GENERATING...
+                            </div>
+                            <div style="font-size: 12px;">
+                                Creating game board layout and mechanics
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <input type="text" class="card-input" placeholder="Type your response..." disabled>
+                </div>
+            </div>
+
+            <!-- Project Card 2 -->
+            <div class="project-card">
+                <div class="card-header">
+                    <div class="card-icon">✈️</div>
+                    <div class="card-title">Trip Planner</div>
+                    <div class="card-status status-complete">Complete</div>
+                    <div class="card-actions">
+                        <button class="card-btn" title="Preview">👁️</button>
+                        <button class="card-btn" title="Files">📁</button>
+                        <button class="card-btn" title="Open">⤢</button>
+                        <button class="card-btn" title="Delete">🗑️</button>
+                    </div>
+                </div>
+                <div class="card-content">
+                    <div style="color: #aaa; font-size: 13px; line-height: 1.6;">
+                        <div style="margin-bottom: 12px;">
+                            <strong style="color: #e0e0e0;">User:</strong> Plan a 7-day trip to Japan
+                        </div>
+                        <div style="margin-bottom: 12px;">
+                            <strong style="color: #10b981;">Agent:</strong> I've created a comprehensive 7-day itinerary for Japan including Tokyo, Kyoto, and Osaka. Here's your trip plan...
+                        </div>
+                        <div style="background: rgba(16, 185, 129, 0.1); padding: 12px; border-radius: 8px; margin-top: 16px;">
+                            <div style="font-weight: 600; margin-bottom: 8px; color: #10b981;">📄 Generated Files:</div>
+                            <div style="font-size: 12px; color: #aaa;">
+                                • itinerary.md<br>
+                                • budget.xlsx<br>
+                                • packing-list.md
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <input type="text" class="card-input" placeholder="Type your response...">
+                </div>
+            </div>
+
+            <!-- Project Card 3 -->
+            <div class="project-card">
+                <div class="card-header">
+                    <div class="card-icon">✍️</div>
+                    <div class="card-title">Content Writer</div>
+                    <div class="card-status status-idle">Idle</div>
+                    <div class="card-actions">
+                        <button class="card-btn" title="Preview">👁️</button>
+                        <button class="card-btn" title="Files">📁</button>
+                        <button class="card-btn" title="Open">⤢</button>
+                        <button class="card-btn" title="Delete">🗑️</button>
+                    </div>
+                </div>
+                <div class="card-content">
+                    <div style="color: #aaa; font-size: 13px; line-height: 1.6;">
+                        <div style="margin-bottom: 12px;">
+                            <strong style="color: #e0e0e0;">User:</strong> Write a blog post about AI productivity tools
+                        </div>
+                        <div style="margin-bottom: 12px;">
+                            <strong style="color: #888;">Agent:</strong> Ready to help with your content. What specific aspects would you like me to focus on?
+                        </div>
+                        <div style="text-align: center; padding: 40px; color: #666;">
+                            💬 Start chatting to get AI assistance
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <input type="text" class="card-input" placeholder="Type your message...">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const layoutToggle = document.getElementById('layoutToggle');
+        const densitySelect = document.getElementById('densitySelect');
+        const workspaceGrid = document.getElementById('workspaceGrid');
+
+        // Layout switching
+        layoutToggle.addEventListener('click', (e) => {
+            if (e.target.tagName === 'BUTTON') {
+                const layout = e.target.dataset.layout;
+
+                // Update active button
+                layoutToggle.querySelectorAll('button').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                e.target.classList.add('active');
+
+                // Update grid class
+                workspaceGrid.className = workspaceGrid.className
+                    .replace(/layout-\w+/, `layout-${layout}`);
+            }
+        });
+
+        // Density switching
+        densitySelect.addEventListener('change', (e) => {
+            const density = e.target.value;
+
+            // Update grid class
+            workspaceGrid.className = workspaceGrid.className
+                .replace(/density-\w+/, `density-${density}`);
+        });
+
+        // Show metrics on scroll
+        window.addEventListener('scroll', () => {
+            const metrics = document.querySelector('.metrics');
+            if (metrics) {
+                const rect = metrics.getBoundingClientRect();
+                if (rect.top < window.innerHeight) {
+                    metrics.style.opacity = '1';
+                    metrics.style.transform = 'translateY(0)';
+                }
+            }
+        });
+    </script>
+</body>
+</html>

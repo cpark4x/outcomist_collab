@@ -1,0 +1,1001 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Outcomist Design Mockups - Master Index</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 60px;
+            animation: fadeInDown 0.6s ease-out;
+        }
+
+        .header h1 {
+            font-size: 3.5em;
+            margin-bottom: 15px;
+            font-weight: 700;
+            text-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+
+        .header p {
+            font-size: 1.4em;
+            opacity: 0.95;
+            margin-bottom: 10px;
+        }
+
+        .header .subtitle {
+            font-size: 1em;
+            opacity: 0.8;
+            font-style: italic;
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .stats {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin-bottom: 60px;
+            flex-wrap: wrap;
+        }
+
+        .stat-box {
+            background: rgba(255,255,255,0.2);
+            backdrop-filter: blur(10px);
+            padding: 20px 40px;
+            border-radius: 15px;
+            text-align: center;
+            color: white;
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        .stat-number {
+            font-size: 3em;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 1em;
+            opacity: 0.9;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .category-section {
+            margin-bottom: 50px;
+            animation: slideUp 0.6s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .category-header {
+            background: white;
+            padding: 25px 35px;
+            border-radius: 15px 15px 0 0;
+            margin-bottom: 0;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .category-title {
+            font-size: 2em;
+            font-weight: 700;
+            color: #1a1a2e;
+            margin-bottom: 8px;
+        }
+
+        .category-description {
+            font-size: 1.1em;
+            color: #666;
+            line-height: 1.5;
+        }
+
+        .mockups-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 25px;
+            background: rgba(255,255,255,0.95);
+            padding: 30px;
+            border-radius: 0 0 15px 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+        }
+
+        .mockup-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: 3px solid transparent;
+        }
+
+        .mockup-card:hover {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 12px 30px rgba(102, 126, 234, 0.3);
+            border-color: #667eea;
+        }
+
+        .mockup-preview {
+            height: 180px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .preview-icon {
+            font-size: 4em;
+            opacity: 0.9;
+        }
+
+        .preview-badge {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: rgba(255,255,255,0.95);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.75em;
+            font-weight: 600;
+            color: #667eea;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .mockup-content {
+            padding: 20px;
+        }
+
+        .mockup-title {
+            font-size: 1.3em;
+            font-weight: 600;
+            color: #1a1a2e;
+            margin-bottom: 8px;
+        }
+
+        .mockup-description {
+            font-size: 0.95em;
+            color: #666;
+            line-height: 1.5;
+            margin-bottom: 15px;
+        }
+
+        .mockup-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 15px;
+        }
+
+        .tag {
+            background: #f0f0f0;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            color: #555;
+        }
+
+        .mockup-button {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .mockup-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .showcase-card {
+            background: linear-gradient(135deg, #ffeaa7 0%, #fdcb6e 100%);
+        }
+
+        .showcase-card .mockup-preview {
+            background: linear-gradient(135deg, #ffeaa7 0%, #fdcb6e 100%);
+        }
+
+        .showcase-card .preview-badge {
+            color: #d63031;
+        }
+
+        /* Color variations for different preview types */
+        .preview-ux { background: linear-gradient(135deg, #0A1628 0%, #1E293B 100%); }
+        .preview-multi { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .preview-style { background: linear-gradient(135deg, #FAFAF9 0%, #E5E7EB 100%); }
+        .preview-workspace { background: linear-gradient(135deg, #F5F5F5 0%, #E0E0E0 100%); }
+        .preview-canvas { background: linear-gradient(135deg, #FAFAFA 0%, #FFFFFF 100%); }
+        .preview-other { background: linear-gradient(135deg, #667eea 30%, #764ba2 100%); }
+
+        .quick-nav {
+            background: rgba(255,255,255,0.95);
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 40px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .quick-nav-button {
+            padding: 12px 24px;
+            background: white;
+            border: 2px solid #667eea;
+            color: #667eea;
+            border-radius: 25px;
+            font-size: 0.95em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .quick-nav-button:hover {
+            background: #667eea;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2.5em;
+            }
+
+            .mockups-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stats {
+                flex-direction: column;
+                gap: 20px;
+            }
+
+            .quick-nav {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎨 Outcomist Design Mockups</h1>
+            <p>Comprehensive Design Exploration & Prototypes</p>
+            <div class="subtitle">All 31+ mockups organized by category</div>
+        </div>
+
+        <div class="stats">
+            <div class="stat-box">
+                <div class="stat-number">31+</div>
+                <div class="stat-label">Mockups</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-number">6</div>
+                <div class="stat-label">Categories</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-number">15+</div>
+                <div class="stat-label">Variations</div>
+            </div>
+        </div>
+
+        <!-- Quick Navigation -->
+        <div class="quick-nav">
+            <a href="#showcase" class="quick-nav-button">🌟 Showcase Pages</a>
+            <a href="#ux-proposals" class="quick-nav-button">💡 UX Proposals</a>
+            <a href="#multi-project" class="quick-nav-button">📊 Multi-Project</a>
+            <a href="#style-variations" class="quick-nav-button">🎨 Style Variations</a>
+            <a href="#workspace" class="quick-nav-button">💻 Workspace Options</a>
+            <a href="#other" class="quick-nav-button">✨ Other Mockups</a>
+        </div>
+
+        <!-- SHOWCASE PAGES -->
+        <div id="showcase" class="category-section">
+            <div class="category-header">
+                <div class="category-title">🌟 Showcase Pages</div>
+                <div class="category-description">
+                    Curated collections that present multiple design options in organized, comparable formats
+                </div>
+            </div>
+            <div class="mockups-grid">
+                <div class="mockup-card showcase-card" onclick="window.location.href='ux_proposals_showcase.html'">
+                    <div class="mockup-preview">
+                        <div class="preview-icon">🚀</div>
+                        <div class="preview-badge">Showcase</div>
+                    </div>
+                    <div class="mockup-content">
+                        <div class="mockup-title">UX Proposals Showcase</div>
+                        <div class="mockup-description">
+                            Interactive showcase comparing 5 complete UX paradigms with tabs, mockups, and analysis
+                        </div>
+                        <div class="mockup-tags">
+                            <span class="tag">All 5 UX Proposals</span>
+                            <span class="tag">Tabbed Interface</span>
+                            <span class="tag">Comparison</span>
+                        </div>
+                        <button class="mockup-button">View Showcase</button>
+                    </div>
+                </div>
+
+                <div class="mockup-card showcase-card" onclick="window.location.href='all_variations_index.html'">
+                    <div class="mockup-preview">
+                        <div class="preview-icon">🎯</div>
+                        <div class="preview-badge">Showcase</div>
+                    </div>
+                    <div class="mockup-content">
+                        <div class="mockup-title">Multi-Project Variations Index</div>
+                        <div class="mockup-description">
+                            Card-based gallery of 5 multi-project dashboard variations with ratings and best-fit recommendations
+                        </div>
+                        <div class="mockup-tags">
+                            <span class="tag">5 Variations</span>
+                            <span class="tag">Card Layout</span>
+                            <span class="tag">Ratings</span>
+                        </div>
+                        <button class="mockup-button">View Index</button>
+                    </div>
+                </div>
+
+                <div class="mockup-card showcase-card" onclick="window.location.href='style_variations_showcase.html'">
+                    <div class="mockup-preview">
+                        <div class="preview-icon">🎨</div>
+                        <div class="preview-badge">Showcase</div>
+                    </div>
+                    <div class="mockup-content">
+                        <div class="mockup-title">Style Variations Showcase</div>
+                        <div class="mockup-description">
+                            Visual exploration of 5 distinct visual design styles applied to the same interface structure
+                        </div>
+                        <div class="mockup-tags">
+                            <span class="tag">5 Styles</span>
+                            <span class="tag">Visual Design</span>
+                            <span class="tag">Aesthetics</span>
+                        </div>
+                        <button class="mockup-button">View Styles</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- UX PROPOSALS -->
+        <div id="ux-proposals" class="category-section">
+            <div class="category-header">
+                <div class="category-title">💡 UX Proposals (5)</div>
+                <div class="category-description">
+                    Five distinct UX paradigms for the autonomous agent interface - each with different metaphors and interaction models
+                </div>
+            </div>
+            <div class="mockups-grid">
+                <div class="mockup-card" onclick="window.location.href='variation_1_command_center.html'">
+                    <div class="mockup-preview preview-ux">
+                        <div class="preview-icon">🎛️</div>
+                        <div class="preview-badge">UX #1</div>
+                    </div>
+                    <div class="mockup-content">
+                        <div class="mockup-title">Command Center</div>
+                        <div class="mockup-description">
+                            NASA Control Tower - Maximum information density for power users managing 10+ concurrent tasks
+                        </div>
+                        <div class="mockup-tags">
+                            <span class="tag">High Density</span>
+                            <span class="tag">Power Users</span>
+                            <span class="tag">Enterprise</span>
+                        </div>
+                        <button class="mockup-button">View Command Center</button>
+                    </div>
+                </div>
+
+                <div class="mockup-card" onclick="window.location.href='variation_2_focus_mode.html'">
+                    <div class="mockup-preview preview-ux" style="background: linear-gradient(135deg, #FFFFFF 0%, #F3F4F6 100%);">
+                        <div class="preview-icon">🎯</div>
+                        <div class="preview-badge">UX #2</div>
+                    </div>
+                    <div class="mockup-content">
+                        <div class="mockup-title">Focus Mode</div>
+                        <div class="mockup-description">
+                            One Thing at a Time - Carousel interface with radical simplicity, perfect for mobile
+                        </div>
+                        <div class="mockup-tags">
+                            <span class="tag">Minimal</span>
+                            <span class="tag">Mobile-First</span>
+                            <span class="tag">Carousel</span>
+                        </div>
+                        <button class="mockup-button">View Focus Mode</button>
+                    </div>
+                </div>
+
+                <div class="mockup-card" onclick="window.location.href='variation_3_timeline_river.html'">
+                    <div class="mockup-preview preview-ux" style="background: linear-gradient(135deg, #FAFAF9 0%, #E5E7EB 100%);">
+                        <div class="preview-icon">🌊</div>
+                        <div class="preview-badge">UX #3</div>
+                    </div>
+                    <div class="mockup-content">
+                        <div class="mockup-title">Timeline River</div>
+                        <div class="mockup-description">
+                            Chronological stream of all activity with "NOW" marker - perfect for reviewing what happened
+                        </div>
+                        <div class="mockup-tags">
+                            <span class="tag">Timeline</span>
+                            <span class="tag">Chronological</span>
+                            <span class="tag">Activity Feed</span>
+                        </div>
+                        <button class="mockup-button">View Timeline</button>
+                    </div>
+                </div>
+
+                <div class="mockup-card" onclick="window.location.href='variation_4_kanban_pipeline.html'">
+                    <div class="mockup-preview preview-ux" style="background: linear-gradient(135deg, #F5F5F5 0%, #E0E0E0 100%);">
+                        <div class="preview-icon">📋</div>
+                        <div class="preview-badge">UX #4</div>
+                    </div>
+                    <div class="mockup-content">
+                        <div class="mockup-title">Kanban Pipeline</div>
+                        <div class="mockup-description">
+                            Stage-based columns (Planning → Executing → Verifying) with flow metrics and bottleneck detection
+                        </div>
+                        <div class="mockup-tags">
+                            <span class="tag">Kanban</span>
+                            <span class="tag">Process-Oriented</span>
+                            <span class="tag">Familiar</span>
+                        </div>
+                        <button class="mockup-button">View Kanban</button>
+                    </div>
+                </div>
+
+                <div class="mockup-card" onclick="window.location.href='variation_5_command_palette.html'">
+                    <div class="mockup-preview preview-ux" style="background: linear-gradient(135deg, #FFFFFF 0%, #F9FAFB 100%);">
+                        <div class="preview-icon">⌘</div>
+                        <div class="preview-badge">UX #5</div>
+                    </div>
+                    <div class="mockup-content">
+                        <div class="mockup-title">Command Palette</div>
+                        <div class="mockup-description">
+                            Minimal UI with powerful Cmd+K palette - keyboard-first navigation for developers and power users
+                        </div>
+                        <div class="mockup-tags">
+                            <span class="tag">Keyboard-First</span>
+                            <span class="tag">Minimal UI</span>
+                            <span class="tag">Fast</span>
+                        </div>
+                        <button class="mockup-button">View Command Palette</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- MULTI-PROJECT VARIATIONS -->
+        <div id="multi-project" class="category-section">
+            <div class="category-header">
+                <div class="category-title">📊 Multi-Project Dashboard Variations</div>
+                <div class="category-description">
+                    Different approaches to managing and visualizing multiple projects simultaneously
+                </div>
+            </div>
+            <div class="mockups-grid">
+                <div class="mockup-card" onclick="window.location.href='multi_project_prototype.html'">
+                    <div class="mockup-preview preview-multi">
+                        <div class="preview-icon">📊</div>
+                    </div>
+                    <div class="mockup-content">
+                        <div class="mockup-title">Multi-Project Prototype</div>
+                        <div class="mockup-description">
+                            Core multi-project dashboard with card-based layout and status indicators
+                        </div>
+                        <div class="mockup-tags">
+                            <span class="tag">Card Layout</span>
+                            <span class="tag">Status Tracking</span>
+                        </div>
+                        <button class="mockup-button">View Prototype</button>
+                    </div>
+                </div>
+
+                <div class="mockup-card" onclick="window.location.href='widget_based_multi_project.html'">
+                    <div class="mockup-preview preview-multi">
+                        <div class="preview-icon">🧩</div>
+                    </div>
+                    <div class="mockup-content">
+                        <div class="mockup-title">Widget-Based Layout</div>
+                        <div class="mockup-description">
+                            Modular widget system for customizable project views and information architecture
+                        </div>
+                        <div class="mockup-tags">
+                            <span class="tag">Widgets</span>
+                            <span class="tag">Modular</span>
+                            <span class="tag">Customizable</span>
+                        </div>
+                        <button class="mockup-button">View Widgets</button>
+                    </div>
+                </div>
+
+                <div class="mockup-card" onclick="window.location.href='multi_project_workspace.html'">
+                    <div class="mockup-preview preview-multi">
+                        <div class="preview-icon">💼</div>
+                    </div>
+                    <div class="mockup-content">
+                        <div class="mockup-title">Multi-Project Workspace</div>
+                        <div class="mockup-description">
+                            Comprehensive workspace view with sidebar navigation and detailed project cards
+                        </div>
+                        <div class="mockup-tags">
+                            <span class="tag">Workspace</span>
+                            <span class="tag">Navigation</span>
+                        </div>
+                        <button class="mockup-button">View Workspace</button>
+                    </div>
+                </div>
+
+                <div class="mockup-card" onclick="window.location.href='project_view_comparison.html'">
+                    <div class="mockup-preview preview-multi">
+                        <div class="preview-icon">⚖️</div>
+                    </div>
+                    <div class="mockup-content">
+                        <div class="mockup-title">Project View Comparison</div>
+                        <div class="mockup-description">
+                            Side-by-side comparison of different project view approaches
+                        </div>
+                        <div class="mockup-tags">
+                            <span class="tag">Comparison</span>
+                            <span class="tag">Analysis</span>
+                        </div>
+                        <button class="mockup-button">View Comparison</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- STYLE VARIATIONS -->
+        <div id="style-variations" class="category-section">
+            <div class="category-header">
+                <div class="category-title">🎨 Style Variations (5)</div>
+                <div class="category-description">
+                    Five distinct visual design styles applied to the same interface - exploring color, typography, and aesthetics
+                </div>
+            </div>
+            <div class="mockups-grid">
+                <div class="mockup-card" onclick="window.location.href='style_variation_1_corporate_clean.html'">
+                    <div class="mockup-preview preview-style">
+                        <div class="preview-icon">💼</div>
+                        <div class="preview-badge">Style #1</div>
+                    </div>
+                    <div class="mockup-content">
+                        <div class="mockup-title">Corporate Clean</div>
+                        <div class="mockup-description">
+                            Professional, enterprise-grade aesthetic with subtle blues and generous whitespace
+                        </div>
+                        <div class="mockup-tags">
+                            <span class="tag">Professional</span>
+                            <span class="tag">Enterprise</span>
+                            <span class="tag">Clean</span>
+                        </div>
+                        <button class="mockup-button">View Style</button>
+                    </div>
+                </div>
+
+                <div class="mockup-card" onclick="window.location.href='style_variation_2_dark_mode.html'">
+                    <div class="mockup-preview preview-style" style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);">
+                        <div class="preview-icon" style="filter: brightness(2);">🌙</div>
+                        <div class="preview-badge">Style #2</div>
+                    </div>
+                    <div class="mockup-content">
+                        <div class="mockup-title">Dark Mode</div>
+                        <div class="mockup-description">
+                            Modern dark theme with high-contrast accents and reduced eye strain
+                        </div>
+                        <div class="mockup-tags">
+                            <span class="tag">Dark Theme</span>
+                            <span class="tag">Modern</span>
+                            <span class="tag">High Contrast</span>
+                        </div>
+                        <button class="mockup-button">View Style</button>
+                    </div>
+                </div>
+
+                <div class="mockup-card" onclick="window.location.href='style_variation_3_warm_minimal.html'">
+                    <div class="mockup-preview preview-style" style="background: linear-gradient(135deg, #FFF5E6 0%, #FFE4B5 100%);">
+                        <div class="preview-icon">☀️</div>
+                        <div class="preview-badge">Style #3</div>
+                    </div>
+                    <div class="mockup-content">
+                        <div class="mockup-title">Warm Minimal</div>
+                        <div class="mockup-description">
+                            Soft, approachable design with warm tones and minimal visual noise
+                        </div>
+                        <div class="mockup-tags">
+                            <span class="tag">Warm</span>
+                            <span class="tag">Approachable</span>
+                            <span class="tag">Minimal</span>
+                        </div>
+                        <button class="mockup-button">View Style</button>
+                    </div>
+                </div>
+
+                <div class="mockup-card" onclick="window.location.href='style_variation_4_vibrant_modern.html'">
+                    <div class="mockup-preview preview-style" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                        <div class="preview-icon" style="filter: brightness(2);">⚡</div>
+                        <div class="preview-badge">Style #4</div>
+                    </div>
+                    <div class="mockup-content">
+                        <div class="mockup-title">Vibrant Modern</div>
+                        <div class="mockup-description">
+                            Bold colors, strong gradients, and energetic visual language
+                        </div>
+                        <div class="mockup-tags">
+                            <span class="tag">Vibrant</span>
+                            <span class="tag">Bold</span>
+                            <span class="tag">Energetic</span>
+                        </div>
+                        <button class="mockup-button">View Style</button>
+                    </div>
+                </div>
+
+                <div class="mockup-card" onclick="window.location.href='style_variation_5_technical_dense.html'">
+                    <div class="mockup-preview preview-style" style="background: linear-gradient(135deg, #1E3A5F 0%, #2C5F8D 100%);">
+                        <div class="preview-icon" style="filter: brightness(2);">⚙️</div>
+                        <div class="preview-badge">Style #5</div>
+                    </div>
+                    <div class="mockup-content">
+                        <div class="mockup-title">Technical Dense</div>
+                        <div class="mockup-description">
+                            Information-rich interface for technical users with monospace fonts and data focus
+                        </div>
+                        <div class="mockup-tags">
+                            <span class="tag">Technical</span>
+                            <span class="tag">Dense</span>
+                            <span class="tag">Data-Rich</span>
+                        </div>
+                        <button class="mockup-button">View Style</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- WORKSPACE OPTIONS -->
+        <div id="workspace" class="category-section">
+            <div class="category-header">
+                <div class="category-title">💻 Workspace Layout Options</div>
+                <div class="category-description">
+                    Various workspace configurations exploring different layouts, views, and interaction patterns
+                </div>
+            </div>
+            <div class="mockups-grid">
+                <div class="mockup-card" onclick="window.location.href='canvas_workspace.html'">
+                    <div class="mockup-preview preview-workspace">
+                        <div class="preview-icon">🖼️</div>
+                    </div>
+                    <div class="mockup-content">
+                        <div class="mockup-title">Canvas Workspace</div>
+                        <div class="mockup-description">
+                            Spatial canvas for visual thinkers with infinite scrolling and node connections
+                        </div>
+                        <div class="mockup-tags">
+                            <span class="tag">Canvas</span>
+                            <span class="tag">Spatial</span>
+                        </div>
+                        <button class="mockup-button">View Canvas</button>
+                    </div>
+                </div>
+
+                <div class="mockup-card" onclick="window.location.href='dual_mode_workspace.html'">
+                    <div class="mockup-preview preview-workspace">
+                        <div class="preview-icon">🔄</div>
+                    </div>
+                    <div class="mockup-content">
+                        <div class="mockup-title">Dual Mode Workspace</div>
+                        <div class="mockup-description">
+                            Toggle between different workspace modes for different tasks
+                        </div>
+                        <div class="mockup-tags">
+                            <span class="tag">Dual Mode</span>
+                            <span class="tag">Flexible</span>
+                        </div>
+                        <button class="mockup-button">View Dual Mode</button>
+                    </div>
+                </div>
+
+                <div class="mockup-card" onclick="window.location.href='workspace_with_status.html'">
+                    <div class="mockup-preview preview-workspace">
+                        <div class="preview-icon">📊</div>
+                    </div>
+                    <div class="mockup-content">
+                        <div class="mockup-title">Status-Enhanced Workspace</div>
+                        <div class="mockup-description">
+                            Workspace with prominent status indicators and health metrics
+                        </div>
+                        <div class="mockup-tags">
+                            <span class="tag">Status</span>
+                            <span class="tag">Metrics</span>
+                        </div>
+                        <button class="mockup-button">View Status</button>
+                    </div>
+                </div>
+
+                <div class="mockup-card" onclick="window.location.href='workspace_with_quick_actions.html'">
+                    <div class="mockup-preview preview-workspace">
+                        <div class="preview-icon">⚡</div>
+                    </div>
+                    <div class="mockup-content">
+                        <div class="mockup-title">Quick Actions Workspace</div>
+                        <div class="mockup-description">
+                            Workspace optimized for rapid task delegation and quick actions
+                        </div>
+                        <div class="mockup-tags">
+                            <span class="tag">Quick Actions</span>
+                            <span class="tag">Speed</span>
+                        </div>
+                        <button class="mockup-button">View Quick Actions</button>
+                    </div>
+                </div>
+
+                <div class="mockup-card" onclick="window.location.href='workspace_agent_view.html'">
+                    <div class="mockup-preview preview-workspace">
+                        <div class="preview-icon">🤖</div>
+                    </div>
+                    <div class="mockup-content">
+                        <div class="mockup-title">Agent-Centric View</div>
+                        <div class="mockup-description">
+                            Workspace organized around agent status and autonomous operations
+                        </div>
+                        <div class="mockup-tags">
+                            <span class="tag">Agent-Focused</span>
+                            <span class="tag">Monitoring</span>
+                        </div>
+                        <button class="mockup-button">View Agent View</button>
+                    </div>
+                </div>
+
+                <div class="mockup-card" onclick="window.location.href='workspace_with_view_toggle.html'">
+                    <div class="mockup-preview preview-workspace">
+                        <div class="preview-icon">👁️</div>
+                    </div>
+                    <div class="mockup-content">
+                        <div class="mockup-title">View Toggle Workspace</div>
+                        <div class="mockup-description">
+                            Multiple view options (list, grid, timeline) for the same data
+                        </div>
+                        <div class="mockup-tags">
+                            <span class="tag">Multiple Views</span>
+                            <span class="tag">Flexible</span>
+                        </div>
+                        <button class="mockup-button">View Toggle</button>
+                    </div>
+                </div>
+
+                <div class="mockup-card" onclick="window.location.href='status_visibility_options.html'">
+                    <div class="mockup-preview preview-workspace">
+                        <div class="preview-icon">🚦</div>
+                    </div>
+                    <div class="mockup-content">
+                        <div class="mockup-title">Status Visibility Options</div>
+                        <div class="mockup-description">
+                            Different ways to display project and task status information
+                        </div>
+                        <div class="mockup-tags">
+                            <span class="tag">Status Display</span>
+                            <span class="tag">Options</span>
+                        </div>
+                        <button class="mockup-button">View Options</button>
+                    </div>
+                </div>
+
+                <div class="mockup-card" onclick="window.location.href='multi_session_options.html'">
+                    <div class="mockup-preview preview-workspace">
+                        <div class="preview-icon">🔀</div>
+                    </div>
+                    <div class="mockup-content">
+                        <div class="mockup-title">Multi-Session Options</div>
+                        <div class="mockup-description">
+                            Managing multiple work sessions and contexts simultaneously
+                        </div>
+                        <div class="mockup-tags">
+                            <span class="tag">Sessions</span>
+                            <span class="tag">Multi-Context</span>
+                        </div>
+                        <button class="mockup-button">View Sessions</button>
+                    </div>
+                </div>
+
+                <div class="mockup-card" onclick="window.location.href='onboarding_flow.html'">
+                    <div class="mockup-preview preview-workspace">
+                        <div class="preview-icon">🚀</div>
+                    </div>
+                    <div class="mockup-content">
+                        <div class="mockup-title">Onboarding Flow</div>
+                        <div class="mockup-description">
+                            First-time user experience and workspace setup flow
+                        </div>
+                        <div class="mockup-tags">
+                            <span class="tag">Onboarding</span>
+                            <span class="tag">First Use</span>
+                        </div>
+                        <button class="mockup-button">View Onboarding</button>
+                    </div>
+                </div>
+
+                <div class="mockup-card" onclick="window.location.href='chat_experience_improvements.html'">
+                    <div class="mockup-preview preview-workspace">
+                        <div class="preview-icon">💬</div>
+                    </div>
+                    <div class="mockup-content">
+                        <div class="mockup-title">Chat Experience Improvements</div>
+                        <div class="mockup-description">
+                            Comprehensive comparison of current vs. improved chat interface with rich interactions
+                        </div>
+                        <div class="mockup-tags">
+                            <span class="tag">Chat UI</span>
+                            <span class="tag">Comparison</span>
+                            <span class="tag">Interactive</span>
+                        </div>
+                        <button class="mockup-button">View Improvements</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- OTHER MOCKUPS -->
+        <div id="other" class="category-section">
+            <div class="category-header">
+                <div class="category-title">✨ Other Design Explorations</div>
+                <div class="category-description">
+                    Additional mockups exploring specific UI patterns, layouts, and visual concepts
+                </div>
+            </div>
+            <div class="mockups-grid">
+                <div class="mockup-card" onclick="window.location.href='canvas_improved.html'">
+                    <div class="mockup-preview preview-other">
+                        <div class="preview-icon">🎨</div>
+                    </div>
+                    <div class="mockup-content">
+                        <div class="mockup-title">Canvas Improved</div>
+                        <div class="mockup-description">
+                            Enhanced version of canvas interface with improved interactions and visual hierarchy
+                        </div>
+                        <div class="mockup-tags">
+                            <span class="tag">Canvas</span>
+                            <span class="tag">Enhanced</span>
+                        </div>
+                        <button class="mockup-button">View Canvas</button>
+                    </div>
+                </div>
+
+                <div class="mockup-card" onclick="window.location.href='outcomist_layout_improved.html'">
+                    <div class="mockup-preview preview-other">
+                        <div class="preview-icon">📐</div>
+                    </div>
+                    <div class="mockup-content">
+                        <div class="mockup-title">Layout Improved</div>
+                        <div class="mockup-description">
+                            Refined layout with better spacing, hierarchy, and information architecture
+                        </div>
+                        <div class="mockup-tags">
+                            <span class="tag">Layout</span>
+                            <span class="tag">Refined</span>
+                        </div>
+                        <button class="mockup-button">View Layout</button>
+                    </div>
+                </div>
+
+                <div class="mockup-card" onclick="window.location.href='outcomist_stats_light.html'">
+                    <div class="mockup-preview preview-other">
+                        <div class="preview-icon">📈</div>
+                    </div>
+                    <div class="mockup-content">
+                        <div class="mockup-title">Stats Light Theme</div>
+                        <div class="mockup-description">
+                            Light-themed statistics dashboard with charts and metrics visualization
+                        </div>
+                        <div class="mockup-tags">
+                            <span class="tag">Statistics</span>
+                            <span class="tag">Light Theme</span>
+                        </div>
+                        <button class="mockup-button">View Stats</button>
+                    </div>
+                </div>
+
+                <div class="mockup-card" onclick="window.location.href='outcomist_3x3_grid.html'">
+                    <div class="mockup-preview preview-other">
+                        <div class="preview-icon">🔲</div>
+                    </div>
+                    <div class="mockup-content">
+                        <div class="mockup-title">3×3 Grid Layout</div>
+                        <div class="mockup-description">
+                            Grid-based layout for organizing projects or tasks in a visual matrix
+                        </div>
+                        <div class="mockup-tags">
+                            <span class="tag">Grid</span>
+                            <span class="tag">Matrix</span>
+                        </div>
+                        <button class="mockup-button">View Grid</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div style="text-align: center; margin-top: 60px; padding: 30px; background: rgba(255,255,255,0.95); border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+            <h3 style="margin-bottom: 15px; color: #1a1a2e;">📋 Design Documentation</h3>
+            <p style="color: #666; margin-bottom: 20px;">
+                These mockups represent explorations of different UX paradigms, visual styles, and interaction patterns for Outcomist.
+            </p>
+            <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
+                <a href="#" style="color: #667eea; text-decoration: none; font-weight: 600;">Documentation</a>
+                <span style="color: #ccc;">|</span>
+                <a href="#" style="color: #667eea; text-decoration: none; font-weight: 600;">Design System</a>
+                <span style="color: #ccc;">|</span>
+                <a href="#" style="color: #667eea; text-decoration: none; font-weight: 600;">GitHub</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Smooth scroll for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>

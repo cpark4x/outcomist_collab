@@ -1,46 +1,37 @@
 # Outcomist Documentation
 
-This folder contains all documentation for the Outcomist project.
+Welcome to Outcomist documentation. This covers all platforms and components.
 
-## Structure
+## 📱 For Users
+- [User Guide](user/README.md) - Getting started with Outcomist
+- [API Reference](user/API.md) - API documentation
+- [Quickstart](user/QUICKSTART.md) - Quick setup guide
 
-### 📖 [VISION.md](./VISION.md)
-**Start here** - The project vision, current status, roadmap, and design philosophy. This is the single source of truth for understanding what Outcomist is and where it's going.
+## 🛠 For Developers
+- [Contributing](development/CONTRIBUTING.md) - How to contribute
+- [Deployment](development/DEPLOYMENT.md) - Deployment guide
+- [Streaming Architecture](development/STREAMING.md) - Real-time features
 
-### 📋 [planning/](./planning/)
-Strategic planning documents:
-- `problem_statement.md` - The core problem we're solving
-- `competitive_landscape.md` - Analysis of similar tools
-- `product_story.md` - The narrative behind Outcomist
+## 📋 Project Documentation
+- [Vision](VISION.md) - Project vision and goals
+- [Planning](planning/) - Project planning documents
+- [Specs](specs/) - Technical specifications
+- [Design Mockups](design-mockups/) - UI/UX designs
+- [Changelog](project/CHANGELOG.md) - Version history
+- [Project Status](project/PROJECT_COMPLETE.md) - Current status
 
-### 📄 [specs/](./specs/)
-Detailed specifications and documentation:
-- `Autonomous Agent — Product Specification (v3.1).md` - Full product specification
-- `Autonomous Agent_ 10 Non-Engineering Use Case Scenarios.md` - Real-world use cases
-- `autonomous_agent_faq_formatted.md` - Frequently asked questions
+## 🧪 Testing
+- [E2E Test Matrix](testing/E2E_TEST_MATRIX.md) - End-to-end test plan
 
-### 🎨 [design-mockups/](./design-mockups/)
-HTML mockups and design exploration:
-- 26+ HTML mockups showing UI variations
-- UX design proposals
-- Dashboard explorations
-- See [design-mockups/README.md](./design-mockups/README.md) for details
+## 🏗 Architecture
 
-## Quick Start
+### Current Platform: Web Application
+Located in `/webapp/` - Full-stack web application with React frontend and Python backend.
 
-1. **Understand the vision**: Read [VISION.md](./VISION.md)
-2. **See the current state**: Check the "Current Status" section
-3. **Explore use cases**: Review [specs/Autonomous Agent_ 10 Non-Engineering Use Case Scenarios.md](./specs/Autonomous%20Agent_%2010%20Non-Engineering%20Use%20Case%20Scenarios.md)
-4. **Review the code**: See the [outcomist/](../outcomist/) folder
+### Future Platforms
+- `/iosapp/` - Native iOS application (planned)
+- `/desktopapp/` - Desktop application (Electron/Tauri) (planned)
+- `/shared/` - Shared code and components (planned)
 
-## Contributing
-
-When updating documentation:
-- Keep [VISION.md](./VISION.md) up to date with current status
-- Add new planning docs to `planning/`
-- Add technical specs to `specs/`
-- Add design explorations to `design-mockups/`
-
----
-
-**Working on Outcomist?** Read [VISION.md](./VISION.md) first to understand the project direction.
+## 📝 Session History
+See `/webapp/sessions/` for AI-assisted development session summaries.

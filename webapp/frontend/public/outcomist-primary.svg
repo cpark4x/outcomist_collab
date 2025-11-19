@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 160">
+  <!-- Outcomist Primary Logo: Discovery Radar Symbol + Wordmark -->
+  <!-- Premium execution with optical refinements -->
+
+  <!-- Discovery Radar Symbol -->
+  <g transform="translate(80, 80)">
+    <!-- Outer circle with gap at 45° (top-right) - revealing hidden pattern -->
+    <path d="M 38,0 A 38,38 0 1,1 26.87,-26.87"
+          fill="none"
+          stroke="#1a1d21"
+          stroke-width="4"
+          stroke-linecap="round"/>
+
+    <!-- Middle circle with gap at 135° (top-left) -->
+    <path d="M 24,0 A 24,24 0 1,1 -16.97,-16.97"
+          fill="none"
+          stroke="#1a1d21"
+          stroke-width="4"
+          stroke-linecap="round"/>
+
+    <!-- Inner circle with gap at 225° (bottom-left) -->
+    <path d="M 13,0 A 13,13 0 1,1 -9.19,-9.19"
+          fill="none"
+          stroke="#1a1d21"
+          stroke-width="4"
+          stroke-linecap="round"/>
+
+    <!-- Center dot (discovery focal point) -->
+    <circle cx="0" cy="0" r="4" fill="#1a1d21"/>
+  </g>
+
+  <!-- OUTCOMIST Wordmark -->
+  <text x="180" y="103"
+        font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+        font-size="84"
+        font-weight="550"
+        letter-spacing="4.5"
+        fill="#1a1d21">
+    OUTCOMIST
+  </text>
+</svg>

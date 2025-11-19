@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 120">
+  <!-- Wordmark: OUTCOMIST (web-optimized version) -->
+  <text x="40" y="75" font-family="system-ui, -apple-system, sans-serif" font-size="56" font-weight="700" letter-spacing="4" fill="#1e293b">
+    OUTC
+  </text>
+
+  <!-- Hidden Pattern O: 20 dots forming perfect circle -->
+  <g transform="translate(243, 45)">
+    <!-- Dots positioned in perfect circle at radius 24 -->
+    <circle cx="0" cy="-24" r="3.5" fill="#1e293b"/>
+    <circle cx="8.48" cy="-22.55" r="3.5" fill="#1e293b"/>
+    <circle cx="16" cy="-19.1" r="3.5" fill="#1e293b"/>
+    <circle cx="21.92" cy="-13.86" r="3.5" fill="#1e293b"/>
+    <circle cx="25.98" cy="-7.71" r="3.5" fill="#1e293b"/>
+    <circle cx="28.06" cy="-1.06" r="3.5" fill="#1e293b"/>
+    <circle cx="28.06" cy="5.56" r="3.5" fill="#1e293b"/>
+    <circle cx="25.98" cy="12.21" r="3.5" fill="#1e293b"/>
+    <circle cx="21.92" cy="18.35" r="3.5" fill="#1e293b"/>
+    <circle cx="16" cy="23.6" r="3.5" fill="#1e293b"/>
+    <circle cx="8.48" cy="27.05" r="3.5" fill="#1e293b"/>
+    <circle cx="0" cy="28.5" r="3.5" fill="#1e293b"/>
+    <circle cx="-8.48" cy="27.05" r="3.5" fill="#1e293b"/>
+    <circle cx="-16" cy="23.6" r="3.5" fill="#1e293b"/>
+    <circle cx="-21.92" cy="18.35" r="3.5" fill="#1e293b"/>
+    <circle cx="-25.98" cy="12.21" r="3.5" fill="#1e293b"/>
+    <circle cx="-28.06" cy="5.56" r="3.5" fill="#1e293b"/>
+    <circle cx="-28.06" cy="-1.06" r="3.5" fill="#1e293b"/>
+    <circle cx="-25.98" cy="-7.71" r="3.5" fill="#1e293b"/>
+    <circle cx="-21.92" cy="-13.86" r="3.5" fill="#1e293b"/>
+    <circle cx="-16" cy="-19.1" r="3.5" fill="#1e293b"/>
+    <circle cx="-8.48" cy="-22.55" r="3.5" fill="#1e293b"/>
+  </g>
+
+  <text x="293" y="75" font-family="system-ui, -apple-system, sans-serif" font-size="56" font-weight="700" letter-spacing="4" fill="#1e293b">
+    MIST
+  </text>
+</svg>

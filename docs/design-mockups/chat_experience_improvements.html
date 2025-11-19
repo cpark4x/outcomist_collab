@@ -1,0 +1,1232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Experience Improvements - Outcomist</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 1800px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 50px;
+        }
+
+        .header h1 {
+            font-size: 3em;
+            margin-bottom: 15px;
+            font-weight: 700;
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.95;
+        }
+
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 50px;
+        }
+
+        .comparison-section {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+
+        .section-header {
+            padding: 20px 25px;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: white;
+        }
+
+        .section-header h2 {
+            font-size: 1.5em;
+            margin-bottom: 5px;
+        }
+
+        .section-header p {
+            opacity: 0.8;
+            font-size: 0.9em;
+        }
+
+        .label {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+
+        .label-before {
+            background: #ffebee;
+            color: #c62828;
+        }
+
+        .label-after {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .chat-container {
+            height: 600px;
+            display: flex;
+            flex-direction: column;
+            background: #f5f5f5;
+        }
+
+        /* Chat Messages Area */
+        .messages-area {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            background: #fafafa;
+        }
+
+        .message {
+            margin-bottom: 16px;
+            display: flex;
+            gap: 12px;
+        }
+
+        .message.user {
+            flex-direction: row-reverse;
+        }
+
+        .avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2em;
+        }
+
+        .avatar.agent {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .avatar.user {
+            background: #4CAF50;
+        }
+
+        .message-content {
+            max-width: 70%;
+        }
+
+        .message.user .message-content {
+            align-items: flex-end;
+        }
+
+        .message-bubble {
+            padding: 12px 16px;
+            border-radius: 18px;
+            font-size: 0.95em;
+            line-height: 1.4;
+            position: relative;
+        }
+
+        .message.agent .message-bubble {
+            background: white;
+            color: #1C1C1E;
+            border: 1px solid #e0e0e0;
+        }
+
+        .message.user .message-bubble {
+            background: #007AFF;
+            color: white;
+        }
+
+        .message-meta {
+            font-size: 0.75em;
+            color: #999;
+            margin-top: 4px;
+            padding: 0 4px;
+        }
+
+        /* Rich Message Types */
+        .task-card {
+            background: #fff;
+            border: 1px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 16px;
+            margin-top: 8px;
+        }
+
+        .task-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .task-title {
+            font-weight: 600;
+            color: #1a1a2e;
+        }
+
+        .task-status {
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            font-weight: 600;
+        }
+
+        .status-executing {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-complete {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .task-progress {
+            height: 6px;
+            background: #f0f0f0;
+            border-radius: 3px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+
+        .task-progress-bar {
+            height: 100%;
+            background: #007AFF;
+            transition: width 0.3s;
+        }
+
+        /* Quick Actions */
+        .quick-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+            flex-wrap: wrap;
+        }
+
+        .quick-action-btn {
+            padding: 8px 14px;
+            background: #f0f0f0;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            font-size: 0.85em;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .quick-action-btn:hover {
+            background: #007AFF;
+            color: white;
+            border-color: #007AFF;
+        }
+
+        /* Typing Indicator */
+        .typing-indicator {
+            display: flex;
+            gap: 4px;
+            padding: 12px 16px;
+            background: white;
+            border-radius: 18px;
+            border: 1px solid #e0e0e0;
+            width: fit-content;
+        }
+
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            background: #999;
+            border-radius: 50%;
+            animation: typing 1.4s infinite;
+        }
+
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes typing {
+            0%, 60%, 100% { transform: translateY(0); opacity: 0.7; }
+            30% { transform: translateY(-10px); opacity: 1; }
+        }
+
+        /* Suggested Actions */
+        .suggested-actions {
+            padding: 15px 20px;
+            background: #fff;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .suggested-title {
+            font-size: 0.8em;
+            color: #666;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .suggestion-chips {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .suggestion-chip {
+            padding: 8px 16px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 20px;
+            font-size: 0.9em;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .suggestion-chip:hover {
+            transform: scale(1.05);
+        }
+
+        /* Input Area */
+        .input-area {
+            padding: 20px;
+            background: white;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .input-wrapper {
+            display: flex;
+            gap: 12px;
+            align-items: flex-end;
+        }
+
+        .input-field {
+            flex: 1;
+            min-height: 44px;
+            max-height: 120px;
+            padding: 12px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 24px;
+            font-size: 0.95em;
+            font-family: inherit;
+            resize: none;
+            transition: border-color 0.2s;
+        }
+
+        .input-field:focus {
+            outline: none;
+            border-color: #007AFF;
+        }
+
+        .send-button {
+            width: 44px;
+            height: 44px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.2em;
+            transition: transform 0.2s;
+        }
+
+        .send-button:hover {
+            transform: scale(1.1);
+        }
+
+        .input-tools {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 10px;
+        }
+
+        .tool-btn {
+            padding: 6px 12px;
+            background: #f5f5f5;
+            border: 1px solid #e0e0e0;
+            border-radius: 16px;
+            font-size: 0.85em;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .tool-btn:hover {
+            background: #e0e0e0;
+        }
+
+        /* File Attachment */
+        .file-attachment {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            background: #f5f5f5;
+            border-radius: 12px;
+            margin-top: 8px;
+        }
+
+        .file-icon {
+            width: 40px;
+            height: 40px;
+            background: #007AFF;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2em;
+        }
+
+        .file-info {
+            flex: 1;
+        }
+
+        .file-name {
+            font-weight: 600;
+            font-size: 0.9em;
+            color: #1a1a2e;
+        }
+
+        .file-size {
+            font-size: 0.75em;
+            color: #666;
+        }
+
+        /* Code Block */
+        .code-block {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 16px;
+            border-radius: 8px;
+            font-family: 'Monaco', 'Courier New', monospace;
+            font-size: 0.85em;
+            margin-top: 8px;
+            overflow-x: auto;
+        }
+
+        .code-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #333;
+        }
+
+        .code-language {
+            color: #858585;
+            font-size: 0.85em;
+        }
+
+        .copy-btn {
+            padding: 4px 10px;
+            background: #333;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 0.8em;
+            cursor: pointer;
+        }
+
+        /* Message Actions */
+        .message-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 8px;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .message:hover .message-actions {
+            opacity: 1;
+        }
+
+        .action-btn {
+            padding: 4px 8px;
+            background: #f0f0f0;
+            border: none;
+            border-radius: 4px;
+            font-size: 0.75em;
+            cursor: pointer;
+            color: #666;
+        }
+
+        .action-btn:hover {
+            background: #e0e0e0;
+            color: #333;
+        }
+
+        /* Context Banner */
+        .context-banner {
+            padding: 12px 20px;
+            background: #fff3cd;
+            border-bottom: 1px solid #ffc107;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 0.9em;
+        }
+
+        .context-icon {
+            font-size: 1.2em;
+        }
+
+        .context-text {
+            flex: 1;
+            color: #856404;
+        }
+
+        .context-close {
+            cursor: pointer;
+            color: #856404;
+        }
+
+        /* Pinned Messages */
+        .pinned-section {
+            padding: 12px 20px;
+            background: #e3f2fd;
+            border-bottom: 1px solid #2196F3;
+        }
+
+        .pinned-content {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 0.9em;
+        }
+
+        .pin-icon {
+            color: #2196F3;
+        }
+
+        /* Thread View */
+        .thread-indicator {
+            font-size: 0.8em;
+            color: #007AFF;
+            cursor: pointer;
+            margin-top: 6px;
+            display: inline-block;
+        }
+
+        .thread-indicator:hover {
+            text-decoration: underline;
+        }
+
+        /* Single Column Sections */
+        .full-width-section {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            margin-bottom: 30px;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            padding: 25px;
+        }
+
+        .feature-card {
+            padding: 20px;
+            background: #f9f9f9;
+            border-radius: 12px;
+            border-left: 4px solid #667eea;
+        }
+
+        .feature-title {
+            font-weight: 600;
+            font-size: 1.1em;
+            margin-bottom: 8px;
+            color: #1a1a2e;
+        }
+
+        .feature-description {
+            font-size: 0.9em;
+            color: #666;
+            line-height: 1.5;
+        }
+
+        .feature-icon {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+
+        @media (max-width: 1200px) {
+            .comparison-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>💬 Chat Experience Improvements</h1>
+            <p>Enhanced interaction patterns for Outcomist autonomous agent</p>
+        </div>
+
+        <!-- Comparison 1: Basic vs Enhanced Messages -->
+        <div class="comparison-grid">
+            <!-- Before -->
+            <div class="comparison-section">
+                <div class="section-header">
+                    <div class="label label-before">Current</div>
+                    <h2>Basic Chat Interface</h2>
+                    <p>Simple text-only messages</p>
+                </div>
+                <div class="chat-container">
+                    <div class="messages-area">
+                        <div class="message agent">
+                            <div class="avatar agent">🤖</div>
+                            <div class="message-content">
+                                <div class="message-bubble">
+                                    What can I help you with today?
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="message user">
+                            <div class="avatar user">👤</div>
+                            <div class="message-content">
+                                <div class="message-bubble">
+                                    Analyze the Q4 sales data
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="message agent">
+                            <div class="avatar agent">🤖</div>
+                            <div class="message-content">
+                                <div class="message-bubble">
+                                    I'll analyze the Q4 sales data for you. This will take a few minutes.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="message agent">
+                            <div class="avatar agent">🤖</div>
+                            <div class="message-content">
+                                <div class="message-bubble">
+                                    Analysis complete. Revenue was $2.4M, up 23% from Q3.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="input-area">
+                        <div class="input-wrapper">
+                            <textarea class="input-field" placeholder="Type a message..."></textarea>
+                            <button class="send-button">➤</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- After -->
+            <div class="comparison-section">
+                <div class="section-header">
+                    <div class="label label-after">Improved</div>
+                    <h2>Rich Interactive Messages</h2>
+                    <p>Context-aware with inline actions</p>
+                </div>
+                <div class="chat-container">
+                    <div class="messages-area">
+                        <div class="message agent">
+                            <div class="avatar agent">🤖</div>
+                            <div class="message-content">
+                                <div class="message-bubble">
+                                    What can I help you with today?
+                                </div>
+                                <div class="quick-actions">
+                                    <button class="quick-action-btn">📊 Analyze data</button>
+                                    <button class="quick-action-btn">📝 Create report</button>
+                                    <button class="quick-action-btn">🔍 Research topic</button>
+                                </div>
+                                <div class="message-meta">Just now</div>
+                            </div>
+                        </div>
+
+                        <div class="message user">
+                            <div class="avatar user">👤</div>
+                            <div class="message-content">
+                                <div class="message-bubble">
+                                    Analyze the Q4 sales data
+                                </div>
+                                <div class="message-meta">2:34 PM</div>
+                            </div>
+                        </div>
+
+                        <div class="message agent">
+                            <div class="avatar agent">🤖</div>
+                            <div class="message-content">
+                                <div class="message-bubble">
+                                    I'll analyze your Q4 sales data. You can monitor progress below:
+                                </div>
+                                <div class="task-card">
+                                    <div class="task-card-header">
+                                        <div class="task-title">Q4 Sales Analysis</div>
+                                        <div class="task-status status-executing">Executing</div>
+                                    </div>
+                                    <div style="font-size: 0.85em; color: #666; margin-bottom: 8px;">
+                                        Processing sales_q4.csv
+                                    </div>
+                                    <div class="task-progress">
+                                        <div class="task-progress-bar" style="width: 65%"></div>
+                                    </div>
+                                </div>
+                                <div class="message-actions">
+                                    <button class="action-btn">👍</button>
+                                    <button class="action-btn">📌 Pin</button>
+                                    <button class="action-btn">↩️ Reply</button>
+                                </div>
+                                <div class="message-meta">2:34 PM · Estimated 2 min remaining</div>
+                            </div>
+                        </div>
+
+                        <div class="message agent">
+                            <div class="avatar agent">🤖</div>
+                            <div class="message-content">
+                                <div class="typing-indicator">
+                                    <div class="typing-dot"></div>
+                                    <div class="typing-dot"></div>
+                                    <div class="typing-dot"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="suggested-actions">
+                        <div class="suggested-title">Suggested Follow-ups</div>
+                        <div class="suggestion-chips">
+                            <div class="suggestion-chip">Compare to Q3</div>
+                            <div class="suggestion-chip">Show by region</div>
+                            <div class="suggestion-chip">Export report</div>
+                        </div>
+                    </div>
+
+                    <div class="input-area">
+                        <div class="input-tools">
+                            <button class="tool-btn">📎 Attach</button>
+                            <button class="tool-btn">💻 Code</button>
+                            <button class="tool-btn">🎤 Voice</button>
+                        </div>
+                        <div class="input-wrapper">
+                            <textarea class="input-field" placeholder="Ask a follow-up question or give new instructions..."></textarea>
+                            <button class="send-button">➤</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Comparison 2: File Handling -->
+        <div class="comparison-grid">
+            <!-- Before -->
+            <div class="comparison-section">
+                <div class="section-header">
+                    <div class="label label-before">Current</div>
+                    <h2>Basic File Sharing</h2>
+                    <p>Plain text file references</p>
+                </div>
+                <div class="chat-container">
+                    <div class="messages-area">
+                        <div class="message user">
+                            <div class="avatar user">👤</div>
+                            <div class="message-content">
+                                <div class="message-bubble">
+                                    Here's the data file: sales_report.pdf
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="message agent">
+                            <div class="avatar agent">🤖</div>
+                            <div class="message-content">
+                                <div class="message-bubble">
+                                    I received the file. What would you like me to do with it?
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="input-area">
+                        <div class="input-wrapper">
+                            <textarea class="input-field" placeholder="Type a message..."></textarea>
+                            <button class="send-button">➤</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- After -->
+            <div class="comparison-section">
+                <div class="section-header">
+                    <div class="label label-after">Improved</div>
+                    <h2>Rich File Attachments</h2>
+                    <p>Visual previews with quick actions</p>
+                </div>
+                <div class="chat-container">
+                    <div class="messages-area">
+                        <div class="message user">
+                            <div class="avatar user">👤</div>
+                            <div class="message-content">
+                                <div class="message-bubble">
+                                    Here's the data you need to analyze
+                                </div>
+                                <div class="file-attachment">
+                                    <div class="file-icon">📄</div>
+                                    <div class="file-info">
+                                        <div class="file-name">sales_report_q4.pdf</div>
+                                        <div class="file-size">2.4 MB · 15 pages</div>
+                                    </div>
+                                    <button class="action-btn">👁️ View</button>
+                                </div>
+                                <div class="message-meta">2:45 PM</div>
+                            </div>
+                        </div>
+
+                        <div class="message agent">
+                            <div class="avatar agent">🤖</div>
+                            <div class="message-content">
+                                <div class="message-bubble">
+                                    I've received your PDF. I can extract the data and analyze it. What insights are you looking for?
+                                </div>
+                                <div class="quick-actions">
+                                    <button class="quick-action-btn">📊 Create summary</button>
+                                    <button class="quick-action-btn">📈 Extract charts</button>
+                                    <button class="quick-action-btn">💬 Q&A about document</button>
+                                </div>
+                                <div class="message-meta">2:45 PM</div>
+                            </div>
+                        </div>
+
+                        <div class="message user">
+                            <div class="avatar user">👤</div>
+                            <div class="message-content">
+                                <div class="message-bubble">
+                                    Create a summary with key insights
+                                </div>
+                                <div class="message-meta">2:46 PM</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="input-area">
+                        <div class="input-tools">
+                            <button class="tool-btn">📎 Attach file</button>
+                            <button class="tool-btn">📸 Screenshot</button>
+                            <button class="tool-btn">🔗 Paste link</button>
+                        </div>
+                        <div class="input-wrapper">
+                            <textarea class="input-field" placeholder="Type a message..."></textarea>
+                            <button class="send-button">➤</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Comparison 3: Context & Threading -->
+        <div class="comparison-grid">
+            <!-- Before -->
+            <div class="comparison-section">
+                <div class="section-header">
+                    <div class="label label-before">Current</div>
+                    <h2>Linear Conversation</h2>
+                    <p>All messages in single stream</p>
+                </div>
+                <div class="chat-container">
+                    <div class="messages-area">
+                        <div class="message agent">
+                            <div class="avatar agent">🤖</div>
+                            <div class="message-content">
+                                <div class="message-bubble">
+                                    Analysis complete. Revenue up 23%.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="message user">
+                            <div class="avatar user">👤</div>
+                            <div class="message-content">
+                                <div class="message-bubble">
+                                    What about the marketing campaign?
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="message agent">
+                            <div class="avatar agent">🤖</div>
+                            <div class="message-content">
+                                <div class="message-bubble">
+                                    I'll analyze the marketing campaign.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="message user">
+                            <div class="avatar user">👤</div>
+                            <div class="message-content">
+                                <div class="message-bubble">
+                                    Actually, can you break down revenue by region first?
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="input-area">
+                        <div class="input-wrapper">
+                            <textarea class="input-field" placeholder="Type a message..."></textarea>
+                            <button class="send-button">➤</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- After -->
+            <div class="comparison-section">
+                <div class="section-header">
+                    <div class="label label-after">Improved</div>
+                    <h2>Threaded Conversations</h2>
+                    <p>Context-aware with task tracking</p>
+                </div>
+                <div class="chat-container">
+                    <div class="pinned-section">
+                        <div class="pinned-content">
+                            <div class="pin-icon">📌</div>
+                            <div style="flex: 1;">
+                                <strong>Task:</strong> Q4 Sales Analysis
+                            </div>
+                            <button class="action-btn">View details</button>
+                        </div>
+                    </div>
+
+                    <div class="context-banner">
+                        <div class="context-icon">💼</div>
+                        <div class="context-text">
+                            Working on: <strong>Q4 Performance Review</strong>
+                        </div>
+                        <div class="context-close">✕</div>
+                    </div>
+
+                    <div class="messages-area">
+                        <div class="message agent">
+                            <div class="avatar agent">🤖</div>
+                            <div class="message-content">
+                                <div class="message-bubble">
+                                    Analysis complete. Revenue up 23% to $2.4M.
+                                </div>
+                                <div class="thread-indicator">3 replies →</div>
+                                <div class="message-meta">2:50 PM</div>
+                            </div>
+                        </div>
+
+                        <div class="message user">
+                            <div class="avatar user">👤</div>
+                            <div class="message-content">
+                                <div class="message-bubble">
+                                    What about the marketing campaign performance?
+                                </div>
+                                <div class="task-card">
+                                    <div class="task-card-header">
+                                        <div class="task-title">Marketing Campaign Analysis</div>
+                                        <div class="task-status status-executing">Started</div>
+                                    </div>
+                                    <div style="font-size: 0.85em; color: #666;">
+                                        New task created automatically
+                                    </div>
+                                </div>
+                                <div class="message-meta">2:51 PM</div>
+                            </div>
+                        </div>
+
+                        <div class="message agent">
+                            <div class="avatar agent">🤖</div>
+                            <div class="message-content">
+                                <div class="message-bubble">
+                                    I'll analyze the marketing campaign in parallel. Meanwhile, would you like me to break down the revenue by region?
+                                </div>
+                                <div class="quick-actions">
+                                    <button class="quick-action-btn">✅ Yes, show regions</button>
+                                    <button class="quick-action-btn">⏭️ Skip to marketing</button>
+                                </div>
+                                <div class="message-meta">2:51 PM</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="input-area">
+                        <div class="input-wrapper">
+                            <textarea class="input-field" placeholder="Reply to Q4 Performance Review..."></textarea>
+                            <button class="send-button">➤</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Comparison 4: Code and Technical Content -->
+        <div class="comparison-grid">
+            <!-- Before -->
+            <div class="comparison-section">
+                <div class="section-header">
+                    <div class="label label-before">Current</div>
+                    <h2>Plain Code Blocks</h2>
+                    <p>No syntax highlighting or actions</p>
+                </div>
+                <div class="chat-container">
+                    <div class="messages-area">
+                        <div class="message agent">
+                            <div class="avatar agent">🤖</div>
+                            <div class="message-content">
+                                <div class="message-bubble">
+                                    Here's the code:
+
+                                    function analyzeData(data) {
+                                      return data.reduce((sum, val) => sum + val, 0);
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="input-area">
+                        <div class="input-wrapper">
+                            <textarea class="input-field" placeholder="Type a message..."></textarea>
+                            <button class="send-button">➤</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- After -->
+            <div class="comparison-section">
+                <div class="section-header">
+                    <div class="label label-after">Improved</div>
+                    <h2>Rich Code Display</h2>
+                    <p>Syntax highlighting with quick actions</p>
+                </div>
+                <div class="chat-container">
+                    <div class="messages-area">
+                        <div class="message agent">
+                            <div class="avatar agent">🤖</div>
+                            <div class="message-content">
+                                <div class="message-bubble">
+                                    Here's the optimized analysis function:
+                                </div>
+                                <div class="code-block">
+                                    <div class="code-header">
+                                        <div class="code-language">javascript</div>
+                                        <button class="copy-btn">Copy code</button>
+                                    </div>
+                                    <pre style="margin: 0; color: #d4d4d4;">
+<span style="color: #569cd6;">function</span> <span style="color: #dcdcaa;">analyzeData</span>(<span style="color: #9cdcfe;">data</span>) {
+  <span style="color: #c586c0;">return</span> <span style="color: #9cdcfe;">data</span>.<span style="color: #dcdcaa;">reduce</span>(
+    (<span style="color: #9cdcfe;">sum</span>, <span style="color: #9cdcfe;">val</span>) => <span style="color: #9cdcfe;">sum</span> + <span style="color: #9cdcfe;">val</span>,
+    <span style="color: #b5cea8;">0</span>
+  );
+}</pre>
+                                </div>
+                                <div class="quick-actions">
+                                    <button class="quick-action-btn">💾 Save to file</button>
+                                    <button class="quick-action-btn">▶️ Run code</button>
+                                    <button class="quick-action-btn">📝 Add comments</button>
+                                </div>
+                                <div class="message-meta">2:55 PM</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="input-area">
+                        <div class="input-tools">
+                            <button class="tool-btn">💻 Insert code</button>
+                            <button class="tool-btn">📊 Add chart</button>
+                            <button class="tool-btn">🔢 Formula</button>
+                        </div>
+                        <div class="input-wrapper">
+                            <textarea class="input-field" placeholder="Type a message..."></textarea>
+                            <button class="send-button">➤</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Feature Summary -->
+        <div class="full-width-section">
+            <div class="section-header">
+                <h2>Key Improvement Areas</h2>
+                <p>Complete feature breakdown across all improvements</p>
+            </div>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">🎯</div>
+                    <div class="feature-title">Quick Actions</div>
+                    <div class="feature-description">
+                        Contextual buttons that suggest relevant next steps based on the conversation. Reduces typing and speeds up common workflows.
+                    </div>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">📊</div>
+                    <div class="feature-title">Rich Task Cards</div>
+                    <div class="feature-description">
+                        Inline task tracking with progress bars, status indicators, and quick actions. See task status without leaving the chat.
+                    </div>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">💬</div>
+                    <div class="feature-title">Threaded Replies</div>
+                    <div class="feature-description">
+                        Organize conversations into threads to handle multiple topics simultaneously without losing context.
+                    </div>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">📎</div>
+                    <div class="feature-title">Rich Attachments</div>
+                    <div class="feature-description">
+                        Visual file previews with metadata, quick view options, and contextual actions based on file type.
+                    </div>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">💻</div>
+                    <div class="feature-title">Code Highlighting</div>
+                    <div class="feature-description">
+                        Syntax-highlighted code blocks with copy, run, and save actions. Makes technical content easier to read and use.
+                    </div>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">🎤</div>
+                    <div class="feature-title">Voice Input</div>
+                    <div class="feature-description">
+                        Hands-free voice input for messages and commands. Especially useful for mobile or multitasking scenarios.
+                    </div>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">📌</div>
+                    <div class="feature-title">Pinned Messages</div>
+                    <div class="feature-description">
+                        Pin important messages or tasks to keep them visible at the top of the chat for easy reference.
+                    </div>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">💼</div>
+                    <div class="feature-title">Context Banner</div>
+                    <div class="feature-description">
+                        Show current working context (project, task, or document) so the agent knows what you're focused on.
+                    </div>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">⏱️</div>
+                    <div class="feature-title">Typing Indicators</div>
+                    <div class="feature-description">
+                        Visual feedback showing when the agent is processing your request. Reduces uncertainty and improves perceived responsiveness.
+                    </div>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">💡</div>
+                    <div class="feature-title">Suggested Actions</div>
+                    <div class="feature-description">
+                        AI-powered suggestions for follow-up questions or actions based on conversation history and task status.
+                    </div>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">⏮️</div>
+                    <div class="feature-title">Message Actions</div>
+                    <div class="feature-description">
+                        Hover actions on messages: thumbs up/down, pin, reply, edit, or delete. Quick feedback without interrupting flow.
+                    </div>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">🕐</div>
+                    <div class="feature-title">Timestamps & Status</div>
+                    <div class="feature-description">
+                        Clear timestamps and status indicators (sent, delivered, read) help track conversation flow and agent responsiveness.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Implementation Priority -->
+        <div class="full-width-section">
+            <div class="section-header">
+                <h2>📋 Implementation Recommendations</h2>
+                <p>Phased rollout strategy</p>
+            </div>
+            <div style="padding: 30px;">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 25px;">
+
+                    <div style="padding: 25px; background: #e8f5e9; border-radius: 12px; border-left: 4px solid #4CAF50;">
+                        <h3 style="color: #2e7d32; margin-bottom: 15px;">🚀 Phase 1 (High Priority)</h3>
+                        <ul style="list-style: none; padding: 0;">
+                            <li style="padding: 8px 0; color: #1b5e20;">✓ Rich task cards with progress</li>
+                            <li style="padding: 8px 0; color: #1b5e20;">✓ Quick action buttons</li>
+                            <li style="padding: 8px 0; color: #1b5e20;">✓ Typing indicators</li>
+                            <li style="padding: 8px 0; color: #1b5e20;">✓ File attachment previews</li>
+                            <li style="padding: 8px 0; color: #1b5e20;">✓ Timestamps & metadata</li>
+                        </ul>
+                    </div>
+
+                    <div style="padding: 25px; background: #fff3e0; border-radius: 12px; border-left: 4px solid #FF9800;">
+                        <h3 style="color: #e65100; margin-bottom: 15px;">⚡ Phase 2 (Medium Priority)</h3>
+                        <ul style="list-style: none; padding: 0;">
+                            <li style="padding: 8px 0; color: #bf360c;">✓ Context banners</li>
+                            <li style="padding: 8px 0; color: #bf360c;">✓ Suggested follow-ups</li>
+                            <li style="padding: 8px 0; color: #bf360c;">✓ Message actions (pin, reply)</li>
+                            <li style="padding: 8px 0; color: #bf360c;">✓ Code syntax highlighting</li>
+                            <li style="padding: 8px 0; color: #bf360c;">✓ Pinned messages section</li>
+                        </ul>
+                    </div>
+
+                    <div style="padding: 25px; background: #e3f2fd; border-radius: 12px; border-left: 4px solid #2196F3;">
+                        <h3 style="color: #0d47a1; margin-bottom: 15px;">🎯 Phase 3 (Nice to Have)</h3>
+                        <ul style="list-style: none; padding: 0;">
+                            <li style="padding: 8px 0; color: #01579b;">✓ Threaded conversations</li>
+                            <li style="padding: 8px 0; color: #01579b;">✓ Voice input</li>
+                            <li style="padding: 8px 0; color: #01579b;">✓ Advanced code actions</li>
+                            <li style="padding: 8px 0; color: #01579b;">✓ Rich formatting tools</li>
+                            <li style="padding: 8px 0; color: #01579b;">✓ Message search & filter</li>
+                        </ul>
+                    </div>
+
+                </div>
+
+                <div style="margin-top: 30px; padding: 20px; background: #f5f5f5; border-radius: 12px;">
+                    <h4 style="margin-bottom: 10px; color: #1a1a2e;">💡 Key Insight</h4>
+                    <p style="color: #666; line-height: 1.6;">
+                        Focus on improvements that reduce friction in the task delegation workflow. The most valuable features are those that:
+                        <strong>(1)</strong> provide immediate visibility into task status,
+                        <strong>(2)</strong> suggest relevant next actions, and
+                        <strong>(3)</strong> reduce the need to leave the chat to complete common actions.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</body>
+</html>

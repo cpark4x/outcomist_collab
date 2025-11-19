@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Outcomist - Lightweight Stats Options</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1e1e1e 0%, #2d2d2d 100%);
+            color: #e0e0e0;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 40px;
+        }
+
+        .section {
+            margin-bottom: 60px;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #e0e0e0;
+            margin-bottom: 20px;
+            padding-left: 12px;
+            border-left: 3px solid #4A90E2;
+        }
+
+        .section-description {
+            font-size: 13px;
+            color: #888;
+            margin-bottom: 24px;
+            padding-left: 15px;
+        }
+
+        /* Demo Frame */
+        .demo-frame {
+            background: rgba(42, 42, 42, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 16px;
+        }
+
+        .demo-label {
+            font-size: 11px;
+            font-weight: 600;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 16px;
+        }
+
+        /* Option 1: Toolbar Stats (Most Subtle) */
+        .toolbar-stats {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            font-size: 12px;
+            color: #888;
+        }
+
+        .toolbar-stat {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .toolbar-stat-value {
+            font-weight: 600;
+            color: #aaa;
+        }
+
+        .toolbar-stat-label {
+            color: #666;
+        }
+
+        .stat-dot {
+            width: 4px;
+            height: 4px;
+            background: #666;
+            border-radius: 50%;
+        }
+
+        /* Option 2: Inline Stats Bar */
+        .inline-stats {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            padding: 12px 20px;
+            background: rgba(42, 42, 42, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            font-size: 12px;
+        }
+
+        .inline-stat {
+            display: flex;
+            align-items: baseline;
+            gap: 6px;
+        }
+
+        .inline-stat-value {
+            font-size: 16px;
+            font-weight: 600;
+            color: #e0e0e0;
+        }
+
+        .inline-stat-label {
+            color: #666;
+        }
+
+        /* Option 3: Subtle Cards (Minimal) */
+        .subtle-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+        }
+
+        .subtle-stat {
+            background: rgba(42, 42, 42, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.2s;
+        }
+
+        .subtle-stat:hover {
+            background: rgba(42, 42, 42, 0.5);
+            border-color: rgba(255, 255, 255, 0.08);
+        }
+
+        .subtle-stat-icon {
+            font-size: 20px;
+            opacity: 0.6;
+        }
+
+        .subtle-stat-content {
+            flex: 1;
+        }
+
+        .subtle-stat-value {
+            font-size: 20px;
+            font-weight: 600;
+            color: #e0e0e0;
+            line-height: 1;
+            margin-bottom: 4px;
+        }
+
+        .subtle-stat-label {
+            font-size: 11px;
+            color: #666;
+        }
+
+        /* Option 4: Text-Only Stats */
+        .text-stats {
+            font-size: 13px;
+            color: #888;
+            line-height: 1.8;
+        }
+
+        .text-stats strong {
+            color: #e0e0e0;
+            font-weight: 600;
+        }
+
+        /* Option 5: Compact Badges */
+        .badge-stats {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .stat-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            background: rgba(42, 42, 42, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            font-size: 12px;
+        }
+
+        .stat-badge-value {
+            font-weight: 600;
+            color: #e0e0e0;
+        }
+
+        .stat-badge-label {
+            color: #666;
+        }
+
+        /* Option 6: Single Line Summary */
+        .summary-stat {
+            font-size: 12px;
+            color: #888;
+            padding: 10px 16px;
+            background: rgba(42, 42, 42, 0.3);
+            border-left: 2px solid #4A90E2;
+            border-radius: 4px;
+        }
+
+        .summary-stat strong {
+            color: #4A90E2;
+            font-weight: 600;
+        }
+
+        /* Recommendation Badge */
+        .recommendation {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 10px;
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            color: #10b981;
+            margin-left: 12px;
+        }
+
+        /* Mock Toolbar */
+        .mock-toolbar {
+            background: rgba(42, 42, 42, 0.95);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 14px 24px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 24px;
+            border-radius: 8px;
+        }
+
+        .mock-brand {
+            font-size: 18px;
+            font-weight: 700;
+            background: linear-gradient(to right, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .spacer {
+            flex: 1;
+        }
+
+        .mock-button {
+            padding: 8px 16px;
+            background: linear-gradient(to bottom right, #4A90E2, #357ABD);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        /* Visual Comparison */
+        .comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 40px;
+        }
+
+        .comparison-item {
+            background: rgba(42, 42, 42, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 20px;
+        }
+
+        .comparison-title {
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: #e0e0e0;
+        }
+
+        .comparison-label {
+            font-size: 11px;
+            color: #666;
+            margin-bottom: 16px;
+        }
+
+        .visual-weight {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .weight-label {
+            font-size: 11px;
+            color: #666;
+            width: 80px;
+        }
+
+        .weight-bar {
+            flex: 1;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .weight-fill {
+            height: 100%;
+            background: linear-gradient(to right, #10b981, #4A90E2);
+            transition: width 0.3s;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 style="font-size: 28px; font-weight: 700; margin-bottom: 12px;">
+            Lightweight Stats Options
+        </h1>
+        <p style="font-size: 14px; color: #888; margin-bottom: 48px;">
+            Much lighter alternatives to the heavy metrics dashboard
+        </p>
+
+        <!-- Option 1: Toolbar Stats -->
+        <div class="section">
+            <div class="section-title">
+                Option 1: Toolbar Stats <span class="recommendation">✓ Recommended</span>
+            </div>
+            <div class="section-description">
+                Most subtle — stats integrated directly into the toolbar
+            </div>
+            <div class="demo-frame">
+                <div class="demo-label">Preview</div>
+                <div class="mock-toolbar">
+                    <div class="mock-brand">Outcomist</div>
+                    <div class="spacer"></div>
+
+                    <!-- Stats in toolbar -->
+                    <div class="toolbar-stats">
+                        <div class="toolbar-stat">
+                            <span class="toolbar-stat-value">3</span>
+                            <span class="toolbar-stat-label">projects</span>
+                        </div>
+                        <span class="stat-dot"></span>
+                        <div class="toolbar-stat">
+                            <span class="toolbar-stat-value">12</span>
+                            <span class="toolbar-stat-label">sessions</span>
+                        </div>
+                        <span class="stat-dot"></span>
+                        <div class="toolbar-stat">
+                            <span class="toolbar-stat-value">847</span>
+                            <span class="toolbar-stat-label">messages</span>
+                        </div>
+                    </div>
+
+                    <button class="mock-button">+ New Project</button>
+                </div>
+            </div>
+            <div class="visual-weight">
+                <div class="weight-label">Visual Weight:</div>
+                <div class="weight-bar">
+                    <div class="weight-fill" style="width: 15%;"></div>
+                </div>
+                <span style="font-size: 11px; color: #10b981;">Very Light</span>
+            </div>
+        </div>
+
+        <!-- Option 2: Inline Stats Bar -->
+        <div class="section">
+            <div class="section-title">Option 2: Inline Stats Bar</div>
+            <div class="section-description">
+                Compact horizontal bar — sits above the project grid
+            </div>
+            <div class="demo-frame">
+                <div class="demo-label">Preview</div>
+                <div class="inline-stats">
+                    <div class="inline-stat">
+                        <span class="inline-stat-value">3</span>
+                        <span class="inline-stat-label">projects</span>
+                    </div>
+                    <div style="width: 1px; height: 16px; background: rgba(255, 255, 255, 0.1);"></div>
+                    <div class="inline-stat">
+                        <span class="inline-stat-value">12</span>
+                        <span class="inline-stat-label">sessions</span>
+                    </div>
+                    <div style="width: 1px; height: 16px; background: rgba(255, 255, 255, 0.1);"></div>
+                    <div class="inline-stat">
+                        <span class="inline-stat-value">847</span>
+                        <span class="inline-stat-label">messages</span>
+                    </div>
+                </div>
+            </div>
+            <div class="visual-weight">
+                <div class="weight-label">Visual Weight:</div>
+                <div class="weight-bar">
+                    <div class="weight-fill" style="width: 25%;"></div>
+                </div>
+                <span style="font-size: 11px; color: #10b981;">Light</span>
+            </div>
+        </div>
+
+        <!-- Option 3: Subtle Cards -->
+        <div class="section">
+            <div class="section-title">Option 3: Subtle Cards (Minimal)</div>
+            <div class="section-description">
+                Small cards with icons — more visual but still lightweight
+            </div>
+            <div class="demo-frame">
+                <div class="demo-label">Preview</div>
+                <div class="subtle-stats">
+                    <div class="subtle-stat">
+                        <div class="subtle-stat-icon">📁</div>
+                        <div class="subtle-stat-content">
+                            <div class="subtle-stat-value">3</div>
+                            <div class="subtle-stat-label">Projects</div>
+                        </div>
+                    </div>
+                    <div class="subtle-stat">
+                        <div class="subtle-stat-icon">💬</div>
+                        <div class="subtle-stat-content">
+                            <div class="subtle-stat-value">12</div>
+                            <div class="subtle-stat-label">Sessions</div>
+                        </div>
+                    </div>
+                    <div class="subtle-stat">
+                        <div class="subtle-stat-icon">✉️</div>
+                        <div class="subtle-stat-content">
+                            <div class="subtle-stat-value">847</div>
+                            <div class="subtle-stat-label">Messages</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="visual-weight">
+                <div class="weight-label">Visual Weight:</div>
+                <div class="weight-bar">
+                    <div class="weight-fill" style="width: 35%;"></div>
+                </div>
+                <span style="font-size: 11px; color: #4A90E2;">Medium-Light</span>
+            </div>
+        </div>
+
+        <!-- Option 4: Text-Only Stats -->
+        <div class="section">
+            <div class="section-title">Option 4: Text-Only Summary</div>
+            <div class="section-description">
+                Plain text — ultra minimal, just information
+            </div>
+            <div class="demo-frame">
+                <div class="demo-label">Preview</div>
+                <div class="text-stats">
+                    You have <strong>3 active projects</strong> with <strong>12 sessions</strong> and <strong>847 messages</strong> exchanged.
+                </div>
+            </div>
+            <div class="visual-weight">
+                <div class="weight-label">Visual Weight:</div>
+                <div class="weight-bar">
+                    <div class="weight-fill" style="width: 10%;"></div>
+                </div>
+                <span style="font-size: 11px; color: #10b981;">Ultra Light</span>
+            </div>
+        </div>
+
+        <!-- Option 5: Compact Badges -->
+        <div class="section">
+            <div class="section-title">Option 5: Compact Badges</div>
+            <div class="section-description">
+                Small pill badges — casual and unobtrusive
+            </div>
+            <div class="demo-frame">
+                <div class="demo-label">Preview</div>
+                <div class="badge-stats">
+                    <div class="stat-badge">
+                        <span class="stat-badge-value">3</span>
+                        <span class="stat-badge-label">projects</span>
+                    </div>
+                    <div class="stat-badge">
+                        <span class="stat-badge-value">12</span>
+                        <span class="stat-badge-label">sessions</span>
+                    </div>
+                    <div class="stat-badge">
+                        <span class="stat-badge-value">847</span>
+                        <span class="stat-badge-label">messages</span>
+                    </div>
+                </div>
+            </div>
+            <div class="visual-weight">
+                <div class="weight-label">Visual Weight:</div>
+                <div class="weight-bar">
+                    <div class="weight-fill" style="width: 20%;"></div>
+                </div>
+                <span style="font-size: 11px; color: #10b981;">Very Light</span>
+            </div>
+        </div>
+
+        <!-- Option 6: Single Line -->
+        <div class="section">
+            <div class="section-title">Option 6: Single Line Alert</div>
+            <div class="section-description">
+                Subtle notification bar — can be dismissible
+            </div>
+            <div class="demo-frame">
+                <div class="demo-label">Preview</div>
+                <div class="summary-stat">
+                    <strong>3</strong> projects · <strong>12</strong> sessions · <strong>847</strong> messages
+                </div>
+            </div>
+            <div class="visual-weight">
+                <div class="weight-label">Visual Weight:</div>
+                <div class="weight-bar">
+                    <div class="weight-fill" style="width: 18%;"></div>
+                </div>
+                <span style="font-size: 11px; color: #10b981;">Very Light</span>
+            </div>
+        </div>
+
+        <!-- Comparison -->
+        <div style="margin-top: 60px;">
+            <h2 style="font-size: 20px; font-weight: 600; margin-bottom: 24px;">
+                Visual Weight Comparison
+            </h2>
+            <div class="comparison">
+                <div class="comparison-item">
+                    <div class="comparison-title">❌ Original (Heavy)</div>
+                    <div class="comparison-label">Large cards with big numbers and icons</div>
+                    <div style="text-align: center; padding: 40px; background: rgba(74, 144, 226, 0.05); border-radius: 8px;">
+                        <div style="font-size: 40px; font-weight: 700; color: #4A90E2; margin-bottom: 8px;">847</div>
+                        <div style="font-size: 13px; color: #888;">Messages Exchanged</div>
+                    </div>
+                    <div class="visual-weight">
+                        <div class="weight-label">Visual Weight:</div>
+                        <div class="weight-bar">
+                            <div class="weight-fill" style="width: 80%; background: #ef4444;"></div>
+                        </div>
+                        <span style="font-size: 11px; color: #ef4444;">Heavy</span>
+                    </div>
+                </div>
+
+                <div class="comparison-item">
+                    <div class="comparison-title">✓ Recommended (Light)</div>
+                    <div class="comparison-label">Toolbar integration — subtle and functional</div>
+                    <div style="padding: 20px; background: rgba(42, 42, 42, 0.3); border-radius: 8px;">
+                        <div class="toolbar-stats" style="justify-content: center;">
+                            <div class="toolbar-stat">
+                                <span class="toolbar-stat-value">3</span>
+                                <span class="toolbar-stat-label">projects</span>
+                            </div>
+                            <span class="stat-dot"></span>
+                            <div class="toolbar-stat">
+                                <span class="toolbar-stat-value">12</span>
+                                <span class="toolbar-stat-label">sessions</span>
+                            </div>
+                            <span class="stat-dot"></span>
+                            <div class="toolbar-stat">
+                                <span class="toolbar-stat-value">847</span>
+                                <span class="toolbar-stat-label">messages</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="visual-weight">
+                        <div class="weight-label">Visual Weight:</div>
+                        <div class="weight-bar">
+                            <div class="weight-fill" style="width: 15%;"></div>
+                        </div>
+                        <span style="font-size: 11px; color: #10b981;">Very Light</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

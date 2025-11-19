@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160">
+  <!-- Outcomist Icon: Light Version (for dark backgrounds) -->
+
+  <g transform="translate(80, 80)">
+    <!-- Outer circle with gap at 45° -->
+    <path d="M 52,0 A 52,52 0 1,1 36.77,-36.77"
+          fill="none"
+          stroke="#f8f9fa"
+          stroke-width="5.5"
+          stroke-linecap="round"/>
+
+    <!-- Middle circle with gap at 135° -->
+    <path d="M 33,0 A 33,33 0 1,1 -23.33,-23.33"
+          fill="none"
+          stroke="#f8f9fa"
+          stroke-width="5.5"
+          stroke-linecap="round"/>
+
+    <!-- Inner circle with gap at 225° -->
+    <path d="M 18,0 A 18,18 0 1,1 -12.73,-12.73"
+          fill="none"
+          stroke="#f8f9fa"
+          stroke-width="5.5"
+          stroke-linecap="round"/>
+
+    <!-- Center dot -->
+    <circle cx="0" cy="0" r="5.5" fill="#f8f9fa"/>
+  </g>
+</svg>
