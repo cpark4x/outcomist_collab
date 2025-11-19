@@ -9,7 +9,7 @@ from fastapi import Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from sse_starlette.sse import EventSourceResponse
 
-from ..ai.streaming import stream_claude_response
+from ..ai.streaming_sdk import stream_claude_response_sdk
 from ..config import settings
 from ..database import get_db
 
@@ -40,7 +40,7 @@ async def stream_session(
     async def event_generator():
         """Generate SSE events from Claude streaming response."""
         try:
-            async for event in stream_claude_response(
+            async for event in stream_claude_response_sdk(
                 session_id=session_id,
                 user_message=message,
                 db=db,
